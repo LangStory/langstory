@@ -23,6 +23,7 @@ services:
     volumes:
       - ./client:/client
   langstory_db:
+    hostname: langstory-db
     image: ankane/pgvector:v0.5.1
     volumes:
       - .db_setup.sql:/docker-entrypoint-initdb.d/db_setup.sql
@@ -53,7 +54,7 @@ services:
     env_file:
       - .env
     environment:
-      - DATABASE_URL=${LANGFUSE_DATABASE_URL}
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@langstory-db:5432/langfuse
       - NEXTAUTH_URL=${NEXTAUTH_URL}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - SALT=${SALT}
