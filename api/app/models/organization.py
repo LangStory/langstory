@@ -1,8 +1,9 @@
 from typing import Optional
-from app.models.base import Base
 from sqlmodel import Field, Column
 from sqlalchemy import String
 from pydantic import HttpUrl
+
+from app.models.base import Base
 
 class Organization(Base, table=True):
 

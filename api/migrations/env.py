@@ -7,6 +7,13 @@ from sqlalchemy import pool
 from alembic import context
 
 from app.models.organization import Organization
+from app.models.event import AssistantMessage, SystemMessage, UserMessage, ToolMessage
+from app.models.journey import Journey
+from app.models.tool_call import ToolCall
+from app.models.persona import Persona
+from app.models.project import Project
+from app.models.tool import Tool
+from app.models.user import User
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
