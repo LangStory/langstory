@@ -3,13 +3,14 @@ services:
     hostname: langstory-api
     volumes:
       - ./api:/api
-      - ./logs:/api/logs
       - ./tests:/api/tests
       - ./pytest.ini:/api/pytest.ini
       - ./.pytest_cache:/api/.pytest_cache
     build:
       context: .
       dockerfile: dockerfiles/api.Dockerfile
+      args:
+        - ENVIRONMENT=dev
     env_file:
       - .env
     depends_on:
@@ -26,7 +27,7 @@ services:
     hostname: langstory-db
     image: ankane/pgvector:v0.5.1
     volumes:
-      - .db_setup.sql:/docker-entrypoint-initdb.d/db_setup.sql
+      - ./db_setup.sql:/docker-entrypoint-initdb.d/db_setup.sql
       - ./.data/pg_data:/var/lib/postgresql/data/
     env_file:
       - .env
@@ -66,5 +67,5 @@ services:
       timeout: 10s
       retries: 5
     depends_on:
-      swis_db:
+      langstory_db:
         condition: service_healthy
