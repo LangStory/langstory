@@ -1,0 +1,24 @@
+.aider*
+**/*.pyc
+**/__pycache__
+**/__pytest__
+**/*.pytest_cache
+
+# data
+.data/*
+!.data/.gitkeep
+
+# security
+.env
+
+# logs
+logs/*
+!logs/.gitkeep
+
+#ide
+.idea
+react/node_modules/
+react/dist/
+
+# venv
+.venv
