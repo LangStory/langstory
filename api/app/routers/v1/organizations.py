@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from app.models.organization import Organization
 
-router = APIRouter(prefix="/organizations", tags=["organizations", "admin"])
+router = APIRouter(prefix="/organizations", tags=["admin"])
 
 @router.get("/")
 async def list_organizations(
