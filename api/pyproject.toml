@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "langstory"
-version = "0.0.1a1"
+version = "0.0.1"
 authors = [
     { name = "Ethan Knox", email = "ethan@langstory.org" },
     { name = "Yoaquim Cintron", email = "yoaquim@langstory.org" },
@@ -15,7 +15,6 @@ requires-python = ">=3.11"
 keywords = ["llm", "ai", "ux", "ux-design", "langfuse", "langchain"]
 license = { text = "MIT" }
 classifiers = ["Programming Language :: Python :: 3", ]
-dynamic = ["version"]
 
 #dependencies = []
 
