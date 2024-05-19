@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "langstory"
-version = "0.0.1"
+version = "0.0.1rc1"
 authors = [
     { name = "Ethan Knox", email = "ethan@langstory.org" },
     { name = "Yoaquim Cintron", email = "yoaquim@langstory.org" },
