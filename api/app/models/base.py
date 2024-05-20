@@ -1,11 +1,14 @@
-from typing import Optional
+from typing import Optional, Union, TYPE_CHECKING
 from datetime import datetime
 from sqlmodel import Field, SQLModel
 from pydantic import ConfigDict
-from sqlalchemy import DateTime, func
+from sqlalchemy import DateTime, func, select
 from sqlalchemy.orm import Mapped, mapped_column
 from uuid import UUID, uuid4
 from humps import depascalize, camelize
+
+if TYPE_CHECKING:
+    from sqlalchemy.orm import Session
 
 class Base(SQLModel):
     __abstract__ = True
@@ -27,3 +30,18 @@ class Base(SQLModel):
     def id(self) -> Optional[str]:
         return f"{self.__prefix__}-{self.uid}"
 
+    def find(cls, db_session:"Session", lookup=dict) -> "Base":
+        """gets a single existing object or raises, based on filter criteria
+        Args: 
+            kwargs: the filter and values
+        Raises:
+            - NoResultFound, MultipleResultsFound if not one
+        """
+        with db_session as session:
+            query = session(cls)
+            for k,v in lookup:
+                key = getattr(cls, k)
+                query = query.where(key==v)
+            return session.one(query)
+            
+            
