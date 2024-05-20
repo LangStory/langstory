@@ -22,6 +22,8 @@ jobs:
         run: npm install
       - name: Build project
         run: npm run build
+      - name: Bump Version
+        run: npm version prerelease
       - name: Publish
         run: npm publish --provenance --access public
         env:
