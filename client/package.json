@@ -30,7 +30,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "github.com/LangStory/langstory"
+    "url": "https://github.com/LangStory/langstory"
   },
   "keywords": [
     "ux",
