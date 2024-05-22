@@ -1,11 +1,40 @@
-from fastapi import APIRouter
+from typing import TYPE_CHECKING
+from uuid import UUID
+from sqlalchemy import NoResultFound, MultipleResultsFound
+
+from fastapi import APIRouter, Depends
 from app.models.organization import Organization
+from app.models.user import User
+from app.schemas.organization_schemas import OrganizationBase
+
+from app.http_errors import not_found
+
+if TYPE_CHECKING:
+    from sqlalchemy import Session
 
 router = APIRouter(prefix="/organizations", tags=["admin"])
 
+
+def get_logged_in_user():
+    return None
+
+
+def get_db_session():
+    return None
+
+
 @router.get("/")
-async def list_organizations(
-    # TODO: need a "get_admin_user" dependency injection here
-    # TODO: start with pagination for all lists right out of the gate please!
+def list_organizations(
+        # TODO: need a "get_admin_user" dependency injection here
+        # TODO: start with pagination for all lists right out of the gate please!
 ):
     return "orgs will go here!"
+
+
+@router.get("/{id}", response_model=OrganizationBase)
+def read(uid: UUID, user: User = Depends(get_logged_in_user), db_session: "Session" = Depends(get_db_session)):
+    try:
+        org = user.organizations.filter(Organization.uid == uid).one()
+        return OrganizationBase.model_validate(org)
+    except (NoResultFound, MultipleResultsFound) as e:
+        not_found(e=e)

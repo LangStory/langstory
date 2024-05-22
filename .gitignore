@@ -22,3 +22,6 @@ react/dist/
 
 # venv
 .venv
+
+**/dist/**
+*.egg-info
