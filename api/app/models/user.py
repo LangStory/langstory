@@ -6,7 +6,7 @@ from sqlalchemy import String
 from pydantic import HttpUrl
 
 from app.models.base import Base
-from app.models.organizationsusers import OrganizationsUsers
+from app.models.orgnanizations_users import OrganizationsUsers
 
 if TYPE_CHECKING:
     from app.models.organization import Organization
@@ -39,7 +39,7 @@ class User(Base, table=True):
         db_session,
         id_: Optional[str] = None,
         uid: Optional[UUID] = None,
-        email_address: Optional[User] = None,
+        email_address: Optional[str] = None,
     ):
         if id_:
             try:

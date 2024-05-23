@@ -1,14 +1,14 @@
 from typing import TYPE_CHECKING, Optional, Generator
 from datetime import datetime, timezone, timedelta
 import jwt
-from passlib.context import CryptContext
 from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 
 from app.logger import get_logger
 from app.settings import settings
-from app.models import User, Organization
+from app.models.user import User
+from app.models.organization import Organization
 from app.schemas.jtw_schema import JWTBase, JWTResponse
-from app.http_errors import forbidden, unauthorized, not_found
+from app.http_errors import forbidden, unauthorized
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session

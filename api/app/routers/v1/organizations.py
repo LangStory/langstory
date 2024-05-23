@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated, Generator
 from uuid import UUID
-from sqlalchemy import NoResultFound, MultipleResultsFound
+from sqlalchemy.exc import NoResultFound, MultipleResultsFound
 
 from fastapi import APIRouter, Depends
 from app.models.organization import Organization
@@ -34,8 +34,8 @@ def list_organizations(
 @router.get("/{id}", response_model=OrganizationBase)
 def read(
     uid: UUID,
-    user: User = Depends(get_logged_in_user),
-    db_session: "Session" = Depends(get_db_session),
+    user: Annotated["User", Depends(get_logged_in_user)],
+    db_session: Annotated["Generator", Depends(get_db_session)],
 ):
     try:
         org = user.organizations.filter(Organization.uid == uid).one()
