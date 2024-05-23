@@ -43,7 +43,6 @@ class TestAuth:
     def test_auth_jwt_fails_expired(self, setup_state):
         _, db_session  = setup_state
         flow = JWTTokenFlow(db_session)
-        fixed_user = User(uid=UUID('11d52aeb-0dc3-4a90-a8b8-27b061c49920'), email="stubbed_email@email.test").create(db_session)
         expired_token = ("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
                          "eyJzdWIiOiJ1c2VyLTExZDUyYWViLTBkYzMtNG"
                          "E5MC1hOGI4LTI3YjA2MWM0OTkyMCIsImV4cCI6"
