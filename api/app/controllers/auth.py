@@ -65,8 +65,9 @@ class JWTTokenFlow(AuthBase):
         decoded = jwt.decode(
             refresh_token.token, settings.jwt_secret_key, algorithms=[self.algorithm]
         )
+        assert decoded["exp"] > datetime.now(timezone.utc).timestamp(), "token is expired"
         try:
-            user = User.read(id_=decoded.sub)
+            user = User.read(self.db_session, id_=decoded["sub"])
         except (MultipleResultsFound, NoResultFound, ValueError) as e:
             unauthorized(e=e, message="User not found")
         org_data = {}
@@ -81,7 +82,24 @@ class JWTTokenFlow(AuthBase):
                     e=e,
                     message="User does not belong to this organization or it does not exist",
                 )
-            org_data = sql_org.model_dump()
+            org_data = {
+                "id": sql_org.id,
+                "name": sql_org.name,
+            }
         expire = datetime.now(timezone.utc) + timedelta(minutes=5)
-        user_data = user.model_dump()
-        breakpoint()
+        user_data = {
+            "id": user.id,
+            "email_address": user.email_address,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "avatar_url": user.avatar_url,
+            "organizations": [o.id for o in user.organizations],
+        }
+        data = {
+            "sub": user.id,
+            "org": org_data,
+            "exp": expire,
+            "user": user_data,
+        }
+        token = jwt.encode(data.copy(), settings.jwt_secret_key, algorithm=self.algorithm)
+        return JWTResponse(token=token, data=data)

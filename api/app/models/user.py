@@ -30,7 +30,8 @@ class User(Base, table=True):
         sa_column=Column(String),
     )
     organizations: list["Organization"] = Relationship(
-        back_populates="users", link_model=OrganizationsUsers
+        back_populates="users", link_model=OrganizationsUsers,
+        sa_relationship_kwargs={"lazy":"joined"}
     )
 
     @classmethod

@@ -46,7 +46,7 @@ class Base(SQLModel):
         if uid is None:
             raise ValueError("uid is required")
         with db_session as session:
-            return session.query(cls).get(uid)
+            return session.query(cls).where(cls.uid==uid).one()
 
     def create(self, db_session: "Session") -> Type[Self]:
         with db_session as session:
