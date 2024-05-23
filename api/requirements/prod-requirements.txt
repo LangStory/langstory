@@ -6,3 +6,4 @@ alembic~=1.13.1
 psycopg2-binary~=2.9.9
 fastapi-sso~=0.14.2
 pydantic-settings~=2.2.1
+pyjwt~=2.8.0

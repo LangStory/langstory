@@ -29,8 +29,14 @@ class MessageRole(str, Enum):
 
 class Event(Base):
     name: str = Field(..., description="The name of the event")
-    description: Optional[str] = Field(default=None, description="A description of the event")
-    journey_id: UUID = Field(..., foreign_key="journey.uid", description="The ID of the journey this event belongs to")
+    description: Optional[str] = Field(
+        default=None, description="A description of the event"
+    )
+    journey_id: UUID = Field(
+        ...,
+        foreign_key="journey.uid",
+        description="The ID of the journey this event belongs to",
+    )
     timestamp: datetime = Field(..., description="The timestamp of the event")
 
     @property
@@ -41,6 +47,7 @@ class Event(Base):
 
 class Message(Event):
     """Classic OAI message, with some additional metadata."""
+
     role: MessageRole = Field(..., description="The role of the message")
     content: str = Field(..., description="The content of the message")
 
@@ -53,7 +60,11 @@ class UserMessage(Message, table=True):
     role: MessageRole = Field(MessageRole.user, description="The role of the message")
 
     # relationships
-    persona_id: Optional[UUID] = Field(default=None, foreign_key="persona.uid", description="The optional persona ID for user messages")
+    persona_id: Optional[UUID] = Field(
+        default=None,
+        foreign_key="persona.uid",
+        description="The optional persona ID for user messages",
+    )
     persona: Optional["Persona"] = Relationship(back_populates="user_messages")
 
     @property
@@ -70,7 +81,11 @@ class AssistantMessage(Message, table=True):
 
 class ToolMessage(Message, table=True):
     role: MessageRole = Field(MessageRole.tool, description="The role of the message")
-    tool_call_request_id: Optional[UUID] = Field(default=None, foreign_key="toolcall.request_id", description="The tool call request ID if a tool call initiated this response")
+    tool_call_request_id: Optional[UUID] = Field(
+        default=None,
+        foreign_key="toolcall.request_id",
+        description="The tool call request ID if a tool call initiated this response",
+    )
 
 
 class ExternalEvent(Event, table=True):

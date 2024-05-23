@@ -8,6 +8,7 @@ from app.models.base import Base
 
 class Tool(Base, table=True):
     """The callable function as presented to the LLM"""
+
     name: str = Field(..., description="The name of the tool to be called")
     json_schema: dict = Field(default_factory=dict, description="The jsonschema for the tool", sa_column=Column(JSONB))
     description: Optional[str] = Field(default=None, description="A displayable description of the tool")

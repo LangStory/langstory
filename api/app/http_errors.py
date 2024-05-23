@@ -2,7 +2,9 @@ from fastapi import HTTPException, status
 
 
 def _exception(parent_exception: Exception, status_code: int, message: str):
-    raise HTTPException(status_code=status_code, detail={"message": message}) from parent_exception
+    raise HTTPException(
+        status_code=status_code, detail={"message": message}
+    ) from parent_exception
 
 
 def forbidden(e: Exception = None, message: str = "Forbidden"):
