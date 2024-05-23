@@ -6,8 +6,8 @@ from pydantic import HttpUrl
 
 from app.models.base import Base
 
-class Project(Base, table=True):
 
+class Project(Base, table=True):
     name: str = Field(..., description="The name of the project")
     avatar_url: Optional[HttpUrl] = Field(default=None, description="The URL of the project's avatar", sa_column=Column(String))
     description: Optional[str] = Field(default=None, description="A description of the project")

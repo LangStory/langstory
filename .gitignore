@@ -17,8 +17,15 @@ logs/*
 
 #ide
 .idea
-react/node_modules/
-react/dist/
+client/node_modules/
+client/dist/
 
 # venv
 .venv
+
+**/dist/**
+*.egg-info
+
+
+# react
+client/node_modules/
