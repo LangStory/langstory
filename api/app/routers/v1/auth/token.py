@@ -12,8 +12,8 @@ router = APIRouter(prefix="/token", tags=["auth"])
 @router.post("/refresh")
 def refresh(
     token: JWTBase,
-    db_session: Annotated["Generator", Depends(get_db_session)],
+    db_session: Annotated[Generator, Depends(get_db_session)],
 ):
     """use a refresh token to get a new JWT"""
-    #flow = JWTTokenFlow(db_session)
-    # return flow.get_auth_token(token.token)
+    flow = JWTTokenFlow(db_session)
+    return flow.get_auth_token(token.token)

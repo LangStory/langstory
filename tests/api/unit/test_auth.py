@@ -1,4 +1,5 @@
 import pytest
+from datetime import datetime, timezone
 
 from app.controllers.auth import JWTTokenFlow
 from app.models.user import User
@@ -16,6 +17,12 @@ class TestAuth:
         user, db_session  = setup_state
         flow = JWTTokenFlow(db_session)
         token = flow.get_refresh_token(user)
-        breakpoint()
-        assert token.data["expires"]
+        assert token.data["exp"] > datetime.now(timezone.utc)
+        assert token.data["sub"] == user.id
 
+    #def test_auth_jwt(self, setup_state):
+        #user, db_session  = setup_state
+        #flow = JWTTokenFlow(db_session)
+        #token = flow.get_auth_token(user)
+        #breakpoint()
+        #assert token.data["expires"]

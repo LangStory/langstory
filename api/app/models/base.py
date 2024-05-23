@@ -18,14 +18,12 @@ class Base(SQLModel):
         extra="forbid",
     )
 
-    uid: UUID = Field(default=uuid4, primary_key=True)
+    uid: UUID = Field(default_factory=uuid4, primary_key=True)
     created_at: datetime = Field(
-        default=None,
-        sa_column=mapped_column(DateTime(), server_default=func.now(), nullable=True),
+        sa_column_kwargs={"server_default": func.now()},
     )
     updated_at: datetime = Field(
-        default=None,
-        sa_column=mapped_column(DateTime(), onupdate=func.now(), nullable=True),
+        sa_column_kwargs={"server_default": func.now(), "onupdate": func.now()},
     )
     deleted: bool = Field(default=False)
 

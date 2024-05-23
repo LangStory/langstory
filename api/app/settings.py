@@ -21,4 +21,6 @@ class Settings(BaseSettings):
     db_user: str
     db_password: str
 
+    jwt_secret_key: str
+
 settings = Settings()

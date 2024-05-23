@@ -48,7 +48,7 @@ class JWTTokenFlow(AuthBase):
     def get_refresh_token(self, user: User) -> "JWTResponse":
         """generates a bare refresh token for a given user"""
         logger.debug("generating refresh token for %s", user.email_address)
-        expire = datetime.now(timezone.utc) + timedelta(years=1)
+        expire = datetime.now(timezone.utc) + timedelta(days=365)
         data = {"sub": user.id, "exp": expire}
         token = jwt.encode(
             data.copy(), settings.jwt_secret_key, algorithm=self.algorithm

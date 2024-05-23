@@ -22,5 +22,5 @@ class Organization(Base, table=True):
         sa_column=Column(String),
     )
     users: list["User"] = Relationship(
-        back_populates="users", link_model=OrganizationsUsers
+        back_populates="organizations", link_model=OrganizationsUsers
     )

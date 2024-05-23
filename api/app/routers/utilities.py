@@ -22,8 +22,7 @@ def _create_engine(database:Optional[str]=None)-> Engine:
             database=database,
         ))
 
-def get_db_session(engine:Optional[Engine] = None) -> "Generator[Session, None, None]":
-    engine = engine or _create_engine()
-    bound_session = sessionmaker(bind=engine)
+def get_db_session() -> Generator:
+    bound_session = sessionmaker(bind=_create_engine())
     with bound_session() as session:
         yield session
