@@ -6,7 +6,7 @@ from sqlalchemy import String
 from pydantic import HttpUrl
 
 from app.models.base import Base
-from app.models.organizationsusers import OrganizationsUsers
+from app.models.orgnanizations_users import OrganizationsUsers
 
 if TYPE_CHECKING:
     from app.models.organization import Organization

@@ -5,6 +5,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 from app.models.base import Base
 
+
 class Tool(Base, table=True):
     """The callable function as presented to the LLM"""
     name: str = Field(..., description="The name of the tool to be called")

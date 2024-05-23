@@ -1,7 +1,5 @@
 from uuid import UUID
-
 from sqlmodel import Field
-
 from app.models.base import Base
 
 

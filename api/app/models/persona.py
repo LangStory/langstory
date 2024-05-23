@@ -5,8 +5,8 @@ from sqlmodel import Field, Column, String
 
 from app.models.base import Base
 
-class Persona(Base, table=True):
 
+class Persona(Base, table=True):
     name: str = Field(..., description="The name of the persona")
     description: Optional[str] = Field(default=None, description="A description of the persona")
     project_id: UUID = Field(..., foreign_key="project.uid", description="The ID of the project this persona belongs to")

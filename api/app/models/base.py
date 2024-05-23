@@ -1,4 +1,4 @@
-from typing import Optional, TYPE_CHECKING, List, Type
+from typing import Optional, TYPE_CHECKING, Type, Self
 from datetime import datetime
 from sqlmodel import Field, SQLModel
 from pydantic import ConfigDict
@@ -32,30 +32,30 @@ class Base(SQLModel):
         return f"{self.__prefix__}-{self.uid}"
 
     @classmethod
-    def list(cls, db_session: "Session") -> list[Type[Base]]:
+    def list(cls, db_session: "Session") -> list[Type[Self]]:
         with db_session as session:
             return session.query(cls).all()
 
     @classmethod
-    def read(cls, db_session: "Session", uid: Optional[UUID] = None, **kwargs) -> Type[Base]:
+    def read(cls, db_session: "Session", uid: Optional[UUID] = None, **kwargs) -> Type[Self]:
         del kwargs
         if uid is None:
             raise ValueError("uid is required")
         with db_session as session:
             return session.query(cls).get(uid)
 
-    def create(self, db_session: "Session") -> Type[Base]:
+    def create(self, db_session: "Session") -> Type[Self]:
         with db_session as session:
             session.add(self)
             session.commit()
             session.refresh(self)
             return self
 
-    def delete(self, db_session: "Session") -> Type[Base]:
+    def delete(self, db_session: "Session") -> Type[Self]:
         self.deleted = True
         return self.update(db_session)
 
-    def update(self, db_session: "Session") -> Type[Base]:
+    def update(self, db_session: "Session") -> Type[Self]:
         with db_session as session:
             session.commit()
             session.refresh(self)

@@ -8,6 +8,7 @@ from app.models.base import Base
 if TYPE_CHECKING:
     from app.models.event import AssistantMessage
 
+
 class ToolCall(Base, table=True):
     """A called instance of a tool"""
     request_id: UUID = Field(default_factory=uuid4, description="a unique identifier to link calls to responses", unique=True)
