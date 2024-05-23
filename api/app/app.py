@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers.v1 import ROUTERS as v1_routes
-from app.tags_metadata import TAGS_METADATA  # TODO: do this better
 
 
 def create_app():

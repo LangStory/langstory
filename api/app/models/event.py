@@ -32,10 +32,10 @@ class Event(Base):
     description: Optional[str] = Field(
         default=None, description="A description of the event"
     )
-    journey_id: UUID = Field(
+    chat_id: UUID = Field(
         ...,
-        foreign_key="journey.uid",
-        description="The ID of the journey this event belongs to",
+        foreign_key="chat.uid",
+        description="The ID of the chat this event belongs to",
     )
     timestamp: datetime = Field(..., description="The timestamp of the event")
 
@@ -89,7 +89,7 @@ class ToolMessage(Message, table=True):
 
 
 class ExternalEvent(Event, table=True):
-    """Stimuli that can trigger or impact a journey"""
+    """Stimuli that can trigger or impact a chat"""
 
     name: str = Field(..., description="The name of the external event")
     description: Optional[str] = Field(default=None, description="A description of the external event")

@@ -2,3 +2,4 @@ CREATE EXTENSION IF NOT EXISTS "vector";
 
 CREATE DATABASE langfuse;
 CREATE DATABASE langstory_test;
+

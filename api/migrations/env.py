@@ -8,7 +8,7 @@ from alembic import context
 
 from app.models.organization import Organization
 from app.models.event import AssistantMessage, SystemMessage, UserMessage, ToolMessage
-from app.models.journey import Journey
+from app.models.chat import Chat
 from app.models.tool_call import ToolCall
 from app.models.persona import Persona
 from app.models.project import Project
