@@ -25,7 +25,7 @@ class AuthBase:
         self.db_session = db_session
 
     @classmethod
-    def stanardized_email(cls, email: str) -> str:
+    def standardized_email(cls, email: str) -> str:
         return email.strip().lower()
 
 
@@ -59,7 +59,7 @@ class JWTTokenFlow(AuthBase):
         return JWTResponse(token=token, data=data)
 
     def get_auth_token(
-        self, refresh_token: "JWTBase", org: Optional["str"] = None
+            self, refresh_token: "JWTBase", org: Optional["str"] = None
     ) -> "JWTResponse":
         """generate a detailed token and readable data for a given user and org"""
         decoded = jwt.decode(
@@ -74,7 +74,7 @@ class JWTTokenFlow(AuthBase):
             sql_org = Organization.read(self.db_session, uid=org)
             try:
                 assert (
-                    org in user.organizations
+                        org in user.organizations
                 ), f"User {user.uid} is not a member of org {org}"
             except AssertionError as e:
                 forbidden(
