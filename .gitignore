@@ -25,3 +25,7 @@ react/dist/
 
 **/dist/**
 *.egg-info
+
+
+# react
+client/node_modules/
