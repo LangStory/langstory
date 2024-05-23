@@ -12,6 +12,15 @@ if TYPE_CHECKING:
 
 class Organization(Base, table=True):
     name: str = Field(..., description="The name of the organization")
-    email_domain: Optional[str] = Field(None, description="If set, all users with this email domain will be granted access to this organization")
-    avatar_url: Optional[HttpUrl] = Field(None, description="The URL of the organization's avatar", sa_column=Column(String))
-    users: list["User"] = Relationship(back_populates="users", link_model=OrganizationsUsers)
+    email_domain: Optional[str] = Field(
+        None,
+        description="If set, all users with this email domain will be granted access to this organization",
+    )
+    avatar_url: Optional[HttpUrl] = Field(
+        None,
+        description="The URL of the organization's avatar",
+        sa_column=Column(String),
+    )
+    users: list["User"] = Relationship(
+        back_populates="users", link_model=OrganizationsUsers
+    )

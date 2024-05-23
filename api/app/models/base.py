@@ -19,8 +19,14 @@ class Base(SQLModel):
     )
 
     uid: UUID = Field(default=uuid4, primary_key=True)
-    created_at: datetime = Field(default=None, sa_column=mapped_column(DateTime(), server_default=func.now(), nullable=True))
-    updated_at: datetime = Field(default=None, sa_column=mapped_column(DateTime(), onupdate=func.now(), nullable=True))
+    created_at: datetime = Field(
+        default=None,
+        sa_column=mapped_column(DateTime(), server_default=func.now(), nullable=True),
+    )
+    updated_at: datetime = Field(
+        default=None,
+        sa_column=mapped_column(DateTime(), onupdate=func.now(), nullable=True),
+    )
     deleted: bool = Field(default=False)
 
     @property
@@ -37,7 +43,9 @@ class Base(SQLModel):
             return session.query(cls).all()
 
     @classmethod
-    def read(cls, db_session: "Session", uid: Optional[UUID] = None, **kwargs) -> Type[Base]:
+    def read(
+        cls, db_session: "Session", uid: Optional[UUID] = None, **kwargs
+    ) -> Type[Base]:
         del kwargs
         if uid is None:
             raise ValueError("uid is required")

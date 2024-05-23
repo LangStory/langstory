@@ -6,5 +6,5 @@ from app.models.base import Base
 
 
 class OrganizationsUsers(Base, table=True):
-    organization_id: UUID = Field(..., foreign_key='organization.id')
-    user_id: UUID = Field(..., foreign_key='user.id')
+    organization_id: UUID = Field(..., foreign_key="organization.id")
+    user_id: UUID = Field(..., foreign_key="user.id")

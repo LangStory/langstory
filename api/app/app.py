@@ -2,13 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers.v1 import ROUTERS as v1_routes
-from app.tags_metadata import TAGS_METADATA # TODO: do this better
+from app.tags_metadata import TAGS_METADATA  # TODO: do this better
 
 
 def create_app():
     app = FastAPI(
         swagger_ui_parameters={"docExpansion": "none"},
-        #openapi_tags=TAGS_METADATA,
+        # openapi_tags=TAGS_METADATA,
         title="☯️ LangStory",
         summary="Create beautiful natural language user experiences.",
         version="0.2.0",  # TODO wire this up to the version in the package
@@ -29,5 +29,6 @@ def create_app():
         app.include_router(route, prefix="", include_in_schema=False)
         app.include_router(route, prefix="/latest", include_in_schema=False)
     return app
+
 
 app = create_app()
