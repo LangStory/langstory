@@ -47,6 +47,6 @@ export default function init(rollbar: Rollbar, updatedAuth: () => void) {
     //--------------------
     // MIXPANEL
     //--------------------
-    if (process.env.NODE_ENV === 'production') mixpanel.init('9e21912804890c28dc6cbbf8632850bc', {track_pageview: true, persistence: 'localStorage'})
+    if (process.env.NODE_ENV === 'production') mixpanel.init('notavalidtoken', {track_pageview: true, persistence: 'localStorage'})
     else mixpanel.init('notavalidtoken', {track_pageview: true, persistence: 'localStorage'})
 }

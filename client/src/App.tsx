@@ -8,7 +8,7 @@ import ErrorFallbackUI from 'components/ErrorFallbackUI.tsx'
 import Routes from 'components/core/Routes.tsx'
 
 const rollbar = new Rollbar({
-    accessToken: '',
+    accessToken: 'notavalidtoken',
     captureUncaught: true,
     captureUnhandledRejections: true,
     enabled: process.env.NODE_ENV === 'production',
