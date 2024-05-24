@@ -9,7 +9,7 @@ from app.controllers.auth import JWTTokenFlow, AuthenticateUsernamePasswordFlow
 from app.controllers.user import CreateNewUserFlow
 
 
-router = APIRouter(prefix="/username-password", tags=["auth"])
+router = APIRouter(prefix="/auth/username-password", tags=["auth"])
 
 
 @router.post("/sign-up")

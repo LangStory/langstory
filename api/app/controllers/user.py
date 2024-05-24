@@ -26,6 +26,8 @@ class CreateNewUserFlow(AuthMixin, PasswordMixin):
 
     def create_user_with_username_password(self, user: "NewUser") -> User:
         """create a new user"""
+        if not settings.allow_new_users:
+            bad_request(message="Adding new users has been disabled, contact your administrator")
         if not user.password or len(user.password) < 8:
             bad_request(message="Password must be at least 8 characters long")
 

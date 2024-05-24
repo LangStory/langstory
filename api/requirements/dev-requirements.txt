@@ -4,3 +4,4 @@ prospector~=1.10.3
 pytest-it~=0.1.5
 black~=24.03.0
 prospector~=1.10.3
+pytest-asyncio~=0.23.7
