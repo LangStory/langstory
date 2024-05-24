@@ -3,7 +3,7 @@ import { PlusIcon, PaperClipIcon, ArrowRightIcon } from '@heroicons/react/24/out
 export default function Chat() {
 
     return (
-        <div className="w-full h-screen flex">
+        <div className="w-full h-screen flex font-ibm">
             <div className="w-1/5 h-full pt-10 px-8 flex flex-col items-center space-y-20 bg-gray-100">
 
                 <div className="flex items-center">
