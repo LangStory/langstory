@@ -16,13 +16,14 @@ services:
     depends_on:
       langstory_db:
         condition: service_healthy
+    command: ["uvicorn", "app.app:app", "--host", "0.0.0.0", "--port", "80", "--reload"]
   langstory_client:
     hostname: langstory-client
     build:
       context: .
       dockerfile: dockerfiles/client.Dockerfile
     volumes:
-      - ./client:/client
+      - ./client:/client/app
   langstory_db:
     hostname: langstory-db
     image: ankane/pgvector:v0.5.1

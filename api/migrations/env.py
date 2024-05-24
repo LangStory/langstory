@@ -6,6 +6,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
+from app.models.archives import Archives
 from app.models.organization import Organization
 from app.models.event import AssistantMessage, SystemMessage, UserMessage, ToolMessage
 from app.models.chat import Chat

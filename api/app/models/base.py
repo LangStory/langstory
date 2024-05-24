@@ -2,8 +2,7 @@ from typing import Optional, TYPE_CHECKING, Type, Self
 from datetime import datetime
 from sqlmodel import Field, SQLModel
 from pydantic import ConfigDict
-from sqlalchemy import DateTime, func
-from sqlalchemy.orm import mapped_column
+from sqlalchemy import func
 from uuid import UUID, uuid4
 from humps import depascalize, camelize
 
@@ -20,9 +19,11 @@ class Base(SQLModel):
 
     uid: UUID = Field(default_factory=uuid4, primary_key=True)
     created_at: datetime = Field(
+        default=datetime.now(),
         sa_column_kwargs={"server_default": func.now()},
     )
     updated_at: datetime = Field(
+        default=datetime.now(),
         sa_column_kwargs={"server_default": func.now(), "onupdate": func.now()},
     )
     deleted: bool = Field(default=False)
@@ -46,7 +47,7 @@ class Base(SQLModel):
         if uid is None:
             raise ValueError("uid is required")
         with db_session as session:
-            return session.query(cls).get(uid)
+            return session.query(cls).where(cls.uid==uid).one()
 
     def create(self, db_session: "Session") -> Type[Self]:
         with db_session as session:

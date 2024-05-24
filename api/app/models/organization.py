@@ -1,13 +1,16 @@
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, Generator
 from sqlmodel import Field, Column, Relationship
 from sqlalchemy import String
 from pydantic import HttpUrl
 
 from app.models.base import Base
+from app.settings import settings
 from app.models.orgnanizations_users import OrganizationsUsers
 
 if TYPE_CHECKING:
     from app.models.user import User
+    from sqlalchemy.orm import Session
+
 
 
 class Organization(Base, table=True):
@@ -21,6 +24,10 @@ class Organization(Base, table=True):
         description="The URL of the organization's avatar",
         sa_column=Column(String),
     )
-    users: list["User"] = Relationship(
-        back_populates="organizations", link_model=OrganizationsUsers
-    )
+
+
+    @classmethod
+    def default(cls, db_session:"Generator[Session, None, None]"):
+        if org := db_session.query(cls).first():
+            return org
+        return Organization(name=settings.organization_name).create(db_session)

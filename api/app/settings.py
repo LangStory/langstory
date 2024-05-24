@@ -6,6 +6,7 @@ from pydantic import Field
 class Settings(BaseSettings):
     google_oauth_client_id: Optional[str] = None
     google_oauth_client_secret: Optional[str] = None
+    organization_name: Optional[str] = "LangStory"
     canonical_url: str
     validate_user_email: bool = Field(
         default=False,

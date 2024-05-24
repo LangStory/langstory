@@ -8,6 +8,7 @@ from pydantic import HttpUrl
 from app.models.base import Base
 from app.models.orgnanizations_users import OrganizationsUsers
 
+from app.models.organization import Organization
 if TYPE_CHECKING:
     from app.models.organization import Organization
 
@@ -29,8 +30,12 @@ class User(Base, table=True):
         description="The URL of the user's avatar",
         sa_column=Column(String),
     )
+    password: Optional[str] = Field(default=None, description="The user's password")
+
+    # relationships
     organizations: list["Organization"] = Relationship(
-        back_populates="users", link_model=OrganizationsUsers
+        link_model=OrganizationsUsers,
+        sa_relationship_kwargs={"lazy":"joined"}
     )
 
     @classmethod

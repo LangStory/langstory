@@ -53,8 +53,8 @@ CREATE FUNCTION make_archive_of_changes() RETURNS TRIGGER AS $$
       AND record_type = record_type
       AND record_id = (
         CASE WHEN TG_OP = 'DELETE'
-          THEN OLD._id
-          ELSE NEW._id
+          THEN OLD.uid
+          ELSE NEW.uid
         END
       );
 
@@ -64,7 +64,7 @@ CREATE FUNCTION make_archive_of_changes() RETURNS TRIGGER AS $$
         table_name, record_type, record_id, operation, new_values, most_recent, recorded_at
       )
       VALUES (
-        TG_TABLE_NAME, TG_ARGV[0], NEW._id, TG_OP, to_jsonb(NEW), TRUE, now()
+        TG_TABLE_NAME, TG_ARGV[0], NEW.uid, TG_OP, to_jsonb(NEW), TRUE, now()
       );
       RETURN NEW;
 
@@ -73,7 +73,7 @@ CREATE FUNCTION make_archive_of_changes() RETURNS TRIGGER AS $$
         table_name, record_type, record_id, operation, new_values, old_values, most_recent, recorded_at
       )
       VALUES (
-        TG_TABLE_NAME, TG_ARGV[0], NEW._id, TG_OP, to_jsonb(NEW), to_jsonb(OLD), TRUE, now()
+        TG_TABLE_NAME, TG_ARGV[0], NEW.uid, TG_OP, to_jsonb(NEW), to_jsonb(OLD), TRUE, now()
       );
       RETURN NEW;
 
@@ -82,7 +82,7 @@ CREATE FUNCTION make_archive_of_changes() RETURNS TRIGGER AS $$
         table_name, record_type, record_id, operation, old_values, most_recent, recorded_at
       )
       VALUES (
-        TG_TABLE_NAME, TG_ARGV[0], OLD._id, TG_OP, to_jsonb(OLD), TRUE, now()
+        TG_TABLE_NAME, TG_ARGV[0], OLD.uid, TG_OP, to_jsonb(OLD), TRUE, now()
       );
       RETURN OLD;
 
