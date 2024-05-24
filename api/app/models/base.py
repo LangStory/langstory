@@ -42,12 +42,14 @@ class Base(SQLModel):
             return session.query(cls).all()
 
     @classmethod
-    def read(cls, db_session: "Session", uid: Optional[UUID] = None, **kwargs) -> Type[Self]:
+    def read(
+        cls, db_session: "Session", uid: Optional[UUID] = None, **kwargs
+    ) -> Type[Self]:
         del kwargs
         if uid is None:
             raise ValueError("uid is required")
         with db_session as session:
-            return session.query(cls).where(cls.uid==uid).one()
+            return session.query(cls).where(cls.uid == uid).one()
 
     def create(self, db_session: "Session") -> Type[Self]:
         with db_session as session:

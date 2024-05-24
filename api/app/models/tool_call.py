@@ -24,6 +24,12 @@ class ToolCall(Base, table=True):
     )
 
     # relationship
-    tool_id: UUID = Field(..., foreign_key="tool.uid", description="The ID of the tool being called")
-    assistant_message_id: UUID = Field(..., foreign_key="assistantmessage.uid", description="The assistant message associated with this tool call")
+    tool_id: UUID = Field(
+        ..., foreign_key="tool.uid", description="The ID of the tool being called"
+    )
+    assistant_message_id: UUID = Field(
+        ...,
+        foreign_key="assistantmessage.uid",
+        description="The assistant message associated with this tool call",
+    )
     assistant_message: "AssistantMessage" = Relationship(back_populates="tool_calls")

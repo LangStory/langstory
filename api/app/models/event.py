@@ -75,7 +75,9 @@ class UserMessage(Message, table=True):
 
 
 class AssistantMessage(Message, table=True):
-    role: MessageRole = Field(MessageRole.assistant, description="The role of the message")
+    role: MessageRole = Field(
+        MessageRole.assistant, description="The role of the message"
+    )
     tool_calls: List["ToolCall"] = Relationship(back_populates="assistant_message")
 
 
@@ -92,4 +94,6 @@ class ExternalEvent(Event, table=True):
     """Stimuli that can trigger or impact a chat"""
 
     name: str = Field(..., description="The name of the external event")
-    description: Optional[str] = Field(default=None, description="A description of the external event")
+    description: Optional[str] = Field(
+        default=None, description="A description of the external event"
+    )

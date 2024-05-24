@@ -12,6 +12,7 @@ def create_app():
         summary="Create beautiful natural language user experiences.",
         version="0.2.0",  # TODO wire this up to the version in the package
     )
+
     # Configure CORS
     app.add_middleware(
         CORSMiddleware,

@@ -2,3 +2,5 @@
 pytest~=8.2.0
 prospector~=1.10.3
 pytest-it~=0.1.5
+black~=23.10.1
+prospector~=1.10.3

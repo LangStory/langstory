@@ -24,4 +24,5 @@ class Settings(BaseSettings):
 
     jwt_secret_key: str
 
+
 settings = Settings()

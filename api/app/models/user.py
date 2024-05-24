@@ -1,16 +1,13 @@
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 from uuid import UUID
 
-from sqlmodel import Field, Column, Relationship
-from sqlalchemy import String
 from pydantic import HttpUrl
+from sqlalchemy import String
+from sqlmodel import Field, Column, Relationship
 
 from app.models.base import Base
-from app.models.orgnanizations_users import OrganizationsUsers
-
 from app.models.organization import Organization
-if TYPE_CHECKING:
-    from app.models.organization import Organization
+from app.models.orgnanizations_users import OrganizationsUsers
 
 
 class User(Base, table=True):
@@ -34,17 +31,16 @@ class User(Base, table=True):
 
     # relationships
     organizations: list["Organization"] = Relationship(
-        link_model=OrganizationsUsers,
-        sa_relationship_kwargs={"lazy":"joined"}
+        link_model=OrganizationsUsers, sa_relationship_kwargs={"lazy": "joined"}
     )
 
     @classmethod
     def read(
-            cls,
-            db_session,
-            id_: Optional[str] = None,
-            uid: Optional[UUID] = None,
-            email_address: Optional[str] = None,
+        cls,
+        db_session,
+        id_: Optional[str] = None,
+        uid: Optional[UUID] = None,
+        email_address: Optional[str] = None,
     ):
         if id_:
             try:

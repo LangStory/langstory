@@ -19,8 +19,10 @@ class NewUser(BaseSchema):
         default=None, description="the user's password, required if not using SSO"
     )
 
+
 class ScopedUser:
     """a user scoped to an organization"""
+
     user: "User"
     organization: Optional["Organization"] = None
 
@@ -29,7 +31,6 @@ class ScopedUser:
         self.organization = organization
 
     def __getattr__(self, attr: str) -> Any:
-
         try:
             return self.__getattribute__(attr)
         except AttributeError as e:

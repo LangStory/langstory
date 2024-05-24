@@ -1,16 +1,13 @@
-from typing import TYPE_CHECKING, Annotated, Generator
+from typing import Annotated, Generator
 from uuid import UUID
-from sqlalchemy.exc import NoResultFound, MultipleResultsFound
 
 from fastapi import APIRouter, Depends
+from sqlalchemy.exc import NoResultFound, MultipleResultsFound
+
+from app.http_errors import not_found
 from app.models.organization import Organization
 from app.models.user import User
 from app.schemas.organization_schemas import OrganizationBase
-
-from app.http_errors import not_found
-
-if TYPE_CHECKING:
-    from sqlalchemy import Session
 
 router = APIRouter(prefix="/organizations", tags=["admin"])
 

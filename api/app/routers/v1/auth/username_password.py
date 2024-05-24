@@ -26,7 +26,9 @@ async def sign_up(
 async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db_session: Annotated["Generator", Depends(get_db_session)],
-)-> Optional[JWTResponse]:
+) -> Optional[JWTResponse]:
     """use standard U/P to exchange for a refresh JWT"""
-    user = AuthenticateUsernamePasswordFlow(db_session).authenticate(email_address=form_data.username, password=form_data.password)
+    user = AuthenticateUsernamePasswordFlow(db_session).authenticate(
+        email_address=form_data.username, password=form_data.password
+    )
     return JWTTokenFlow(db_session).get_refresh_token(user)

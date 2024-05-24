@@ -1,16 +1,17 @@
 """Business logic for user related operations."""
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
+
 from sqlalchemy.exc import IntegrityError
 
-from app.models.user import User
-from app.models.organization import Organization
-from app.http_errors import bad_request
-
-from app.controllers.mixins.password_mixin import PasswordMixin
 from app.controllers.mixins.auth_mixin import AuthMixin
+from app.controllers.mixins.password_mixin import PasswordMixin
+from app.http_errors import bad_request
+from app.models.organization import Organization
+from app.models.user import User
 
 if TYPE_CHECKING:
     from app.schemas.user_schemas import NewUser
+
 
 class CreateNewUserFlow(AuthMixin, PasswordMixin):
     """create a new user"""
@@ -23,7 +24,7 @@ class CreateNewUserFlow(AuthMixin, PasswordMixin):
         self.db_session.refresh(user)
         return user
 
-    def create_user_with_username_password(self, user:"NewUser") -> User:
+    def create_user_with_username_password(self, user: "NewUser") -> User:
         """create a new user"""
         if not user.password or len(user.password) < 8:
             bad_request(message="Password must be at least 8 characters long")

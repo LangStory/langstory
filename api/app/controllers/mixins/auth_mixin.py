@@ -5,9 +5,7 @@ if TYPE_CHECKING:
     from sqlalchemy.orm import Session
 
 
-
 class AuthMixin:
-
     """common utilites for auth"""
 
     db_session: "Generator[Session, None, None]"

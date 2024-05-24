@@ -7,6 +7,7 @@ from sqlmodel import SQLModel, Field
 
 from app.models.base import Base
 
+
 class Archives(SQLModel, table=True):
     """Reflection of table created manually by migration"""
 
