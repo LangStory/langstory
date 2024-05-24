@@ -20,3 +20,7 @@ def unauthorized(e: Exception = None, message: str = "Unauthorized"):
 def not_found(e: Exception = None, message: str = "Not Found"):
     e = e or Exception()
     _exception(e, status.HTTP_404_NOT_FOUND, message)
+
+def bad_request(e: Exception = None, message: str = "Bad Request"):
+    e = e or Exception()
+    _exception(e, status.HTTP_400_BAD_REQUEST, message)

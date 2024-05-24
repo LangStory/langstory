@@ -18,4 +18,4 @@ def refresh(
     """use a refresh token to get a new JWT"""
     org = Organization.default(db_session)
     flow = JWTTokenFlow(db_session)
-    return flow.get_auth_token(token.token, org=org.id)
+    return flow.get_auth_token(token, org=org.id)

@@ -2,8 +2,7 @@ from typing import Optional, TYPE_CHECKING, Type, Self
 from datetime import datetime
 from sqlmodel import Field, SQLModel
 from pydantic import ConfigDict
-from sqlalchemy import DateTime, func
-from sqlalchemy.orm import mapped_column
+from sqlalchemy import func
 from uuid import UUID, uuid4
 from humps import depascalize, camelize
 

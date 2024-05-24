@@ -1,52 +1,25 @@
-from typing import TYPE_CHECKING, Optional, Generator
+from typing import Optional
 from uuid import UUID
 from datetime import datetime, timezone, timedelta
 import jwt
 from sqlalchemy.exc import MultipleResultsFound, NoResultFound
-from passlib.context import CryptContext
 
 from app.logger import get_logger
 from app.settings import settings
 from app.models.user import User
-from app.schemas.user_schemas import ScopedUser
 from app.models.organization import Organization
+from app.schemas.user_schemas import ScopedUser
 from app.schemas.jtw_schema import JWTBase, JWTResponse
 from app.http_errors import forbidden, unauthorized
 
-if TYPE_CHECKING:
-    from sqlalchemy.orm import Session
+from app.controllers.mixins.password_mixin import PasswordMixin
+from app.controllers.mixins.auth_mixin import AuthMixin
 
 logger = get_logger(__name__)
 
 
-class AuthBase:
-    """common utilites for auth"""
-
-    db_session: "Generator[Session, None, None]"
-
-    def __init__(self, db_session: "Generator[Session, None, None]"):
-        self.db_session = db_session
-
-    @classmethod
-    def standardized_email(cls, email: str) -> str:
-        return email.strip().lower()
-
-
-class CreateUserFlow(AuthBase):
-    """create a new user"""
-
-    def create_with_email_password(self, email_address: str, password: str) -> User:
-        """standard old-school u/p"""
-
-    def create_with_email_sso(self, email_address: str) -> User:
-        """create using 3rd party auth"""
-
-    def _create_user(self, email_address: str, password: Optional[str] = None) -> User:
-        """underlying mechanics to create a user"""
-
-class AuthenticateUsernamePasswordFlow(AuthBase):
+class AuthenticateUsernamePasswordFlow(AuthMixin, PasswordMixin):
     """authenticate the user with username and password"""
-    password_context: CryptContext = CryptContext(schemes=["argon2"])
 
     def authenticate(self, email_address: str, password: str) -> User:
         """authenticate the user or raise an exception"""
@@ -58,11 +31,7 @@ class AuthenticateUsernamePasswordFlow(AuthBase):
         except (MultipleResultsFound, NoResultFound, ValueError) as e:
             unauthorized(e=e, message="User not found or password is incorrect")
 
-
-
-
-
-class JWTTokenFlow(AuthBase):
+class JWTTokenFlow(AuthMixin):
     algorithm: str = "HS256"
 
     def get_refresh_token(self, user: User) -> "JWTResponse":
@@ -92,10 +61,11 @@ class JWTTokenFlow(AuthBase):
             unauthorized(e=e, message="User not found")
         org_data = {}
         if org:
-            sql_org = Organization.read(self.db_session, uid=org)
+            org_uid = self.get_org_uid(org)
+            sql_org = Organization.read(self.db_session, uid=org_uid)
             try:
                 assert (
-                        org in user.organizations
+                        sql_org in user.organizations
                 ), f"User {user.uid} is not a member of org {org}"
             except AssertionError as e:
                 forbidden(
@@ -130,8 +100,8 @@ class JWTTokenFlow(AuthBase):
         user_uid = UUID(decoded["sub"].split("user-")[1])
         org = None
         if decoded["org"]:
-            org_uid = UUID(decoded["org"].split("org-")[1])
-            org = Organization(uid=org_uid, name=decoded["org"])
+            org_uid = cls.get_org_uid(decoded["org"]["id"])
+            org = Organization(uid=org_uid, name=decoded["org"]["name"])
         return ScopedUser(
             user=User(uid=user_uid, email_address=decoded["user"]["email_address"]),
             organization=org,

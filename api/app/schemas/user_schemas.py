@@ -13,9 +13,10 @@ class NewUser(BaseSchema):
     email_address: str = Field(
         ..., description="the user's email address, must be unique once conformed"
     )
-    display_name: str = Field(..., description="the user's display name")
+    first_name: str = Field(..., description="the user's display name")
+    last_name: str = Field(..., description="the user's display name")
     password: Optional[str] = Field(
-        None, description="the user's password, required if not using SSO"
+        default=None, description="the user's password, required if not using SSO"
     )
 
 class ScopedUser:

@@ -30,6 +30,9 @@ class User(Base, table=True):
         description="The URL of the user's avatar",
         sa_column=Column(String),
     )
+    password: Optional[str] = Field(default=None, description="The user's password")
+
+    # relationships
     organizations: list["Organization"] = Relationship(
         link_model=OrganizationsUsers,
         sa_relationship_kwargs={"lazy":"joined"}
