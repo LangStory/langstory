@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING, Optional, Generator
+from uuid import UUID
 from datetime import datetime, timezone, timedelta
 import jwt
 from sqlalchemy.exc import MultipleResultsFound, NoResultFound
@@ -6,6 +7,7 @@ from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 from app.logger import get_logger
 from app.settings import settings
 from app.models.user import User
+from app.schemas.user_schemas import ScopedUser
 from app.models.organization import Organization
 from app.schemas.jtw_schema import JWTBase, JWTResponse
 from app.http_errors import forbidden, unauthorized
@@ -103,3 +105,16 @@ class JWTTokenFlow(AuthBase):
         }
         token = jwt.encode(data.copy(), settings.jwt_secret_key, algorithm=self.algorithm)
         return JWTResponse(token=token, data=data)
+
+    def get_scoped_user(cls, token: str) -> ScopedUser:
+        """get a user object from a token"""
+        decoded = jwt.decode(token, settings.jwt_secret_key, algorithms=[cls.algorithm])
+        user_uid = UUID(decoded["sub"].split("user-")[1])
+        org = None
+        if decoded["org"]:
+            org_uid = UUID(decoded["org"].split("org-")[1])
+            org = Organization(uid=org_uid, name=decoded["org"])
+        return ScopedUser(
+            user=User(uid=user_uid, email_address=decoded["user"]["email_address"]),
+            organization=org,
+        )

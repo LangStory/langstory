@@ -20,9 +20,11 @@ class Base(SQLModel):
 
     uid: UUID = Field(default_factory=uuid4, primary_key=True)
     created_at: datetime = Field(
+        default=datetime.now(),
         sa_column_kwargs={"server_default": func.now()},
     )
     updated_at: datetime = Field(
+        default=datetime.now(),
         sa_column_kwargs={"server_default": func.now(), "onupdate": func.now()},
     )
     deleted: bool = Field(default=False)
