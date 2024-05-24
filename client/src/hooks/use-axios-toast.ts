@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 import toast from 'react-hot-toast'
 import { useRollbar } from '@rollbar/react'
 import { AxiosError, AxiosResponse } from 'axios'
-import { ErrorDetail } from '../types.ts'
 
 /**
  * A custom hook for handling Axios requests with toast notifications.
@@ -28,7 +27,7 @@ export function useAxiosToast() {
                     if (options.onSuccess) options.onSuccess(response)
                     return options.success
                 },
-                error: (error: AxiosError<ErrorDetail>) => {
+                error: (error: AxiosError<{ status: number, detail: string }>) => {
                     const message = `❌  ${options.error}`
                     if (error.response) {
                         const status = error.response.status

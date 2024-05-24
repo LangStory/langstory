@@ -4,7 +4,6 @@ import { StatusCodes } from 'http-status-codes'
 import toast from 'react-hot-toast'
 import mixpanel from 'mixpanel-browser'
 import { deleteValue, getValue, STORAGE_KEYS } from './session-manager.ts'
-import { jwtDecode, JwtPayload } from 'jwt-decode'
 
 export default function init(rollbar: Rollbar, updatedAuth: () => void) {
 

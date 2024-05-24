@@ -2,10 +2,10 @@ import { ErrorBoundary, Provider } from '@rollbar/react'
 import { BrowserRouter } from 'react-router-dom'
 import Rollbar from 'rollbar'
 import { Toaster } from 'react-hot-toast'
-import init from './lib/init.ts'
-import { AuthProvider, useAuth } from './hooks/use-auth.tsx'
-import ErrorFallbackUI from './components/ErrorFallbackUI.tsx'
-import Routes from './components/core/Routes.tsx'
+import init from 'lib/init.ts'
+import { AuthProvider, useAuth } from 'hooks/use-auth.tsx'
+import ErrorFallbackUI from 'components/ErrorFallbackUI.tsx'
+import Routes from 'components/core/Routes.tsx'
 
 const rollbar = new Rollbar({
     accessToken: '',

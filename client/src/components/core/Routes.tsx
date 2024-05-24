@@ -1,20 +1,16 @@
+import { RollbarContext } from '@rollbar/react'
 import { ReactNode } from 'react'
 import { Route, Routes, Navigate } from 'react-router-dom'
-import AuthRoute from './AuthRoute'
-import NoAuthRoute from './NoAuthRoute'
-import { useAuth } from '../../hooks/use-auth'
-import Navbar from './Navbar'
+import { useAuth } from 'hooks/use-auth'
+import AuthRoute from 'components/core/AuthRoute'
+import NoAuthRoute from 'components/core/NoAuthRoute'
+import Navbar from 'components/core/Navbar'
 
-import QrReader from '../QrScanner.tsx'
-import Login from '../../pages/Login'
-import ReceivingTasks from '../../pages/ReceivingTasks.tsx'
-import ReceivingTaskDetail from '../../pages/ReceivingTaskDetail.tsx'
-import PickingJob from '../../pages/PickingJob.tsx'
-import AddReceivingTaskItem from '../../pages/AddReceivingTaskItem.tsx'
-import ReceivingTaskItemDetail from '../../pages/ReceivingTaskItemDetail.tsx'
-import MagicLinkLogin from '../../pages/MagicLinkLogin.tsx'
-import Settings from '../../pages/Settings.tsx'
-import { RollbarContext } from '@rollbar/react'
+import Login from 'pages/Login'
+import MagicLinkLogin from 'pages/MagicLinkLogin.tsx'
+import Settings from 'pages/Settings.tsx'
+import ChatsList from 'pages/ChatsList.tsx'
+import Chat from 'pages/Chat.tsx'
 
 function withNoAuth(children: ReactNode): ReactNode {
     return (
@@ -65,22 +61,16 @@ function withAuthNavbarRollbar(name: string, children: ReactNode): ReactNode {
 // ==========================================
 export default function AppRoutes() {
     const {user} = useAuth()
-    const navigateToDefault = () => user ? <Navigate to={'/receiving-tasks'}/> : <Navigate to="/login"/>
+    const navigateToDefault = () => user ? <Navigate to={'/home'}/> : <Navigate to="/login"/>
 
     return (
         <Routes>
             {/*------- PRIVATE ROUTES -------*/}
-            <Route path="/receiving-task-item">
-                <Route path=":id" element={withAuthNavbarRollbar('receiving-task-item/details', <ReceivingTaskItemDetail/>)}/>
-            </Route>
-            <Route path="/receiving-tasks">
-                <Route index element={withAuthNavbarRollbar('receiving-tasks', <ReceivingTasks/>)}/>
-                <Route path=":id" element={withAuthNavbarRollbar('receiving-task/details', <ReceivingTaskDetail/>)}/>
-                <Route path=":id/add-item" element={withAuthNavbarRollbar('receiving-task/details/add-item', <AddReceivingTaskItem/>)}/>
+            <Route path="/chats">
+                <Route index element={withAuthNavbarRollbar('receiving-tasks', <ChatsList/>)}/>
+                <Route path=":id" element={withAuthNavbarRollbar('receiving-task/details', <Chat/>)}/>
             </Route>
             <Route path="/settings" element={withAuthNavbarRollbar('settings', <Settings/>)}/>
-            <Route path="/picking-job" element={withAuthNavbarRollbar('picking-job', <PickingJob/>)}/>
-            <Route path="/qr-reader" element={withAuthNavbarRollbar('qr-reader', <QrReader/>)}/>
 
 
             {/*------- PUBLIC ROUTES -------*/}

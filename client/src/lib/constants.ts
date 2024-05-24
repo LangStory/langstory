@@ -1,28 +1,9 @@
-const BASE_URL: string = process.env.NODE_ENV === 'production' ? 'https://api.swis.tools' : 'http://api.swis.localhost'
+const BASE_URL: string = process.env.NODE_ENV === 'production' ? 'https://api.langstory.org' : 'http://api.langstory.localhost'
 const V1 = `${BASE_URL}/v1`
 export const URLS = {
     BASE: BASE_URL,
     LOGIN: (): string => `${BASE_URL}/login/token`,
     MAGIC_LINK_LOGIN: (id: string, slug: string): string => `${BASE_URL}/login/magic-link/${id}/${slug}`,
     REQUEST_MAGIC_LINK: (): string => `${BASE_URL}/login/magic-link`,
-    POST_IMAGE: (id: string): string => `${V1}/image/${id}`,
-    SCAN_RECEIVING_TASK_ITEM: (stickerId: string, rtiId: string): string => `${V1}/sticker/${stickerId}?object_id=${rtiId}`,
-    LIST_RECEIVING_TASKS: (): string => `${V1}/receiving-task/`,
-    LIST_VENDORS: (): string => `${V1}/vendor/`,
-    LIST_PROJECTS: (): string => `${V1}/project/`,
-    LIST_PURCHASE_ORDERS: (): string => `${V1}/purchase-order/`,
-    SEARCH_VENDORS: (query:string): string => `${V1}/vendor/search?query=${query}`,
-    SEARCH_PROJECTS: (query:string): string => `${V1}/project/search?query=${query}`,
-    SEARCH_PURCHASE_ORDERS: (query:string): string => `${V1}/purchase-order/search?query=${query}`,
-    READ_RECEIVING_TASK: (id: string): string => `${V1}/receiving-task/${id}`,
-    READ_RECEIVING_TASK_ITEM: (id: string): string => `${V1}/receiving-task-item/${id}`,
-    CREATE_RECEIVING_TASK: (): string => `${V1}/receiving-task/`,
-    CREATE_RECEIVING_TASK_ITEM: (): string => `${V1}/receiving-task-item/`,
-    PUT_AWAY_RECEIVING_TASK_ITEM: (rtiId: string, stickerId: string): string => `${V1}/receiving-task-item/${rtiId}/put-away/${stickerId}`,
-    PUT_AWAY_RECEIVING_TASK_ITEM_WITH_OPTION: (rtiId: string, stickerId: string, option: string): string => `${V1}/receiving-task-item/${rtiId}/put-away/${stickerId}?locationGroupOption=${option}`,
-    UPDATE_RECEIVING_TASK: (id: string): string => `${V1}/receiving-task/${id}`,
-    UPDATE_RECEIVING_TASK_ITEM: (id: string): string => `${V1}/receiving-task-item/${id}`,
-    UPDATE_PASSWORD: (): string => `${V1}/user/me`,
-    DELETE_RECEIVING_TASK: (id: string): string => `${V1}/receiving-task/${id}`,
-    DELETE_IMAGE: (id: string): string => `${V1}/image/${id}`,
+    ORGANIZATIONS: (): string => `${V1}/organizations`,
 }
