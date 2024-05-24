@@ -4,6 +4,7 @@ from sqlalchemy import String
 from pydantic import HttpUrl
 
 from app.models.base import Base
+from app.settings import settings
 from app.models.orgnanizations_users import OrganizationsUsers
 
 if TYPE_CHECKING:
@@ -27,4 +28,6 @@ class Organization(Base, table=True):
 
     @classmethod
     def default(cls, db_session:"Generator[Session, None, None]"):
-        return db_session.query(cls).first()
+        if org := db_session.query(cls).first():
+            return org
+        return Organization(name=settings.organization_name).create(db_session)

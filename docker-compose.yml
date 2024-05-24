@@ -22,7 +22,7 @@ services:
       context: .
       dockerfile: dockerfiles/client.Dockerfile
     volumes:
-      - ./client:/client
+      - ./client:/client/app
   langstory_db:
     hostname: langstory-db
     image: ankane/pgvector:v0.5.1
