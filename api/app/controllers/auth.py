@@ -3,6 +3,7 @@ from uuid import UUID
 from datetime import datetime, timezone, timedelta
 import jwt
 from sqlalchemy.exc import MultipleResultsFound, NoResultFound
+from passlib.context import CryptContext
 
 from app.logger import get_logger
 from app.settings import settings
@@ -42,6 +43,23 @@ class CreateUserFlow(AuthBase):
 
     def _create_user(self, email_address: str, password: Optional[str] = None) -> User:
         """underlying mechanics to create a user"""
+
+class AuthenticateUsernamePasswordFlow(AuthBase):
+    """authenticate the user with username and password"""
+    password_context: CryptContext = CryptContext(schemes=["argon2"])
+
+    def authenticate(self, email_address: str, password: str) -> User:
+        """authenticate the user or raise an exception"""
+        try:
+            user = User.read(self.db_session, email_address=email_address)
+            if self.password_context.verify(password, user.password):
+                return user
+            raise ValueError("password is incorrect")
+        except (MultipleResultsFound, NoResultFound, ValueError) as e:
+            unauthorized(e=e, message="User not found or password is incorrect")
+
+
+
 
 
 class JWTTokenFlow(AuthBase):
