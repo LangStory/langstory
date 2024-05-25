@@ -6,10 +6,8 @@ from sqlmodel import Field, Relationship
 from humps import depascalize
 
 from app.models.base import Base
-
-if TYPE_CHECKING:
-    from app.models.tool_call import ToolCall
-    from app.models.persona import Persona
+from app.models.persona import Persona
+from app.models.tool_call import ToolCall
 
 
 class EventType(str, Enum):
@@ -55,7 +53,6 @@ class Message(Event):
     )
 
 
-
 class SystemMessage(Message, table=True):
     role: MessageRole = Field(MessageRole.system, description="The role of the message")
 
@@ -69,7 +66,7 @@ class UserMessage(Message, table=True):
         foreign_key="persona.uid",
         description="The optional persona ID for user messages",
     )
-    persona: Optional["Persona"] = Relationship(back_populates="user_messages")
+    persona: Optional[Persona] = Relationship(back_populates="user_messages")
 
     @property
     def name(self) -> str:
