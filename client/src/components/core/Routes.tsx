@@ -10,7 +10,7 @@ import Login from 'pages/Login'
 import MagicLinkLogin from 'pages/MagicLinkLogin.tsx'
 import Settings from 'pages/Settings.tsx'
 import ChatsList from 'pages/ChatsList.tsx'
-import Chat from 'pages/Chat.tsx'
+import ChatComponent from 'pages/ChatComponent.tsx'
 
 function withNoAuth(children: ReactNode): ReactNode {
     return (
@@ -68,7 +68,7 @@ export default function AppRoutes() {
             {/*------- PRIVATE ROUTES -------*/}
             <Route path="/chats">
                 <Route index element={withNoAuth(withNavbar(<ChatsList/>))}/>
-                <Route path=":id" element={withNoAuth(withNavbar(<Chat/>))}/>
+                <Route path=":id" element={withNoAuth(withNavbar(<ChatComponent/>))}/>
                 {/*<Route index element={withAuthNavbarRollbar('receiving-tasks', <ChatsList/>)}/>*/}
                 {/*<Route path=":id" element={withAuthNavbarRollbar('receiving-task/details', <Chat/>)}/>*/}
 

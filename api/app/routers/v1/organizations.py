@@ -1,41 +1,40 @@
-from typing import Annotated, Generator
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from typing import List
 from uuid import UUID
+from app.controllers.organization import OrganizationController
 
-from fastapi import APIRouter, Depends
-from sqlalchemy.exc import NoResultFound, MultipleResultsFound
+from app.routers.utilities import get_db_session
+from app.schemas.organization_schemas import OrganizationCreate, OrganizationRead, OrganizationReadWithUsers
 
-from app.http_errors import not_found
-from app.models.organization import Organization
-from app.models.user import User
-from app.schemas.organization_schemas import OrganizationBase
-
-router = APIRouter(prefix="/organizations", tags=["admin"])
+router = APIRouter(prefix="/organizations", tags=["organizations"])
 
 
-def get_logged_in_user():
-    return None
+@router.post("/", response_model=OrganizationRead)
+def create_organization(organization_data: OrganizationCreate, db: Session = Depends(get_db_session)):
+    controller = OrganizationController(db)
+    organization = controller.create_organization(organization_data)
+    return organization
 
 
-def get_db_session():
-    return None
+@router.get("/", response_model=List[OrganizationRead])
+def get_organizations(db: Session = Depends(get_db_session)):
+    controller = OrganizationController(db)
+    organizations = controller.get_organizations()
+    return organizations
 
 
-@router.get("/")
-def list_organizations(
-    # TODO: need a "get_admin_user" dependency injection here
-    # TODO: start with pagination for all lists right out of the gate please!
-):
-    return "orgs will go here!"
+@router.get("/{organization_id}", response_model=OrganizationReadWithUsers)
+def get_organization(organization_id: UUID, db: Session = Depends(get_db_session)):
+    controller = OrganizationController(db)
+    organization = controller.get_organization(organization_id)
+    if not organization:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    return organization
 
 
-@router.get("/{id}", response_model=OrganizationBase)
-def read(
-    uid: UUID,
-    user: Annotated["User", Depends(get_logged_in_user)],
-    db_session: Annotated["Generator", Depends(get_db_session)],
-):
-    try:
-        org = user.organizations.filter(Organization.uid == uid).one()
-        return OrganizationBase.model_validate(org)
-    except (NoResultFound, MultipleResultsFound) as e:
-        not_found(e=e)
+@router.post("/{organization_id}/users/{user_id}")
+def add_user_to_organization(organization_id: UUID, user_id: UUID, db: Session = Depends(get_db_session)):
+    controller = OrganizationController(db)
+    controller.add_user_to_organization(organization_id, user_id)
+    return {"message": "User added to organization"}

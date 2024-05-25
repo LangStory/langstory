@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
 from app.controllers.chat import ChatController
 from app.routers.utilities import get_db_session
 from app.schemas.chat_schemas import ChatCreate, ChatRead, MessageCreate, MessageRead
-from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
