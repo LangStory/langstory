@@ -102,12 +102,4 @@ class JWTTokenFlow(AuthMixin):
     def get_scoped_user(cls, token: str) -> ScopedUser:
         """get a user object from a token"""
         decoded = jwt.decode(token, settings.jwt_secret_key, algorithms=[cls.algorithm])
-        user_uid = UUID(decoded["sub"].split("user-")[1])
-        org = None
-        if decoded["org"]:
-            org_uid = cls.get_org_uid(decoded["org"]["id"])
-            org = Organization(uid=org_uid, name=decoded["org"]["name"])
-        return ScopedUser(
-            user=User(uid=user_uid, email_address=decoded["user"]["email_address"]),
-            organization=org,
-        )
+        return ScopedUser.from_jwt(decoded)
