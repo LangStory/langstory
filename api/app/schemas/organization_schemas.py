@@ -1,10 +1,11 @@
-from pydantic import BaseModel, HttpUrl
-from uuid import UUID
 from typing import Optional, List
-from app.schemas.user_schemas import NewUser
+
+from pydantic import HttpUrl
+
+from app.schemas.base_schema import BaseSchema
 
 
-class OrganizationCreate(BaseModel):
+class OrganizationCreate(BaseSchema):
     name: str
     email_domain: Optional[HttpUrl] = None
     avatar_url: Optional[HttpUrl] = None
@@ -13,8 +14,8 @@ class OrganizationCreate(BaseModel):
         orm_mode = True
 
 
-class OrganizationRead(BaseModel):
-    id: UUID
+class OrganizationRead(BaseSchema):
+    id: str
     name: str
     email_domain: Optional[str] = None
     avatar_url: Optional[str] = None
@@ -24,4 +25,4 @@ class OrganizationRead(BaseModel):
 
 
 class OrganizationReadWithUsers(OrganizationRead):
-    users: List[NewUser]
+    users: List
