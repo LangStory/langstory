@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
 from uuid import UUID
 from pydantic import Field
 
@@ -6,6 +6,8 @@ from app.schemas.base_schema import BaseSchema
 from app.models.user import User
 from app.models.organization import Organization
 
+if TYPE_CHECKING:
+    from sqlalchemy.orm import Session
 
 class NewUser(BaseSchema):
     """when a new user is created"""
@@ -53,4 +55,11 @@ class ScopedUser:
                       last_name=decoded["user"]["last_name"],
                       avatar_url=decoded["user"]["avatar_url"],),
             organization=org,
+        )
+
+    def refresh(self, db_session:"Session") -> "ScopedUser":
+        """refresh the user object from the database"""
+        return ScopedUser(
+            user=User.read(db_session, id_=self.user.id),
+            organization=Organization.read(db_session, id_=self.organization.id),
         )
