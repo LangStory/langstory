@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     db_password: str
 
     jwt_secret_key: str
+    smtp_email_host: Optional[str] = None
+    smtp_email_port: Optional[int] = None
+    smtp_email_user: Optional[str] = None
+    smtp_email_password: Optional[str] = None
+
 
 
 settings = Settings()

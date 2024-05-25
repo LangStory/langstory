@@ -7,6 +7,7 @@ from app.routers.utilities import get_db_session
 from app.schemas.user_schemas import NewUser
 from app.controllers.auth import JWTTokenFlow, AuthenticateUsernamePasswordFlow
 from app.controllers.user import CreateNewUserFlow
+from app.controllers.magic_link import MagicLinkFlow
 
 
 router = APIRouter(prefix="/auth/username-password", tags=["auth"])
@@ -28,7 +29,13 @@ async def login(
     db_session: Annotated["Generator", Depends(get_db_session)],
 ) -> Optional[JWTResponse]:
     """use standard U/P to exchange for a refresh JWT"""
-    user = AuthenticateUsernamePasswordFlow(db_session).authenticate(
-        email_address=form_data.username, password=form_data.password
-    )
+    user = AuthenticateUsernamePasswordFlow(db_session).authenticate(email_address=form_data.username, password=form_data.password)
     return JWTTokenFlow(db_session).get_refresh_token(user)
+
+@router.get("/get-magic-link")
+async def get_magic_link(
+    email_address: str,
+    db_session: Annotated["Generator", Depends(get_db_session)],
+):
+    """send a magic link to the user"""
+    MagicLinkFlow(db_session).send_magic_link(email_address)
