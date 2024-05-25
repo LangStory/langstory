@@ -29,5 +29,4 @@ class Settings(BaseSettings):
     smtp_email_password: Optional[str] = None
 
 
-
 settings = Settings()

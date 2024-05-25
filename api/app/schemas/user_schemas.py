@@ -9,6 +9,7 @@ from app.models.organization import Organization
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
 
+
 class NewUser(BaseSchema):
     """when a new user is created"""
 
@@ -49,15 +50,17 @@ class ScopedUser:
             org_uid = UUID(decoded["org"]["id"].split("organization-")[1])
             org = Organization(uid=org_uid, name=decoded["org"]["name"])
         return ScopedUser(
-            user=User(uid=user_uid,
-                      email_address=decoded["user"]["email_address"],
-                      first_name=decoded["user"]["first_name"],
-                      last_name=decoded["user"]["last_name"],
-                      avatar_url=decoded["user"]["avatar_url"],),
+            user=User(
+                uid=user_uid,
+                email_address=decoded["user"]["email_address"],
+                first_name=decoded["user"]["first_name"],
+                last_name=decoded["user"]["last_name"],
+                avatar_url=decoded["user"]["avatar_url"],
+            ),
             organization=org,
         )
 
-    def refresh(self, db_session:"Session") -> "ScopedUser":
+    def refresh(self, db_session: "Session") -> "ScopedUser":
         """refresh the user object from the database"""
         return ScopedUser(
             user=User.read(db_session, id_=self.user.id),

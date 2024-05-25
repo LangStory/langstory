@@ -30,8 +30,11 @@ async def login(
     db_session: Annotated["Generator", Depends(get_db_session)],
 ) -> Optional[JWTResponse]:
     """use standard U/P to exchange for a refresh JWT"""
-    user = AuthenticateUsernamePasswordFlow(db_session).authenticate(email_address=form_data.username, password=form_data.password)
+    user = AuthenticateUsernamePasswordFlow(db_session).authenticate(
+        email_address=form_data.username, password=form_data.password
+    )
     return JWTTokenFlow(db_session).get_refresh_token(user)
+
 
 @router.get("/get-magic-link")
 async def get_magic_link(
@@ -42,4 +45,6 @@ async def get_magic_link(
     try:
         MagicLinkFlow(db_session).send_magic_link(email_address)
     except NotImplementedError:
-        return bad_request("Email is not enabled on this server. Please update SMTP and try again.")
+        return bad_request(
+            "Email is not enabled on this server. Please update SMTP and try again."
+        )
