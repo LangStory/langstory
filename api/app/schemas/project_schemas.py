@@ -1,7 +1,6 @@
 from typing import Optional
-from uuid import UUID
 
-from pydantic import BaseModel, HttpUrl
+from pydantic import HttpUrl
 
 from app.schemas.base_schema import BaseSchema
 

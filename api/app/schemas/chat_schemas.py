@@ -1,7 +1,6 @@
-from pydantic import BaseModel
-from uuid import UUID
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+from uuid import UUID
 
 from app.models.event import MessageRole
 from app.schemas.base_schema import BaseSchema

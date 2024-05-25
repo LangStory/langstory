@@ -1,11 +1,11 @@
-from typing import TYPE_CHECKING, Generator, Annotated
+from typing import Generator, Annotated
+
 from fastapi import APIRouter, Depends
 
-from app.schemas.jtw_schema import JWTBase, JWTResponse
+from app.controllers.auth import JWTTokenFlow
 from app.models.organization import Organization
 from app.routers.utilities import get_db_session
-
-from app.controllers.auth import JWTTokenFlow
+from app.schemas.jtw_schema import JWTBase
 
 router = APIRouter(prefix="/auth/token", tags=["auth"])
 

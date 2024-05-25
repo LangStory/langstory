@@ -49,7 +49,9 @@ class Message(Event):
     role: MessageRole = Field(..., description="The role of the message")
     content: str = Field(..., description="The content of the message")
     chat_id: UUID = Field(
-        ..., foreign_key="chat.uid", description="The ID of the chat this message belongs to"
+        ...,
+        foreign_key="chat.uid",
+        description="The ID of the chat this message belongs to",
     )
 
 
