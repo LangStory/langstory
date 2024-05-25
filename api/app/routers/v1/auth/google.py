@@ -3,7 +3,7 @@ from fastapi_sso.sso.google import GoogleSSO
 
 from app.settings import settings
 
-router = APIRouter(prefix="/google", tags=["auth"])
+router = APIRouter(prefix="/auth/google", tags=["auth"])
 
 google_sso = GoogleSSO(
     settings.google_oauth_client_id,

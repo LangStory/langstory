@@ -13,7 +13,7 @@ def cli(environment, all_: bool):
         # exclude .palm/ from refactor targets
         filtered_targets = raw_targets.split("\n")
         for excluded in [".palm/"]:
-            filtered_targets = [target for target in filtered_targets if not target.startswith(excluded)]
+            filtered_targets = [f"{target}" for target in filtered_targets if not target.startswith(excluded)]
         refactor_targets = " ".join(filtered_targets)
     if not refactor_targets:
         click.echo(click.style("No files eligible for refactoring, have you committed all your changes?\n"

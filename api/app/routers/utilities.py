@@ -1,9 +1,12 @@
-from typing import Generator, Optional, TYPE_CHECKING
+from typing import Generator, Optional, TYPE_CHECKING, Annotated
 from sqlalchemy import create_engine, URL
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine import Engine
+from fastapi import Depends
+from fastapi.security import OAuth2PasswordBearer
 
 from app.settings import settings
+from app.schemas.user_schemas import ScopedUser
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
@@ -27,3 +30,10 @@ def get_db_session() -> Generator:
     bound_session = sessionmaker(bind=_create_engine())
     with bound_session() as session:
         yield session
+
+
+def get_current_user(
+    token: Annotated[str, Depends(OAuth2PasswordBearer(tokenUrl="/auth/refresh"))]
+) -> "ScopedUser":
+    """decode the user from the JWT"""
+    return ScopedUser.from_jwt(token)

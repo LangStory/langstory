@@ -4,12 +4,14 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from app.schemas.jtw_schema import JWTResponse
 from app.routers.utilities import get_db_session
+from app.http_errors import bad_request
 from app.schemas.user_schemas import NewUser
 from app.controllers.auth import JWTTokenFlow, AuthenticateUsernamePasswordFlow
 from app.controllers.user import CreateNewUserFlow
+from app.controllers.magic_link import MagicLinkFlow
 
 
-router = APIRouter(prefix="/username-password", tags=["auth"])
+router = APIRouter(prefix="/auth/username-password", tags=["auth"])
 
 
 @router.post("/sign-up")
@@ -32,3 +34,17 @@ async def login(
         email_address=form_data.username, password=form_data.password
     )
     return JWTTokenFlow(db_session).get_refresh_token(user)
+
+
+@router.get("/get-magic-link")
+async def get_magic_link(
+    email_address: str,
+    db_session: Annotated["Generator", Depends(get_db_session)],
+):
+    """send a magic link to the user"""
+    try:
+        MagicLinkFlow(db_session).send_magic_link(email_address)
+    except NotImplementedError:
+        return bad_request(
+            "Email is not enabled on this server. Please update SMTP and try again."
+        )

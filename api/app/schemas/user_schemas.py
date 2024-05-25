@@ -1,10 +1,13 @@
 from typing import Any, Optional, TYPE_CHECKING
+from uuid import UUID
 from pydantic import Field
+
 from app.schemas.base_schema import BaseSchema
+from app.models.user import User
+from app.models.organization import Organization
 
 if TYPE_CHECKING:
-    from app.models.organization import Organization
-    from app.models.user import User
+    from sqlalchemy.orm import Session
 
 
 class NewUser(BaseSchema):
@@ -37,3 +40,29 @@ class ScopedUser:
             if hasattr(self.user, attr):
                 return getattr(self.user, attr)
             raise e
+
+    @classmethod
+    def from_jwt(cls, decoded: dict) -> "ScopedUser":
+        """create from a decoded auth JWT"""
+        user_uid = UUID(decoded["sub"].split("user-")[1])
+        org = None
+        if decoded["org"]:
+            org_uid = UUID(decoded["org"]["id"].split("organization-")[1])
+            org = Organization(uid=org_uid, name=decoded["org"]["name"])
+        return ScopedUser(
+            user=User(
+                uid=user_uid,
+                email_address=decoded["user"]["email_address"],
+                first_name=decoded["user"]["first_name"],
+                last_name=decoded["user"]["last_name"],
+                avatar_url=decoded["user"]["avatar_url"],
+            ),
+            organization=org,
+        )
+
+    def refresh(self, db_session: "Session") -> "ScopedUser":
+        """refresh the user object from the database"""
+        return ScopedUser(
+            user=User.read(db_session, id_=self.user.id),
+            organization=Organization.read(db_session, id_=self.organization.id),
+        )

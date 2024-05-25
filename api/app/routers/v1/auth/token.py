@@ -7,7 +7,7 @@ from app.routers.utilities import get_db_session
 
 from app.controllers.auth import JWTTokenFlow
 
-router = APIRouter(prefix="/token", tags=["auth"])
+router = APIRouter(prefix="/auth/token", tags=["auth"])
 
 
 @router.post("/refresh")
