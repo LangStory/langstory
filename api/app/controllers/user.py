@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy.exc import IntegrityError
 
+from app.settings import settings
 from app.controllers.mixins.auth_mixin import AuthMixin
 from app.controllers.mixins.password_mixin import PasswordMixin
 from app.http_errors import bad_request
