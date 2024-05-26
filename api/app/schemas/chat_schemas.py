@@ -6,6 +6,10 @@ from app.models.event import MessageRole
 from app.schemas.base_schema import BaseSchema
 
 
+class ChatBase(BaseSchema):
+    class Config:
+        from_attributes = True
+
 class ChatCreate(BaseSchema):
     name: str
     description: Optional[str] = None
@@ -17,9 +21,6 @@ class ChatRead(BaseSchema):
     name: str
     description: Optional[str] = None
     project_id: UUID
-
-    class Config:
-        orm_mode = True
 
 
 class MessageCreate(BaseSchema):
@@ -34,6 +35,3 @@ class MessageRead(BaseSchema):
     content: str
     timestamp: datetime
     chat_id: UUID
-
-    class Config:
-        orm_mode = True
