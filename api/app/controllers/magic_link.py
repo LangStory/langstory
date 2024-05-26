@@ -1,6 +1,9 @@
-from typing import TYPE_CHECKING, Tuple
+from typing import Tuple
 from secrets import token_urlsafe
-from base64 import b64encode
+from datetime import datetime, timezone
+from base64 import b64encode, b64decode
+import binascii
+from uuid import UUID
 from pathlib import Path
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 import smtplib
@@ -14,9 +17,8 @@ from app.models.user import User
 from app.models.magic_link import MagicLink
 from app.controllers.mixins.auth_mixin import AuthMixin
 from app.controllers.mixins.password_mixin import PasswordMixin
+from app.http_errors import bad_request
 
-if TYPE_CHECKING:
-    from uuid import UUID
 
 logger = get_logger(__name__)
 
@@ -38,9 +40,9 @@ class MagicLinkFlow(AuthMixin, PasswordMixin):
             logger.error("user not found for email %s", email_address)
             return
         raw_password = token_urlsafe(16)
-        slug = self._make_slug(user.id, raw_password)
+        slug = self._make_slug(user.uid, raw_password)
         logger.debug("removing all existing magic links for user %s", user.id)
-        _ = MagicLink.clear_for_user(self.db_session, user.id)
+        _ = MagicLink.clear_for_user(self.db_session, user.uid)
         logger.debug("creating magic link for user %s", user.id)
         _ = MagicLink(
             user_uid=user.uid,
@@ -53,7 +55,17 @@ class MagicLinkFlow(AuthMixin, PasswordMixin):
     def _make_slug(cls, user_uid: "UUID", raw_password: str) -> str:
         """generate a magic link slug"""
         decoded = f"{user_uid}:{raw_password}"
-        return b64encode(decoded.encode()).decode()
+        return b64encode(decoded.encode()).decode().strip("==")
+
+    def _decode_slug(cls, slug: str) -> Tuple["UUID", str]:
+        """decode a magic link slug"""
+        try:
+            decoded = b64decode(slug.encode() + b"==").decode()
+            user_uid, raw_password = decoded.split(":")
+            return UUID(user_uid), raw_password
+        except (binascii.Error, ValueError) as e:
+            logger.error("magic link decode error: %s", e)
+            raise bad_request(e=e, message="Invalid magic link")
 
     def send_email(self, email_address: str, slug: str):
         """send the magic link to the user"""
@@ -63,11 +75,11 @@ class MagicLinkFlow(AuthMixin, PasswordMixin):
         msg["To"] = email_address
         msg["Subject"] = "Reset your LangStory password"
         text, html = self._get_templates()
-        link = f"{settings.canonical_url}/auth/magic-link/{slug}"
+        link = f"{settings.canonical_url}/auth/magic-link/login/{slug}"
         msg.attach(MIMEText(text.format(link=link), "plain"))
         msg.attach(MIMEText(html.format(link=link), "html"))
 
-        mailserver = smtplib.SMTP(settings.stmp_email_host, settings.smtp_email_port)
+        mailserver = smtplib.SMTP(settings.smtp_email_host, settings.smtp_email_port)
         mailserver.ehlo()
         mailserver.starttls()
         mailserver.ehlo()
@@ -99,3 +111,21 @@ class MagicLinkFlow(AuthMixin, PasswordMixin):
             if not getattr(settings, key):
                 logger.error("missing email setting %s, cannot send email", key)
                 return False
+        return True
+
+    def validate_magic_link(self, slug: str) -> User:
+        """validate the magic link and return the user validated"""
+        user_uid, raw_password = self._decode_slug(slug)
+
+        try:
+            magic_link = MagicLink.read(self.db_session, user_uid=user_uid)
+            magic_link.expiration = datetime.now(timezone.utc)
+            magic_link.update(self.db_session)
+        except NoResultFound as e:
+            raise bad_request(e=e, message="Invalid magic link")
+        if magic_link.is_expired:
+            raise bad_request(message="Magic link expired")
+        if not self.password_context.verify(raw_password, magic_link.token_hash):
+            e = ValueError("hash from magic link does not match")
+            raise bad_request(e=e, message="Invalid magic link")
+        return magic_link.user

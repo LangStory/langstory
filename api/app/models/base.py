@@ -70,6 +70,7 @@ class Base(SQLModel):
 
 
 class AuditedBase(Base):
+    __abstract__ = True
     created_by: Optional[UUID] = Field(
         default=None,
         foreign_key="user.uid",

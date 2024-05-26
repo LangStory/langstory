@@ -1,1 +1,1 @@
-Here is the link to reset your LangStory password: {{link}}
+Here is the link to reset your LangStory password: {link}
