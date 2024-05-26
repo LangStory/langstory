@@ -20,4 +20,6 @@ def cli(environment, all_: bool):
                                "If you want to refactor everything regardless, run 'palm refactor --all'", fg="yellow"))
         return
     click.echo(f"\nRefactoring {click.style(('updated' if not all_ else 'all'), fg='yellow')} code...\n")
-    environment.run_in_docker(f"cd /api/app && black {refactor_targets} ")  # && prospector -I migrations {refactor_targets}")
+    cmd = f"black {refactor_targets} "  # && prospector -I migrations {refactor_targets}")
+
+    environment.run_on_host(f"docker compose exec langstory_api /bin/bash -c \"{cmd}\"")

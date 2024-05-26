@@ -22,7 +22,9 @@ class TestMagicLink:
 
     @m.it("attempts to send an email")
     def test_sends_email(self, db_session):
-        user = User(email_address="some@user.com", first_name="Some", last_name="User").create(db_session)
+        user = User(
+            email_address="some@user.com", first_name="Some", last_name="User"
+        ).create(db_session)
         old_settings = settings.model_dump(exclude_none=True)
         settings.smtp_email_host = "smtp.gmail.com"
         settings.smtp_email_port = 587
@@ -32,10 +34,14 @@ class TestMagicLink:
             with mock.patch("app.controllers.magic_link.smtplib.SMTP") as smtp_mock:
                 magic_link = MagicLinkFlow(db_session)
                 magic_link.send_magic_link(email_address=user.email_address)
-                smtp_mock.assert_called_once_with(settings.smtp_email_host, settings.smtp_email_port)
+                smtp_mock.assert_called_once_with(
+                    settings.smtp_email_host, settings.smtp_email_port
+                )
                 smtp_mock.return_value.starttls.assert_called_once()
-                smtp_mock.return_value.login.assert_called_once_with(settings.smtp_email_user, settings.smtp_email_password)
+                smtp_mock.return_value.login.assert_called_once_with(
+                    settings.smtp_email_user, settings.smtp_email_password
+                )
                 smtp_mock.return_value.sendmail.assert_called_once()
         finally:
-            for k,v in old_settings.items():
+            for k, v in old_settings.items():
                 setattr(settings, k, v)
