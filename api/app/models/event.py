@@ -5,11 +5,9 @@ from datetime import datetime
 from sqlmodel import Field, Relationship
 from humps import depascalize
 
-from app.models.base import Base
-
-if TYPE_CHECKING:
-    from app.models.tool_call import ToolCall
-    from app.models.persona import Persona
+from app.models.base import Base, AuditedBase
+from app.models.persona import Persona
+from app.models.tool_call import ToolCall
 
 
 class EventType(str, Enum):
@@ -32,11 +30,6 @@ class Event(Base):
     description: Optional[str] = Field(
         default=None, description="A description of the event"
     )
-    chat_id: UUID = Field(
-        ...,
-        foreign_key="chat.uid",
-        description="The ID of the chat this event belongs to",
-    )
     timestamp: datetime = Field(..., description="The timestamp of the event")
 
     @property
@@ -45,11 +38,17 @@ class Event(Base):
         return EventType(raw)
 
 
-class Message(Event):
+class Message(Event, AuditedBase):
     """Classic OAI message, with some additional metadata."""
 
+    chat_index: int = Field(..., description="The index of the message in the chat")
     role: MessageRole = Field(..., description="The role of the message")
     content: str = Field(..., description="The content of the message")
+    chat_id: UUID = Field(
+        ...,
+        foreign_key="chat.uid",
+        description="The ID of the chat this message belongs to",
+    )
 
 
 class SystemMessage(Message, table=True):
@@ -65,7 +64,7 @@ class UserMessage(Message, table=True):
         foreign_key="persona.uid",
         description="The optional persona ID for user messages",
     )
-    persona: Optional["Persona"] = Relationship(back_populates="user_messages")
+    persona: Optional[Persona] = Relationship(back_populates="user_messages")
 
     @property
     def name(self) -> str:

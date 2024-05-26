@@ -67,3 +67,16 @@ class Base(SQLModel):
             session.commit()
             session.refresh(self)
             return self
+
+
+class AuditedBase(Base):
+    created_by: Optional[UUID] = Field(
+        default=None,
+        foreign_key="user.uid",
+        description="The ID of the user that owns this entity",
+    )
+    last_updated_by: Optional[UUID] = Field(
+        default=None,
+        foreign_key="user.uid",
+        description="The ID of the user that last updated this entity",
+    )

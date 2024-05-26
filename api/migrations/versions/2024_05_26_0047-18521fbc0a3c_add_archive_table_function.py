@@ -1,8 +1,8 @@
-"""add_archive_table_and_psql_fn
+"""add_archive_table_function
 
-Revision ID: 6af019cd07cc
-Revises: ea3a30d57c8f
-Create Date: 2024-05-23 23:36:59.851359
+Revision ID: 18521fbc0a3c
+Revises: 469627e28100
+Create Date: 2024-05-26 00:47:03.459229
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 import sqlmodel
 
 # revision identifiers, used by Alembic.
-revision: str = '6af019cd07cc'
-down_revision: Union[str, None] = 'ea3a30d57c8f'
+revision: str = '18521fbc0a3c'
+down_revision: Union[str, None] = '469627e28100'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

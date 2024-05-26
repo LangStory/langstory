@@ -1,13 +1,9 @@
 from typing import TYPE_CHECKING
-from uuid import UUID
-from sqlalchemy import NoResultFound, MultipleResultsFound
 
-from fastapi import APIRouter, Depends
-
-from app.http_errors import not_found
+from fastapi import APIRouter
 
 if TYPE_CHECKING:
-    from sqlalchemy import Session
+    pass
 
 router = APIRouter(prefix="/users", tags=["users"])
 

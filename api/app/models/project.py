@@ -1,13 +1,14 @@
 from typing import Optional
 from uuid import UUID
-from sqlmodel import Field, Column
-from sqlalchemy import String
+
 from pydantic import HttpUrl
+from sqlalchemy import String
+from sqlmodel import Field, Column
 
-from app.models.base import Base
+from app.models.base import AuditedBase
 
 
-class Project(Base, table=True):
+class Project(AuditedBase, table=True):
     name: str = Field(..., description="The name of the project")
     avatar_url: Optional[HttpUrl] = Field(
         default=None,

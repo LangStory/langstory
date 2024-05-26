@@ -4,6 +4,5 @@ from humps import camelize
 
 class BaseSchema(BaseModel):
     model_config = ConfigDict(
-        alias_generator=camelize,
-        extra="forbid",
+        alias_generator=camelize, extra="forbid", from_attributes=True
     )

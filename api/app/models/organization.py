@@ -1,14 +1,13 @@
 from typing import Optional, TYPE_CHECKING, Generator
-from sqlmodel import Field, Column, Relationship
-from sqlalchemy import String
+
 from pydantic import HttpUrl
+from sqlalchemy import String
+from sqlmodel import Field, Column
 
 from app.models.base import Base
 from app.settings import settings
-from app.models.orgnanizations_users import OrganizationsUsers
 
 if TYPE_CHECKING:
-    from app.models.user import User
     from sqlalchemy.orm import Session
 
 
