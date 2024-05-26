@@ -3,12 +3,22 @@ from datetime import datetime, timezone
 from httpx import AsyncClient
 from app.settings import settings
 
+
 class TestUsers:
 
     @pytest.fixture
     def setup_client(self, override_app):
-        client = AsyncClient(app=override_app, follow_redirects=True, base_url="http://test/auth/username-password/sign-up")
-        args = {"firstName": "John", "lastName": "tavares", "emailAddress":"emalie@mail.em", "password": "passwordof8"}
+        client = AsyncClient(
+            app=override_app,
+            follow_redirects=True,
+            base_url="http://test/auth/username-password/sign-up",
+        )
+        args = {
+            "firstName": "John",
+            "lastName": "tavares",
+            "emailAddress": "emalie@mail.em",
+            "password": "passwordof8",
+        }
         yield client, args
 
     async def test_new_user(self, setup_client):
@@ -21,7 +31,9 @@ class TestUsers:
             data = response.json()
             assert "token" in data
             assert "sub" in data["data"]
-            assert datetime.fromisoformat(data["data"]["exp"]) > datetime.now(timezone.utc)
+            assert datetime.fromisoformat(data["data"]["exp"]) > datetime.now(
+                timezone.utc
+            )
         finally:
             settings.allow_new_users = old_allow_new_users
 
@@ -32,6 +44,10 @@ class TestUsers:
             settings.allow_new_users = False
             response = await client.post("", json=args)
             assert response.status_code == 400
-            assert response.json() == {"detail": {"message": "Adding new users has been disabled, contact your administrator"}}
+            assert response.json() == {
+                "detail": {
+                    "message": "Adding new users has been disabled, contact your administrator"
+                }
+            }
         finally:
             settings.allow_new_users = old_allow_new_users

@@ -1,7 +1,8 @@
 from pytest import mark as m, raises
 
 from app.settings import settings
-from app.controllers.magic_link import MagicLinkFlow 
+from app.controllers.magic_link import MagicLinkFlow
+
 
 @m.describe("when resetting passwords with a magic link")
 class TestMagicLink:

@@ -31,8 +31,15 @@ class Event(Base):
     description: Optional[str] = Field(
         default=None, description="A description of the event"
     )
-    timestamp: datetime = Field(..., description="The timestamp of the event. NOTE: this is not the record created at, but the artificial timestamp used as part of the chat journey.")
-    thread_id: Optional[UUID] = Field(None, foreign_key="thread.uid", description="The ID of the thread this event belongs to (if any)")
+    timestamp: datetime = Field(
+        ...,
+        description="The timestamp of the event. NOTE: this is not the record created at, but the artificial timestamp used as part of the chat journey.",
+    )
+    thread_id: Optional[UUID] = Field(
+        None,
+        foreign_key="thread.uid",
+        description="The ID of the thread this event belongs to (if any)",
+    )
 
     @property
     def event_type(self) -> EventType:
@@ -55,6 +62,7 @@ class Message(Event, AuditedBase):
 
 class SystemMessage(Message, table=True):
     role: MessageRole = Field(MessageRole.system, description="The role of the message")
+
 
 class UserMessage(Message, table=True):
     role: MessageRole = Field(MessageRole.user, description="The role of the message")
@@ -82,6 +90,7 @@ class AssistantMessage(Message, table=True):
     tool_calls: List["ToolCall"] = Relationship(back_populates="assistant_message")
     thread: Optional[Thread] = Relationship(back_populates="assistant_messages")
 
+
 class ToolMessage(Message, table=True):
     role: MessageRole = Field(MessageRole.tool, description="The role of the message")
     tool_call_request_id: Optional[UUID] = Field(
@@ -90,6 +99,7 @@ class ToolMessage(Message, table=True):
         description="The tool call request ID if a tool call initiated this response",
     )
     thread: Optional[Thread] = Relationship(back_populates="tool_messages")
+
 
 class ExternalEvent(Event, table=True):
     """Stimuli that can trigger or impact a chat"""

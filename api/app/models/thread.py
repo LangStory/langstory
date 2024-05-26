@@ -5,14 +5,23 @@ from uuid import UUID
 from app.models.base import Base
 
 if TYPE_CHECKING:
-    from app.models.event import UserMessage, AssistantMessage, ToolMessage, ExternalEvent, Event
+    from app.models.event import (
+        UserMessage,
+        AssistantMessage,
+        ToolMessage,
+        ExternalEvent,
+        Event,
+    )
+
 
 def thread_relationship():
-    return Relationship(back_populates="thread", sa_relationship_kwargs={"lazy":"selectin"})
+    return Relationship(
+        back_populates="thread", sa_relationship_kwargs={"lazy": "selectin"}
+    )
+
 
 class Thread(Base, table=True):
     name: str = Field(..., description="The name of the organization")
-
 
     # this is gross, but sqlmodel doesn't support polymorphic tables
     # NEVER USE THESE! Access via the messages property
@@ -23,7 +32,9 @@ class Thread(Base, table=True):
 
     @property
     def messages(self) -> List[Type["Event"]]:
-        return self.user_messages \
-             + self.assistant_messages \
-             + self.tool_messages \
-             + self.external_events
+        return (
+            self.user_messages
+            + self.assistant_messages
+            + self.tool_messages
+            + self.external_events
+        )
