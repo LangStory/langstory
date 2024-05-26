@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from app.routers.utilities import _create_engine
 from app.app import app
 from app.routers.utilities import get_db_session
-from app.models.base import Base
+from app.models.all import Base
 
 @pytest.fixture
 def db_session(request):

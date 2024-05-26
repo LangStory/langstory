@@ -7,7 +7,7 @@ from sqlmodel import Field, Column, Relationship
 
 from app.models.base import Base
 from app.models.organization import Organization
-from app.models.orgnanizations_users import OrganizationsUsers
+from app.models.organizations_users import OrganizationsUsers
 
 
 class User(Base, table=True):
