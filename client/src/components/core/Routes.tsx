@@ -67,8 +67,8 @@ export default function AppRoutes() {
         <Routes>
             {/*------- PRIVATE ROUTES -------*/}
             <Route path="/chats">
-                <Route index element={withNoAuth(withNavbar(<ChatsList/>))}/>
-                <Route path=":id" element={withNoAuth(withNavbar(<ChatComponent/>))}/>
+                <Route index element={withAuth(withNavbar(<ChatsList/>))}/>
+                <Route path=":id" element={withAuth(withNavbar(<ChatComponent/>))}/>
                 {/*<Route index element={withAuthNavbarRollbar('receiving-tasks', <ChatsList/>)}/>*/}
                 {/*<Route path=":id" element={withAuthNavbarRollbar('receiving-task/details', <Chat/>)}/>*/}
 

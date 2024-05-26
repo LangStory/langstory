@@ -1,7 +1,8 @@
-const KEY_PREFIX = '__SWIS__'
+const KEY_PREFIX = '__LANGSTORY__'
 
 export const STORAGE_KEYS = {
     ACCESS_TOKEN: `${KEY_PREFIX}access-token`,
+    REFRESH_TOKEN: `${KEY_PREFIX}refresh-token`,
 }
 
 export function deleteValue(key: string) {

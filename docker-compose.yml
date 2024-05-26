@@ -19,7 +19,7 @@ services:
     command: ["uvicorn", "app.app:app", "--host", "0.0.0.0", "--port", "80", "--reload"]
     # for vscode tunnel
     ports:
-      - "8999:80" 
+      - "8999:80"
   langstory_client:
     hostname: langstory-client
     build:
@@ -29,7 +29,7 @@ services:
       - ./client:/client/app
     # for vscode tunnel
     ports:
-      - "8998:5173" 
+      - "8998:5173"
   langstory_db:
     hostname: langstory-db
     image: ankane/pgvector:v0.5.1
