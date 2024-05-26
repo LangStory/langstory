@@ -40,7 +40,7 @@ class MagicLinkFlow(AuthMixin, PasswordMixin):
         raw_password = token_urlsafe(16)
         slug = self._make_slug(user.id, raw_password)
         logger.debug("removing all existing magic links for user %s", user.id)
-        _ = MagicLink.clear_for_user(self.db_session, user.id)
+        _ = MagicLink.clear_for_user(self.db_session, user.uid)
         logger.debug("creating magic link for user %s", user.id)
         _ = MagicLink(
             user_uid=user.uid,
@@ -67,7 +67,7 @@ class MagicLinkFlow(AuthMixin, PasswordMixin):
         msg.attach(MIMEText(text.format(link=link), "plain"))
         msg.attach(MIMEText(html.format(link=link), "html"))
 
-        mailserver = smtplib.SMTP(settings.stmp_email_host, settings.smtp_email_port)
+        mailserver = smtplib.SMTP(settings.smtp_email_host, settings.smtp_email_port)
         mailserver.ehlo()
         mailserver.starttls()
         mailserver.ehlo()
@@ -99,3 +99,4 @@ class MagicLinkFlow(AuthMixin, PasswordMixin):
             if not getattr(settings, key):
                 logger.error("missing email setting %s, cannot send email", key)
                 return False
+        return True
