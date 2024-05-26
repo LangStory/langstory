@@ -2,11 +2,11 @@ from typing import Optional, Type, Self
 from uuid import UUID
 from sqlmodel import Field, Session
 
-from app.models.base import Base
+from app.models.base import Base, AuditedBase
 from app.models.event import Message
 
 
-class Chat(Base, table=True):
+class Chat(AuditedBase, table=True):
     name: str = Field(..., description="The name of the chat")
     description: Optional[str] = Field(
         default=None, description="A description of the chat"

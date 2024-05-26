@@ -9,7 +9,6 @@ class ProjectCreate(BaseSchema):
     name: str
     avatar_url: Optional[HttpUrl] = None
     description: Optional[str] = None
-    organization_id: str
 
 
 class ProjectRead(BaseSchema):
