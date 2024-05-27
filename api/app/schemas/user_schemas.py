@@ -71,7 +71,9 @@ class ScopedUser:
         """convert to a Pydantic model, no longer supports the graduated attr lookup"""
         return PydanticScopedUser(user=self.user, organization=self.organization)
 
+
 class PydanticScopedUser(BaseSchema):
     """ScopedUser converted to a Pydantic model, no longer supports the graduated attr lookup"""
+
     user: Type["User"]
     organization: Optional[Type["Organization"]]

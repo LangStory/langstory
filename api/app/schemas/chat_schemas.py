@@ -10,6 +10,7 @@ class ChatBase(BaseSchema):
     class Config:
         from_attributes = True
 
+
 class ChatCreate(BaseSchema):
     name: str
     description: Optional[str] = None

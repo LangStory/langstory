@@ -6,4 +6,3 @@ if TYPE_CHECKING:
     pass
 
 router = APIRouter(prefix="/users", tags=["users"])
-

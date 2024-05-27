@@ -2,7 +2,6 @@ from uuid import UUID
 from app.controllers.mixins.database_mixin import DatabaseMixin
 
 
-
 class AuthMixin(DatabaseMixin):
     """common utilites for auth"""
 

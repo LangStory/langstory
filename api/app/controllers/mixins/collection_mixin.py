@@ -20,19 +20,22 @@ if TYPE_CHECKING:
 
 logger = get_logger(__name__)
 
+
 class CollectionMixin(DatabaseMixin):
     """supports listing, pagination, and searching of object collections"""
 
-    def __init__(self, db_session:"Session", ModelClass:Type["Base"]):
+    def __init__(self, db_session: "Session", ModelClass: Type["Base"]):
         self.super().__init__(db_session)
         self.ModelClass = ModelClass
 
     def get_collection(self, request: "CollectionRequest") -> "CollectionResponse":
         """shorthand for get_paginated_collection"""
         return self.get_paginated_collection(
-            self.ModelClass, **request.model_dump(exclude_none=True))
+            self.ModelClass, **request.model_dump(exclude_none=True)
+        )
 
-    def get_paginated_collection(self,
+    def get_paginated_collection(
+        self,
         ModelClass: Type["Base"],
         actor: Union["ScopedUser", "User"],
         page: int,
@@ -57,13 +60,15 @@ class CollectionMixin(DatabaseMixin):
 
         page_count = (self._get_total_count(query) + per_page - 1) // per_page
 
-        final_query = query.order_by(orderable).limit(per_page).offset((page - 1) * per_page)
+        final_query = (
+            query.order_by(orderable).limit(per_page).offset((page - 1) * per_page)
+        )
         instances = self._get_results(final_query)
 
         return instances, page_count
 
-    def apply_power_filter(self,
-        model: Type["Base"], statement: "Select", power_filter: str
+    def apply_power_filter(
+        self, model: Type["Base"], statement: "Select", power_filter: str
     ) -> "Select":
         """Apply a power query filter to a sqlalchemy query.
         Args:
@@ -86,20 +91,26 @@ class CollectionMixin(DatabaseMixin):
             return statement.where(False)
         marker_pairs = self._get_marker_pairs(grouping_markers)
 
-        bare_elements, groupings = self._assemble_elements(filter_elements, marker_pairs)
+        bare_elements, groupings = self._assemble_elements(
+            filter_elements, marker_pairs
+        )
         logger.debug("groupings: %s", groupings)
         logger.debug("bare_elements: %s", bare_elements)
 
         statement_predicates = []
-        statement_predicates.append(self._get_groupings_predicates(model, statement, groupings))
-        statement_predicates.append(self._get_bare_predicates(model, statement, bare_elements))
+        statement_predicates.append(
+            self._get_groupings_predicates(model, statement, groupings)
+        )
+        statement_predicates.append(
+            self._get_bare_predicates(model, statement, bare_elements)
+        )
         statement = statement.where(or_(*statement_predicates))
         logger.debug("final arguments: %s", statement.compile().params)
         logger.debug("final statement: %s", statement)
         return statement
 
-    def build_predicate(self,
-        ModelClass: Type["Base"], statement: "Select", element: str
+    def build_predicate(
+        self, ModelClass: Type["Base"], statement: "Select", element: str
     ) -> Tuple["Select", List]:
         """constructs a filter predicate for a given element, that can be assembled into a select.where() clause
         Args:
@@ -135,7 +146,9 @@ class CollectionMixin(DatabaseMixin):
             return statement, predicates
         try:
             target_class = aliased(col.property.mapper.class_)
-            statement = self._apply_related_object_predicate(target_class, attribute, ModelClass, statement)
+            statement = self._apply_related_object_predicate(
+                target_class, attribute, ModelClass, statement
+            )
             modifier = target_class.related_lookup(value)
             predicates.append(modifier)
             return statement, predicates
@@ -145,20 +158,17 @@ class CollectionMixin(DatabaseMixin):
 
     # private methods
 
-    def _get_results(self,
-                     query:"Select") -> List[Type["Base"]]:
+    def _get_results(self, query: "Select") -> List[Type["Base"]]:
         cursor = self.db_session.execute(query)
 
         return cursor.scalars().unique().all()
 
-    def _get_total_count(self, query:"Select") -> int:
-        return self.db_session.scalar(
-                            select(func.count()).select_from(query))
+    def _get_total_count(self, query: "Select") -> int:
+        return self.db_session.scalar(select(func.count()).select_from(query))
 
-    def _get_orderable(self,
-                       ModelClass: Type["Base"],
-                       order_by: str,
-                       dir:str) -> "Column":
+    def _get_orderable(
+        self, ModelClass: Type["Base"], order_by: str, dir: str
+    ) -> "Column":
         """Get the orderable column for a model class.
         Args:
             - ModelClass: the model class to get the orderable column from
@@ -190,9 +200,9 @@ class CollectionMixin(DatabaseMixin):
         logger.debug("marker_pairs: %s", marker_pairs)
         return marker_pairs
 
-    def _assemble_elements(self,
-                           filter_elements:List,
-                           marker_pairs:List[str]) -> Tuple[List[str], List[str]]:
+    def _assemble_elements(
+        self, filter_elements: List, marker_pairs: List[str]
+    ) -> Tuple[List[str], List[str]]:
         """builds the bare elements and groupings from a list of filter elements"""
         bare_elements = []
         groupings = []
@@ -202,41 +212,53 @@ class CollectionMixin(DatabaseMixin):
                 bare_elements.append(filter_elements[:start])
             groupings.append(filter_elements[start : end + 1])
             if (index < len(marker_pairs) - 1) and marker_pairs[index + 1][0] - end > 1:
-                bare_elements.append(filter_elements[end + 1 : marker_pairs[index + 1][0]])
+                bare_elements.append(
+                    filter_elements[end + 1 : marker_pairs[index + 1][0]]
+                )
             if index == len(marker_pairs) - 1:
                 bare_elements.append(filter_elements[end + 1 :])
         if not groupings:
             bare_elements.append(filter_elements)
         return bare_elements, groupings
 
-    def _get_groupings_predicates(self, ModelClass: Type["Base"], statement: "Select", groupings: List[str]) -> "Select":
+    def _get_groupings_predicates(
+        self, ModelClass: Type["Base"], statement: "Select", groupings: List[str]
+    ) -> "Select":
         for grouping in groupings:
             grouping_predicates = []
             for element in [e for e in grouping if e]:
                 logger.debug("building grouping predicate: %s", element)
-                statement, predicates = self.build_predicate(ModelClass, statement, element)
+                statement, predicates = self.build_predicate(
+                    ModelClass, statement, element
+                )
                 grouping_predicates.extend(predicates)
             if not predicates:
                 continue
             return and_(*grouping_predicates)
 
-    def _get_bare_predicates(self, ModelClass: Type["Base"], statement: "Select", bare_elements: List[str]) -> "Select":
+    def _get_bare_predicates(
+        self, ModelClass: Type["Base"], statement: "Select", bare_elements: List[str]
+    ) -> "Select":
         for bare_group in bare_elements:
             bare_group_predicates = []
             for element in [e for e in bare_group if e]:
                 logger.debug("building bare predicate: %s", element)
-                statement, predicates = self.build_predicate(ModelClass, statement, element)
+                statement, predicates = self.build_predicate(
+                    ModelClass, statement, element
+                )
                 bare_group_predicates.extend(predicates)
                 if not predicates:
                     continue
         return and_(*bare_group_predicates)
 
-
     def _attempted_to_search_secrets(self, attribute: str) -> bool:
-        """ Don't let people search by secrets """
-        return attribute in ("password","token_hash",)
+        """Don't let people search by secrets"""
+        return attribute in (
+            "password",
+            "token_hash",
+        )
 
-    def _get_core_components(cls, element:str) -> Tuple[str, str, str]:
+    def _get_core_components(cls, element: str) -> Tuple[str, str, str]:
         """parses the element and returns a tuple of attribute, operator, and value"""
         ops = {
             "==": "ilike",
@@ -265,11 +287,11 @@ class CollectionMixin(DatabaseMixin):
                 return attribute, operator, value
         raise ValueError(f"bad filter element, no recognized operator: {element}")
 
-    def _set_wildcards(cls, value:str) -> str:
+    def _set_wildcards(cls, value: str) -> str:
         """use a wildcard character that humans can understand, remove string wrappers"""
         return value.replace("*", "%").replace("'", "").replace('"', "").strip()
 
-    def _cast_timestamps(cls, attribute:str, value:str) -> str:
+    def _cast_timestamps(cls, attribute: str, value: str) -> str:
         """this is not the best solution for typing but works in the moment"""
         if attribute.endswith("_at"):
             value = parser.parse(value).date()
@@ -277,11 +299,16 @@ class CollectionMixin(DatabaseMixin):
     def _column_is_native_to_model(cls, col) -> bool:
         return isinstance(col.property, ColumnProperty)
 
-    def _apply_related_object_predicate(cls, target_class, attribute:str, ModelClass: Type["Base"], statement: "Select",) -> "Select":
+    def _apply_related_object_predicate(
+        cls,
+        target_class,
+        attribute: str,
+        ModelClass: Type["Base"],
+        statement: "Select",
+    ) -> "Select":
         source_id = getattr(ModelClass, f"{attribute}_id", None)
         if not source_id:
             message = f"There is no standard id pattern for accessing {attribute} on {ModelClass}. Please create a standard id pattern."
             logger.error(message)
             raise ValueError(message)
         return statement.join(target_class, onclause=target_class._id == source_id)
-

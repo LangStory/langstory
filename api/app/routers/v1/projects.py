@@ -28,7 +28,8 @@ def create_project(
         # especially this part
         created_by=actor.uid,
         last_updated_by=actor.uid,
-        **project_data.model_dump(exclude_none=True)).create(db_session)
+        **project_data.model_dump(exclude_none=True)
+    ).create(db_session)
 
 
 @router.get("/", response_model=CollectionResponse)
@@ -52,9 +53,11 @@ def list_projects(
 
 
 @router.get("/{project_id}", response_model=ProjectRead)
-def read_project(project_id: str,
-                actor: ScopedUser = Depends(get_current_user),
-                db_session: Session = Depends(get_db_session)):
+def read_project(
+    project_id: str,
+    actor: ScopedUser = Depends(get_current_user),
+    db_session: Session = Depends(get_db_session),
+):
 
     controller = ProjectController(db_session)
     return controller.read_for_actor(actor, project_id)

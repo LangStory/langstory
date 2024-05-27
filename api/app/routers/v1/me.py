@@ -21,4 +21,3 @@ async def update_self(
     """update a user's own profile"""
     controller = UpdateUserFlow(db_session)
     return controller.update_user(actor, updates)
-

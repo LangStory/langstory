@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from app.schemas.user_schemas import ScopedUser
     from app.schemas.user_schemas import User
 
+
 class Base(SQLModel):
     __abstract__ = True
 
@@ -81,15 +82,21 @@ class Base(SQLModel):
             raise ValueError(f"Invalid ID: {id}")
 
     @classmethod
-    def apply_access_predicate(cls, query:"Select", actor: Union["ScopedUser", "User"], access:List[Literal["read","write","admin"]]) -> "Select":
+    def apply_access_predicate(
+        cls,
+        query: "Select",
+        actor: Union["ScopedUser", "User"],
+        access: List[Literal["read", "write", "admin"]],
+    ) -> "Select":
         """applies a WHERE clause restricting results to the given actor and access level"""
-        del access # not used by default, will be used for more complex access control
+        del access  # not used by default, will be used for more complex access control
         # by default, just check for matching organizations
-        org = getattr(actor, "organization_id", getattr(actor.organization, "uid", None))
+        org = getattr(
+            actor, "organization_id", getattr(actor.organization, "uid", None)
+        )
         if not org:
             raise ValueError("object %s has no organization accessor", actor)
         return query.where(cls.organization_id == actor.organization_id)
-
 
     @classmethod
     def related_lookup(cls, value: str):
@@ -104,6 +111,7 @@ class Base(SQLModel):
         )
         """
         return cls.uid == value
+
 
 class AuditedBase(Base):
     __abstract__ = True

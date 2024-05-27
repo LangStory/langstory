@@ -49,7 +49,9 @@ class CreateNewUserFlow(AuthMixin, PasswordMixin):
 class UpdateUserFlow(AuthMixin, PasswordMixin):
     """update a user"""
 
-    def update_user(self, user: "ScopedUser", updates: "NewUser") -> "PydanticScopedUser":
+    def update_user(
+        self, user: "ScopedUser", updates: "NewUser"
+    ) -> "PydanticScopedUser":
         """set the values of a user"""
         sql_user = self.db_session.merge(user.user)
         for key, value in updates.model_dump(exclude_none=True).items():

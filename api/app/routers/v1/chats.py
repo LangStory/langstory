@@ -12,15 +12,19 @@ from app.schemas.user_schemas import ScopedUser
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
+
 @router.post("/", response_model=ChatRead)
-def create_chat(chat_data: ChatCreate,
-                db_session: Session = Depends(get_db_session),
-                actor: ScopedUser = Depends(get_current_user)):
+def create_chat(
+    chat_data: ChatCreate,
+    db_session: Session = Depends(get_db_session),
+    actor: ScopedUser = Depends(get_current_user),
+):
     # TODO: do chats have projects?
     return Chat(
         created_by=actor.uid,
         last_updated_by=actor.uid,
-        **chat_data.model_dump(exclude_none=True)).create(db_session)
+        **chat_data.model_dump(exclude_none=True)
+    ).create(db_session)
 
 
 @router.post("/{chat_id}/messages", response_model=MessageRead)

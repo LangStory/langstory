@@ -19,7 +19,7 @@ class ProjectController(CollectionMixin):
     def list_for_actor(self, request: "CollectionRequest") -> "CollectionResponse":
         return self.get_collection(request)
 
-    def read_for_actor(self, actor:ScopedUser, project_id: str) -> Optional["Project"]:
+    def read_for_actor(self, actor: ScopedUser, project_id: str) -> Optional["Project"]:
         self.db_session.merge(actor.organization)
         try:
             uid = Project.id_to_uid(project_id)
