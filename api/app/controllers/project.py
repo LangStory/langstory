@@ -14,10 +14,11 @@ if TYPE_CHECKING:
 class ProjectController(CollectionMixin):
 
     def __init__(self, db_session: "Session"):
-        self.super().__init__(db_session=db_session, model=Project)
+        super().__init__(db_session=db_session, ModelClass=Project)
 
     def list_for_actor(self, request: "CollectionRequest") -> "CollectionResponse":
-        return self.get_collection(request)
+        items, page_count = self.get_collection(request)
+        return CollectionResponse(items=items, page=request.page, pages=page_count)
 
     def read_for_actor(self, actor: ScopedUser, project_id: str) -> Optional["Project"]:
         self.db_session.merge(actor.organization)

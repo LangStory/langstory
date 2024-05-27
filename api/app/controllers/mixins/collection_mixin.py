@@ -25,13 +25,14 @@ class CollectionMixin(DatabaseMixin):
     """supports listing, pagination, and searching of object collections"""
 
     def __init__(self, db_session: "Session", ModelClass: Type["Base"]):
-        self.super().__init__(db_session)
+        super().__init__(db_session)
         self.ModelClass = ModelClass
 
     def get_collection(self, request: "CollectionRequest") -> "CollectionResponse":
         """shorthand for get_paginated_collection"""
+        # cannot infer type of ScopedUser at this time
         return self.get_paginated_collection(
-            self.ModelClass, **request.model_dump(exclude_none=True)
+            self.ModelClass, actor=request.actor, **request.model_dump(exclude_none=True, exclude=["actor"])
         )
 
     def get_paginated_collection(
@@ -39,20 +40,22 @@ class CollectionMixin(DatabaseMixin):
         ModelClass: Type["Base"],
         actor: Union["ScopedUser", "User"],
         page: int,
-        per_page: Optional[int] = 25,
+        per_page: Optional[int] = None,
         order_by: Optional[str] = None,
-        order_dir: Optional[str] = "asc",
+        order_dir: Optional[str] = None,
         power_filter: Optional[str] = None,
     ) -> Tuple[List[Type["Base"]], int]:
         """DEPRECATED: use get_collection, which will eventually replace this method"""
         # defaults post-none, as upstream may set these to None
+        page = max((page or 1, 1,))
         per_page = per_page or 25
         order_dir = order_dir or "asc"
         order_by = order_by or getattr(ModelClass, "__order_by_default__")
 
         orderable = self._get_orderable(ModelClass, order_by, order_dir)
-
-        query = select(ModelClass).where(ModelClass.is_deleted == False)
+        query = select(ModelClass)
+        if hasattr(ModelClass, "is_deleted"):
+            query = query.where(ModelClass.is_deleted == False)
         query = ModelClass.apply_access_predicate(query, actor, "read")
 
         if power_filter:

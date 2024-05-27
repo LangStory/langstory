@@ -6,6 +6,7 @@ from app.settings import settings
 from app.schemas.jtw_schema import JWTResponse
 from app.routers.utilities import get_db_session
 from app.schemas.user_schemas import NewUser
+from app.models.organization import Organization
 from app.controllers.auth import JWTTokenFlow, AuthenticateUsernamePasswordFlow
 from app.controllers.user import CreateNewUserFlow
 
@@ -48,5 +49,6 @@ async def development_only_login(
     )
     flow = JWTTokenFlow(db_session)
     refresh = flow.get_refresh_token(user)
-    auth_token = flow.get_auth_token(refresh).token
+    org = Organization.default(db_session)
+    auth_token = flow.get_auth_token(refresh, org=org.id).token
     return {"access_token": auth_token, "token_type": "bearer"}

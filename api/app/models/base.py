@@ -91,12 +91,12 @@ class Base(SQLModel):
         """applies a WHERE clause restricting results to the given actor and access level"""
         del access  # not used by default, will be used for more complex access control
         # by default, just check for matching organizations
-        org = getattr(
+        org_uid = getattr(
             actor, "organization_id", getattr(actor.organization, "uid", None)
         )
-        if not org:
+        if not org_uid:
             raise ValueError("object %s has no organization accessor", actor)
-        return query.where(cls.organization_id == actor.organization_id)
+        return query.where(cls.organization_id == org_uid)
 
     @classmethod
     def related_lookup(cls, value: str):
