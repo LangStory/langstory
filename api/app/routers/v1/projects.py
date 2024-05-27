@@ -3,14 +3,13 @@ from sqlalchemy.orm import Session
 from typing import List, TYPE_CHECKING
 from uuid import UUID
 from app.models.project import Project
+from app.controllers.project import ProjectController
+
 from app.schemas.project_schemas import ProjectCreate, ProjectRead
 from app.schemas.user_schemas import ScopedUser
-from app.http_errors import not_found
+from app.schemas.collection_schemas import CollectionResponse, CollectionRequest
 
 from app.routers.utilities import get_db_session, get_current_user
-
-if TYPE_CHECKING:
-    from sqlalchemy.exc import NoInstanceFound, MultipleInstancesFound
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -32,21 +31,30 @@ def create_project(
         **project_data.model_dump(exclude_none=True)).create(db_session)
 
 
-@router.get("/", response_model=List[ProjectRead])
-def get_projects(
+@router.get("/", response_model=CollectionResponse)
+def list_projects(
+    per_page: int = 10,
+    page: int = 0,
+    query: str = None,
+    order_by: str = None,
+    order_dir: str = "asc",
     db_session: Session = Depends(get_db_session),
     actor: ScopedUser = Depends(get_current_user),
 ):
-    db_session.merge(actor.organization)
-    return actor.organization.projects.all()
+    query_args = {}
+    # drop the None values
+    for key in ["per_page", "page", "order_by", "order_dir"]:
+        query_args[key] = locals()[key] if locals()[key] is not None else None
+
+    request = CollectionRequest(actor=actor, **query_args)
+    controller = ProjectController(db_session)
+    return controller.list_for_actor(request)
 
 
 @router.get("/{project_id}", response_model=ProjectRead)
-def get_project(uid: UUID,
+def read_project(project_id: str,
                 actor: ScopedUser = Depends(get_current_user),
                 db_session: Session = Depends(get_db_session)):
-    db_session.merge(actor.organization)
-    try:
-        return actor.organization.projects.filter_by(uid=uid).one()
-    except (NoInstanceFound, MultipleInstancesFound) as e:
-        not_found(e=e, message="Project not found")
+
+    controller = ProjectController(db_session)
+    return controller.read_for_actor(actor, project_id)

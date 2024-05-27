@@ -1,4 +1,4 @@
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING, Type
 from uuid import UUID
 from pydantic import Field
 
@@ -66,3 +66,12 @@ class ScopedUser:
             user=User.read(db_session, id_=self.user.id),
             organization=Organization.read(db_session, id_=self.organization.id),
         )
+
+    def to_pydantic(self) -> Type["BaseSchema"]:
+        """convert to a Pydantic model, no longer supports the graduated attr lookup"""
+        return PydanticScopedUser(user=self.user, organization=self.organization)
+
+class PydanticScopedUser(BaseSchema):
+    """ScopedUser converted to a Pydantic model, no longer supports the graduated attr lookup"""
+    user: Type["User"]
+    organization: Optional[Type["Organization"]]

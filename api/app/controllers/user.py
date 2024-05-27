@@ -12,7 +12,7 @@ from app.models.organization import Organization
 from app.models.user import User
 
 if TYPE_CHECKING:
-    from app.schemas.user_schemas import NewUser
+    from app.schemas.user_schemas import NewUser, ScopedUser, PydanticScopedUser
 
 
 class CreateNewUserFlow(AuthMixin, PasswordMixin):
@@ -44,3 +44,18 @@ class CreateNewUserFlow(AuthMixin, PasswordMixin):
         except IntegrityError as e:
             self.db_session.rollback()
             bad_request(e=e, message="User already exists")
+
+
+class UpdateUserFlow(AuthMixin, PasswordMixin):
+    """update a user"""
+
+    def update_user(self, user: "ScopedUser", updates: "NewUser") -> "PydanticScopedUser":
+        """set the values of a user"""
+        sql_user = self.db_session.merge(user.user)
+        for key, value in updates.model_dump(exclude_none=True).items():
+            if key == "password":
+                value = self.password_context.hash(value)
+            setattr(sql_user, key, value)
+        sql_user.update(self.db_session)
+        user.user = sql_user
+        return user.to_pydantic()

@@ -7,6 +7,3 @@ if TYPE_CHECKING:
 
 router = APIRouter(prefix="/users", tags=["users"])
 
-
-def get_logged_in_user():
-    return None
