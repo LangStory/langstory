@@ -33,7 +33,7 @@ def get_db_session() -> Generator:
 
 
 def get_current_user(
-    token: Annotated[str, Depends(OAuth2PasswordBearer(tokenUrl="/auth/refresh"))]
+    token: Annotated[str, Depends(OAuth2PasswordBearer(tokenUrl="/auth/token/refresh"))]
 ) -> "ScopedUser":
     """decode the user from the JWT"""
     return ScopedUser.from_jwt(token)

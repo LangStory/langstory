@@ -57,6 +57,8 @@ class UpdateUserFlow(AuthMixin, PasswordMixin):
         for key, value in updates.model_dump(exclude_none=True).items():
             if key == "password":
                 value = self.password_context.hash(value)
+            if key == "email_address":
+                value = self.standardized_email(value)
             setattr(sql_user, key, value)
         sql_user.update(self.db_session)
         user.user = sql_user
