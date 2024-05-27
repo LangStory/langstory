@@ -3,9 +3,10 @@ from uuid import UUID
 
 from pydantic import HttpUrl
 from sqlalchemy import String
-from sqlmodel import Field, Column
+from sqlmodel import Field, Column, Relationship
 
 from app.models.base import AuditedBase
+from app.models.organization import Organization
 
 
 class Project(AuditedBase, table=True):
@@ -23,3 +24,6 @@ class Project(AuditedBase, table=True):
         foreign_key="organization.uid",
         description="The ID of the organization that owns this project",
     )
+
+    # relationships
+    organization: Organization = Relationship(back_populates="projects")

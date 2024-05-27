@@ -1,9 +1,10 @@
-from typing import Union, Literal, Type, Optional, Annotated
+from typing import Union, Literal, Type, Optional, List
 from pydantic import Field
 from app.models.base import Base
 from app.schemas.base_schema import BaseSchema
 from app.schemas.user_schemas import ScopedUser
 from app.models.user import User
+from sqlmodel import SQLModel
 
 
 class CollectionRequest(BaseSchema):
@@ -26,5 +27,5 @@ class CollectionRequest(BaseSchema):
 
 class CollectionResponse(BaseSchema):
     pages: int = Field(description="The total number of pages in the collection")
-    items: list[Type[Base]] = Field(description="The items in the collection")
+    items: List = Field(description="The items in the collection")
     page: int = Field(description="The current page number")

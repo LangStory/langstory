@@ -13,23 +13,50 @@ from app.schemas.user_schemas import ScopedUser
 router = APIRouter(prefix="/chats", tags=["chats"])
 
 
+@router.get("/{chat_id}", response_model=ChatRead)
+def get_chat(
+    chat_id: str,
+    db: Session = Depends(get_db_session),
+    actor: ScopedUser = Depends(get_current_user),
+):
+    controller = ChatController(db)
+    chat = controller.get_chat_for_actor(chat_id, actor)
+    return chat
+
 @router.post("/", response_model=ChatRead)
 def create_chat(
     chat_data: ChatCreate,
     db_session: Session = Depends(get_db_session),
     actor: ScopedUser = Depends(get_current_user),
 ):
-    # TODO: do chats have projects?
-    return Chat(
-        created_by=actor.uid,
-        last_updated_by=actor.uid,
-        **chat_data.model_dump(exclude_none=True)
-    ).create(db_session)
+    controller = ChatController(db_session)
+    return controller.create_chat_for_actor(chat_data, actor)
 
+@router.put("/{chat_id}", response_model=ChatRead)
+@router.patch("/{chat_id}", response_model=ChatRead)
+def update_chat(
+    chat_id: str,
+    chat_data: ChatCreate,
+):
+    chat = Chat.read(id_=chat_id)
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+
+    return chat
+
+@router.delete("/{chat_id}")
+def delete_chat(chat_id: str, db: Session = Depends(get_db_session)):
+    chat = Chat.read(db, id_=chat_id)
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    chat.deleted = True
+    db.commit()
+    return {"message": "Chat deleted successfully"}
 
 @router.post("/{chat_id}/messages", response_model=MessageRead)
 def add_message(
-    chat_id: UUID, message_data: MessageCreate, db: Session = Depends(get_db_session)
+    chat_id: str,
+    message_data: MessageCreate, db: Session = Depends(get_db_session)
 ):
     controller = ChatController(db)
     message = controller.add_message(chat_id, message_data)
@@ -37,10 +64,11 @@ def add_message(
 
 
 @router.get("/{chat_id}/messages", response_model=List[MessageRead])
-def get_messages(chat_id: UUID, db: Session = Depends(get_db_session)):
-    chat = Chat.read(db, uid=chat_id)
+def get_messages(chat_id: str, db: Session = Depends(get_db_session)):
+    chat = Chat.read(db, id_=chat_id)
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
     if not chat.messages:
         raise HTTPException(status_code=404, detail="No messages available for chat")
     return chat
+

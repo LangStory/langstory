@@ -17,6 +17,3 @@ class ProjectRead(BaseSchema):
     avatar_url: Optional[HttpUrl] = None
     description: Optional[str] = None
     organization_id: str
-
-    class Config:
-        from_attributes = True

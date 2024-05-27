@@ -12,23 +12,25 @@ from app.routers.utilities import get_db_session, get_current_user
 router = APIRouter(prefix="/projects", tags=["projects"])
 
 
-@router.post("/", response_model=ProjectRead)
+@router.post("/")
 def create_project(
     project_data: ProjectCreate,
     db_session: Session = Depends(get_db_session),
     actor: ScopedUser = Depends(get_current_user),
-):
+)-> ProjectRead:
     # since the scoped user is from the jwt and detached, we need to connect it
     db_session.merge(actor.organization)
     ## TODO: this goes in a controller since it's business logic
-    return Project(
+    project =  Project(
         organization_id=actor.organization.uid,
         # especially this part
         created_by=actor.uid,
         last_updated_by=actor.uid,
         **project_data.model_dump(exclude_none=True)
     ).create(db_session)
-
+    db_session.add(project)
+    db_session.refresh(project)
+    return ProjectRead(id=project.id, name=project.name, avatarUrl=project.avatar_url, description=project.description, organizationId=project.organization.id)
 
 @router.get("/", response_model=CollectionResponse)
 def list_projects(
