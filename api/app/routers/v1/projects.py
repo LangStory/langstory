@@ -41,7 +41,7 @@ def list_projects(
     actor: ScopedUser = Depends(get_current_user),
 ):
     query_args = {}
-    #drop the None values
+    # drop the None values
     for key in ["perPage", "page", "orderBy", "orderDir"]:
         if locals()[key] is not None:
             query_args[key] = locals()[key]

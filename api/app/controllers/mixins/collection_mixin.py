@@ -32,7 +32,9 @@ class CollectionMixin(DatabaseMixin):
         """shorthand for get_paginated_collection"""
         # cannot infer type of ScopedUser at this time
         return self.get_paginated_collection(
-            self.ModelClass, actor=request.actor, **request.model_dump(exclude_none=True, exclude=["actor"])
+            self.ModelClass,
+            actor=request.actor,
+            **request.model_dump(exclude_none=True, exclude=["actor"]),
         )
 
     def get_paginated_collection(
@@ -47,7 +49,12 @@ class CollectionMixin(DatabaseMixin):
     ) -> Tuple[List[Type["Base"]], int]:
         """DEPRECATED: use get_collection, which will eventually replace this method"""
         # defaults post-none, as upstream may set these to None
-        page = max((page or 1, 1,))
+        page = max(
+            (
+                page or 1,
+                1,
+            )
+        )
         per_page = per_page or 25
         order_dir = order_dir or "asc"
         order_by = order_by or getattr(ModelClass, "__order_by_default__")
