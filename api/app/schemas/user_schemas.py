@@ -22,12 +22,15 @@ class NewUser(BaseSchema):
         default=None, description="the user's password, required if not using SSO"
     )
 
+
 class UpdateUser(NewUser):
     """when a user updates their own profile"""
+
     email_address: Optional[str] = Field(None, description="the user's email address")
     first_name: Optional[str] = Field(None, description="the user's display name")
     last_name: Optional[str] = Field(None, description="the user's display name")
     avatar_url: Optional[str] = Field(None, description="the user's avatar image URL")
+
 
 class ScopedUser:
     """a user scoped to an organization"""

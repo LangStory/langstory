@@ -39,7 +39,6 @@ class JWTTokenFlow(AuthMixin):
     def decode_token(cls, token: str) -> dict:
         return jwt.decode(token, settings.jwt_secret_key, algorithms=[cls.algorithm])
 
-
     def get_refresh_token(self, user: User) -> "JWTResponse":
         """generates a bare refresh token for a given user"""
         logger.debug("generating refresh token for %s", user.email_address)

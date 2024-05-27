@@ -4,7 +4,7 @@ from pydantic import Field
 
 
 class Settings(BaseSettings):
-    environment: Literal["dev","prod"]
+    environment: Literal["dev", "prod"]
     organization_name: Optional[str] = "LangStory"
     canonical_url: str
     validate_user_email: bool = Field(

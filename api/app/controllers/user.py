@@ -54,7 +54,9 @@ class UpdateUserFlow(AuthMixin, PasswordMixin):
     ) -> "PydanticScopedUser":
         """set the values of a user"""
         sql_user = User.read(self.db_session, uid=user.user.uid)
-        for key, value in updates.model_dump(exclude_none=True, exclude=["uid","id"]).items():
+        for key, value in updates.model_dump(
+            exclude_none=True, exclude=["uid", "id"]
+        ).items():
             if key == "password":
                 value = self.password_context.hash(value)
             if key == "email_address":

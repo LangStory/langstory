@@ -34,6 +34,7 @@ async def login(
     )
     return JWTTokenFlow(db_session).get_refresh_token(user)
 
+
 @router.post("/dev-login")
 async def development_only_login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],

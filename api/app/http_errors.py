@@ -6,9 +6,14 @@ def _exception(parent_exception: Exception, status_code: int, message: str):
         status_code=status_code, detail={"message": message}
     ) from parent_exception
 
-def auth_expired(e: Exception = None, message: str = "Authorization token has expired, please log in again"):
+
+def auth_expired(
+    e: Exception = None,
+    message: str = "Authorization token has expired, please log in again",
+):
     e = e or Exception()
     _exception(e, status.HTTP_401_UNAUTHORIZED, message)
+
 
 def forbidden(e: Exception = None, message: str = "Forbidden"):
     e = e or Exception()

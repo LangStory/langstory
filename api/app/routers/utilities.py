@@ -37,7 +37,9 @@ def get_db_session() -> Generator:
 
 
 def get_current_user(
-    token: Annotated[str, Depends(OAuth2PasswordBearer(tokenUrl="/auth/username-password/dev-login"))]
+    token: Annotated[
+        str, Depends(OAuth2PasswordBearer(tokenUrl="/auth/username-password/dev-login"))
+    ]
 ) -> "ScopedUser":
     """decode the user from the JWT"""
     try:
