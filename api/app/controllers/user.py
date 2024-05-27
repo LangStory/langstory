@@ -53,13 +53,15 @@ class UpdateUserFlow(AuthMixin, PasswordMixin):
         self, user: "ScopedUser", updates: "NewUser"
     ) -> "PydanticScopedUser":
         """set the values of a user"""
-        sql_user = self.db_session.merge(user.user)
-        for key, value in updates.model_dump(exclude_none=True).items():
+        sql_user = User.read(self.db_session, uid=user.user.uid)
+        for key, value in updates.model_dump(exclude_none=True, exclude=["uid","id"]).items():
             if key == "password":
                 value = self.password_context.hash(value)
             if key == "email_address":
                 value = self.standardized_email(value)
             setattr(sql_user, key, value)
-        sql_user.update(self.db_session)
+        self.db_session.add(sql_user)
+        self.db_session.commit()
+        self.db_session.refresh(sql_user)
         user.user = sql_user
         return user.to_pydantic()

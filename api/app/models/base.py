@@ -32,7 +32,7 @@ class Base(SQLModel):
         default=datetime.now(),
         sa_column_kwargs={"server_default": func.now(), "onupdate": func.now()},
     )
-    deleted: bool = Field(default=False)
+    deleted: bool = Field(default=False, exclude=True)
 
     @property
     def __prefix__(self) -> str:
