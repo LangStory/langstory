@@ -27,7 +27,9 @@ class User(Base, table=True):
         description="The URL of the user's avatar",
         sa_column=Column(String),
     )
-    password: Optional[str] = Field(default=None, description="The user's password")
+    password: Optional[str] = Field(
+        default=None, description="The user's password", exclude=True
+    )
 
     # relationships
     organizations: list["Organization"] = Relationship(

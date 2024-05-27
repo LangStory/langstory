@@ -1,4 +1,4 @@
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING, Type
 from uuid import UUID
 from pydantic import Field
 
@@ -21,6 +21,15 @@ class NewUser(BaseSchema):
     password: Optional[str] = Field(
         default=None, description="the user's password, required if not using SSO"
     )
+
+
+class UpdateUser(NewUser):
+    """when a user updates their own profile"""
+
+    email_address: Optional[str] = Field(None, description="the user's email address")
+    first_name: Optional[str] = Field(None, description="the user's display name")
+    last_name: Optional[str] = Field(None, description="the user's display name")
+    avatar_url: Optional[str] = Field(None, description="the user's avatar image URL")
 
 
 class ScopedUser:
@@ -66,3 +75,14 @@ class ScopedUser:
             user=User.read(db_session, id_=self.user.id),
             organization=Organization.read(db_session, id_=self.organization.id),
         )
+
+    def to_pydantic(self) -> Type["BaseSchema"]:
+        """convert to a Pydantic model, no longer supports the graduated attr lookup"""
+        return PydanticScopedUser(user=self.user, organization=self.organization)
+
+
+class PydanticScopedUser(BaseSchema):
+    """ScopedUser converted to a Pydantic model, no longer supports the graduated attr lookup"""
+
+    user: "User"
+    organization: Optional["Organization"]
