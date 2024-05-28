@@ -24,10 +24,13 @@ export default function ChatComponent() {
 
     async function newChat() {
         try {
+            const {data: projectData} = await axios(URLS.LIST_PROJECTS())
+            const projectId = projectData.items[0].id
             const {data} = await axios.post<Chat>(URLS.CREATE_NEW_CHAT(), {
                 name: (new Date()).toDateString(),
-                project_id: '1'
+                projectId
             })
+            debugger
             navigate(`/chat/${data.id}`)
         } catch (e) {
             console.error(e)

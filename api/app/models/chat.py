@@ -1,9 +1,16 @@
-from typing import Optional, Type, Self
+from typing import Optional, Union, List, Literal, TYPE_CHECKING
 from uuid import UUID
-from sqlmodel import Field, Session
 
-from app.models.base import Base, AuditedBase
-from app.models.event import Message
+from sqlmodel import Field, Relationship
+
+from app.models.base import AuditedBase
+
+from app.models.project import Project
+
+if TYPE_CHECKING:
+    from sqlalchemy.sql.selectable import Select
+    from app.schemas.user_schemas import ScopedUser
+    from app.schemas.user_schemas import User
 
 
 class Chat(AuditedBase, table=True):
@@ -16,12 +23,23 @@ class Chat(AuditedBase, table=True):
         foreign_key="project.uid",
         description="The ID of the project this chat belongs to",
     )
+    project: "Project" = Relationship()
+
+    # messages: List["Message"] = Relationship(back_populates="chat", sa_relationship_kwargs={"lazy":"dynamic"})
 
     @classmethod
-    def read(cls, db_session: Session, uid: Optional[UUID] = None, **kwargs):
-        if not uid:
-            raise ValueError("uid is required")
-        chat = super().read(db_session, uid=uid)
-        messages = db_session.query(Message).filter(Message.chat_id == uid).all()
-        chat.messages = messages
-        return chat
+    def apply_access_predicate(
+            cls,
+            query: "Select",
+            actor: Union["ScopedUser", "User"],
+            access: List[Literal["read", "write", "admin"]],
+    ) -> "Select":
+        """applies a WHERE clause restricting results to the given actor and access level"""
+        del access  # not used by default, will be used for more complex access control
+        # by default, just check for matching organizations
+        org_uid = getattr(
+            actor, "organization_id", getattr(actor.organization, "uid", None)
+        )
+        if not org_uid:
+            raise ValueError("object %s has no organization accessor", actor)
+        return query.join(Project).where(Project.organization_id == org_uid)

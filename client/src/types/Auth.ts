@@ -1,4 +1,3 @@
-
 interface ResponseTokenUser {
     email_address: string
     first_name: string
@@ -7,6 +6,7 @@ interface ResponseTokenUser {
     organizations?: [string]
     id: string
 }
+
 interface ResponseTokenOrganization {
     id: string
     name: string

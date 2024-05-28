@@ -1,14 +1,15 @@
-from typing import Optional, TYPE_CHECKING, Generator
+from typing import Optional, TYPE_CHECKING, Generator, List
 
 from pydantic import HttpUrl
 from sqlalchemy import String
-from sqlmodel import Field, Column
+from sqlmodel import Field, Column, Relationship
 
 from app.models.base import Base
 from app.settings import settings
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
+    from app.models.project import Project
 
 
 class Organization(Base, table=True):
@@ -22,6 +23,9 @@ class Organization(Base, table=True):
         description="The URL of the organization's avatar",
         sa_column=Column(String),
     )
+
+    # relationships
+    projects: List["Project"] = Relationship(back_populates="organization", sa_relationship_kwargs={"lazy":"dynamic"})
 
     @classmethod
     def default(cls, db_session: "Generator[Session, None, None]"):

@@ -17,7 +17,6 @@ if TYPE_CHECKING:
     from app.schemas.collection_schemas import CollectionRequest, CollectionResponse
     from sqlalchemy.orm import Session
 
-
 logger = get_logger(__name__)
 
 
@@ -61,8 +60,8 @@ class CollectionMixin(DatabaseMixin):
 
         orderable = self._get_orderable(ModelClass, order_by, order_dir)
         query = select(ModelClass)
-        if hasattr(ModelClass, "is_deleted"):
-            query = query.where(ModelClass.is_deleted == False)
+        if hasattr(ModelClass, "deleted"):
+            query = query.where(ModelClass.deleted == False)
         query = ModelClass.apply_access_predicate(query, actor, "read")
 
         if power_filter:
