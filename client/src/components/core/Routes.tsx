@@ -61,7 +61,7 @@ function withAuthNavbarRollbar(name: string, children: ReactNode): ReactNode {
 // ==========================================
 export default function AppRoutes() {
     const {user} = useAuth()
-    const navigateToDefault = () => user ? <Navigate to={'/home'}/> : <Navigate to="/login"/>
+    const navigateToDefault = () => user ? <Navigate to={'/chats'}/> : <Navigate to="/login"/>
 
     return (
         <Routes>

@@ -7,7 +7,7 @@ else
   npm run build
 fi
 if [ "$1" = "deploy" ]; then
-  echo "this is a depoyment so not running dev server"
+  echo "this is a deployment so not running dev server"
   exit 0
 fi
 npx vite serve --host 0.0.0.0

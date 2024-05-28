@@ -1,6 +1,6 @@
 from typing import Optional, TYPE_CHECKING, List, Type
+
 from sqlmodel import Field, Relationship
-from uuid import UUID
 
 from app.models.base import Base
 

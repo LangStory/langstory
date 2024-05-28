@@ -7,6 +7,7 @@ export const URLS = {
     MAGIC_LINK_LOGIN: (id: string, slug: string): string => `${BASE_URL}/login/magic-link/${id}/${slug}`,
     REQUEST_MAGIC_LINK: (): string => `${BASE_URL}/login/magic-link`,
     ORGANIZATIONS: (): string => `${V1}/organizations`,
+    LIST_PROJECTS: (): string => `${V1}/projects`,
     GET_CHAT: (id: string): string => `${V1}/chats/${id}`,
     CREATE_NEW_CHAT: (): string => `${V1}/chats`,
 }

@@ -17,7 +17,6 @@ if TYPE_CHECKING:
     from app.schemas.collection_schemas import CollectionRequest, CollectionResponse
     from sqlalchemy.orm import Session
 
-
 logger = get_logger(__name__)
 
 

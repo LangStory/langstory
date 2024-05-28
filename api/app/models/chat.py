@@ -1,16 +1,17 @@
 from typing import Optional, Union, List, Literal, TYPE_CHECKING
 from uuid import UUID
-from sqlalchemy import select
-from sqlmodel import Field, Session, Relationship
+
+from sqlmodel import Field, Relationship
 
 from app.models.base import AuditedBase
-from app.models.event import Message
+
+from app.models.project import Project
 
 if TYPE_CHECKING:
     from sqlalchemy.sql.selectable import Select
     from app.schemas.user_schemas import ScopedUser
     from app.schemas.user_schemas import User
-    from app.models.project import Project
+
 
 class Chat(AuditedBase, table=True):
     name: str = Field(..., description="The name of the chat")
@@ -23,14 +24,15 @@ class Chat(AuditedBase, table=True):
         description="The ID of the project this chat belongs to",
     )
     project: "Project" = Relationship()
-    messages: List["Message"] = Relationship(back_populates="chat", sa_relationship_kwargs={"lazy":"dynamic"})
+
+    # messages: List["Message"] = Relationship(back_populates="chat", sa_relationship_kwargs={"lazy":"dynamic"})
 
     @classmethod
     def apply_access_predicate(
-        cls,
-        query: "Select",
-        actor: Union["ScopedUser", "User"],
-        access: List[Literal["read", "write", "admin"]],
+            cls,
+            query: "Select",
+            actor: Union["ScopedUser", "User"],
+            access: List[Literal["read", "write", "admin"]],
     ) -> "Select":
         """applies a WHERE clause restricting results to the given actor and access level"""
         del access  # not used by default, will be used for more complex access control
@@ -40,4 +42,4 @@ class Chat(AuditedBase, table=True):
         )
         if not org_uid:
             raise ValueError("object %s has no organization accessor", actor)
-        return query.where(cls.project.organization_id == org_uid)
+        return query.join(Project).where(Project.organization_id == org_uid)

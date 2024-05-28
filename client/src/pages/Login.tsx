@@ -3,10 +3,11 @@ import { Link, useNavigate } from 'react-router-dom'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import { StatusCodes } from 'http-status-codes'
 import { useRollbar } from '@rollbar/react'
-import  RefreshTokenResponse  from '../types/Auth.ts'
-import { STORAGE_KEYS, storeValue } from '../lib/session-manager.ts'
-import { useAuth } from '../hooks/use-auth.tsx'
-import { URLS } from '../lib/constants.ts'
+import RefreshTokenResponse from 'types/Auth.ts'
+import { STORAGE_KEYS, storeValue } from 'lib/session-manager.ts'
+import { URLS } from 'lib/constants.ts'
+import { useAuth } from 'hooks/use-auth.tsx'
+import logo from 'assets/yin-yang.png'
 
 function Login() {
     const navigate = useNavigate()
@@ -26,6 +27,7 @@ function Login() {
             formData.append('password', password)
             try {
                 const response: AxiosResponse<RefreshTokenResponse> = await axios.post<RefreshTokenResponse>(URLS.LOGIN(), formData)
+                debugger
                 if (response.status === StatusCodes.OK) {
                     const token: string = response.data.token
                     storeValue(STORAGE_KEYS.REFRESH_TOKEN, token)
@@ -33,7 +35,7 @@ function Login() {
                     navigate('/chats')
                 } else setError('Couldn\'t log in.')
             } catch (e) {
-                const error = e as AxiosError
+                const error: AxiosError = e as AxiosError
                 if (error.request && error.request.status === StatusCodes.UNAUTHORIZED) setError('Incorrect Email or Password')
                 else {
                     setError((e as Error).message)
@@ -44,16 +46,21 @@ function Login() {
     }
 
     return (
-        <div className="h-screen sm:bg-white md:bg-gray-100 font-droid text-slate-900">
+        <div className="h-screen sm:bg-white md:bg-gray-100 font-ibm text-slate-900">
 
             <div className="flex min-h-full flex-1 flex-col justify-center py-12 sm:px-6 lg:px-8">
                 <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                    <h2 className="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+                    <div className="flex space-x-4 justify-center items-center">
+                        <img src={logo} alt="Logo" className="h-8 w-8"/>
+                        <h1 className="text-3xl font-bold text-gray-900">LangStory</h1>
+                    </div>
+
+                    <h2 className="mt-10 text-center text-lg font-bold leading-9 tracking-tight text-gray-900">
                         Sign in to your account
                     </h2>
                 </div>
 
-                <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]">
+                <div className="mt-3 sm:mx-auto sm:w-full sm:max-w-[480px]">
                     <div className="bg-white px-6 py-12 md:shadow sm:rounded-lg sm:px-12">
                         <form className="space-y-6" onSubmit={async (event: FormEvent<HTMLFormElement>) => await onSubmit(event)}>
                             <div>
@@ -93,7 +100,7 @@ function Login() {
                             <div className="flex flex-col items-center">
                                 <div className="w-full my-4 text-red-500 text-sm text-center">{error}</div>
                                 <div className="w-full text-sm leading-6 text-right">
-                                    <Link to="/magic-link " className="font-semibold text-blue-500 hover:text-blue-500">
+                                    <Link to="/magic-link " className="font-semibold text-violet-600 hover:text-blue-500">
                                         Sign in with Magic Link
                                     </Link>
                                 </div>
@@ -102,7 +109,7 @@ function Login() {
                             <div>
                                 <button
                                     type="submit"
-                                    className="flex w-full justify-center rounded-md bg-blue-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+                                    className="flex w-full justify-center rounded-md bg-violet-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
                                 >
                                     Sign in
                                 </button>

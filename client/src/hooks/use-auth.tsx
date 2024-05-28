@@ -3,7 +3,7 @@ import { jwtDecode } from 'jwt-decode'
 import { AuthJwtPayload, RefreshJwtPayload } from '../lib/langstory-jwt-decode'
 import { getValue, STORAGE_KEYS, storeValue } from '../lib/session-manager'
 import { useRollbarPerson } from '@rollbar/react'
-import RefreshTokenResponse  from '../types/Auth.ts'
+import RefreshTokenResponse from '../types/Auth.ts'
 import { StatusCodes } from 'http-status-codes'
 import { URLS } from '../lib/constants'
 import mixpanel from 'mixpanel-browser'
@@ -24,22 +24,21 @@ export function AuthProvider({children}: { children: ReactNode }) {
     const [error, setError] = useState<string>('')
     useRollbarPerson(user as object)
 
-
-    async function getNewAuthToken(token: string){
+    async function getNewAuthToken(token: string) {
         try {
-            const formData = new FormData()
-            formData.append('token', token)
-            const response: AxiosResponse<RefreshTokenResponse> = await axios.post<RefreshTokenResponse>(URLS.REFRESH_TOKEN(), formData)
+            const response: AxiosResponse<RefreshTokenResponse> = await axios.post<RefreshTokenResponse>(URLS.REFRESH_TOKEN(), {token})
             if (response.status === StatusCodes.OK) {
-                storeValue(STORAGE_KEYS.ACCESS_TOKEN, response.data.token)
-                const token: string = response.data.token
-                const email: string = response.data.data.user.email_address || 'UNDEFINED_USER'
-                const name: string = `${response.data.data.user.first_name} ${response.data.data.user.last_name}`  || 'UNDEFINED_NAME'
-                storeValue(STORAGE_KEYS.ACCESS_TOKEN, token)
-                mixpanel.identify(email)
-                mixpanel.people.set_once({$email: email, $name: name})
-                mixpanel.people.set({email})
-                checkToken()
+                const data: RefreshTokenResponse = response.data
+                if (data.data) {
+                    const token: string = data.token
+                    const email: string = data.data.user.email_address || 'UNDEFINED_USER'
+                    const name: string = `${data.data.user.first_name} ${data.data.user.last_name}` || 'UNDEFINED_NAME'
+                    storeValue(STORAGE_KEYS.ACCESS_TOKEN, token)
+                    mixpanel.identify(email)
+                    mixpanel.people.set_once({$email: email, $name: name})
+                    mixpanel.people.set({email})
+                    await checkToken()
+                }
             } else setError('Couldn\'t log in.')
         } catch (e) {
             const error = e as AxiosError
@@ -50,7 +49,7 @@ export function AuthProvider({children}: { children: ReactNode }) {
         }
     }
 
-    async function refreshToken(){
+    async function refreshToken() {
         const token: string = getValue(STORAGE_KEYS.REFRESH_TOKEN)
         if (token) {
             try {
@@ -87,11 +86,12 @@ export function AuthProvider({children}: { children: ReactNode }) {
                 setUser(null)
             }
         } else {
-            setUser(null)
+            await refreshToken()
         }
     }
+
     useEffect(() => {
-        checkToken()
+        checkToken().then()
         setLoading(false)
     }, [])
 
