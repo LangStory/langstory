@@ -27,7 +27,6 @@ function Login() {
             formData.append('password', password)
             try {
                 const response: AxiosResponse<RefreshTokenResponse> = await axios.post<RefreshTokenResponse>(URLS.LOGIN(), formData)
-                debugger
                 if (response.status === StatusCodes.OK) {
                     const token: string = response.data.token
                     storeValue(STORAGE_KEYS.REFRESH_TOKEN, token)
@@ -50,6 +49,10 @@ function Login() {
 
             <div className="flex min-h-full flex-1 flex-col justify-center py-12 sm:px-6 lg:px-8">
                 <div className="sm:mx-auto sm:w-full sm:max-w-md">
+
+                    {/*=================================*/}
+                    {/*LOGO*/}
+                    {/*=================================*/}
                     <div className="flex space-x-4 justify-center items-center">
                         <img src={logo} alt="Logo" className="h-8 w-8"/>
                         <h1 className="text-3xl font-bold text-gray-900">LangStory</h1>
@@ -62,8 +65,16 @@ function Login() {
 
                 <div className="mt-3 sm:mx-auto sm:w-full sm:max-w-[480px]">
                     <div className="bg-white px-6 py-12 md:shadow sm:rounded-lg sm:px-12">
+
+                        {/*=================================*/}
+                        {/*LOGIN FORM*/}
+                        {/*=================================*/}
                         <form className="space-y-6" onSubmit={async (event: FormEvent<HTMLFormElement>) => await onSubmit(event)}>
                             <div>
+
+                                {/*=================================*/}
+                                {/*EMAIL INPUT*/}
+                                {/*=================================*/}
                                 <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
                                     Email address
                                 </label>
@@ -81,6 +92,10 @@ function Login() {
                             </div>
 
                             <div>
+
+                                {/*=================================*/}
+                                {/*PASSWORD INPUT*/}
+                                {/*=================================*/}
                                 <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
                                     Password
                                 </label>
@@ -98,7 +113,16 @@ function Login() {
                             </div>
 
                             <div className="flex flex-col items-center">
+
+                                {/*=================================*/}
+                                {/*ERROR MESSAGE*/}
+                                {/*=================================*/}
                                 <div className="w-full my-4 text-red-500 text-sm text-center">{error}</div>
+
+
+                                {/*=================================*/}
+                                {/*MAGIC LINK SING IN*/}
+                                {/*=================================*/}
                                 <div className="w-full text-sm leading-6 text-right">
                                     <Link to="/magic-link " className="font-semibold text-violet-600 hover:text-blue-500">
                                         Sign in with Magic Link
@@ -107,6 +131,10 @@ function Login() {
                             </div>
 
                             <div>
+
+                                {/*=================================*/}
+                                {/*SIGN IN BUTTON*/}
+                                {/*=================================*/}
                                 <button
                                     type="submit"
                                     className="flex w-full justify-center rounded-md bg-violet-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
