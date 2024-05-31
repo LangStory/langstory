@@ -4,9 +4,8 @@ from pydantic import HttpUrl
 from sqlmodel import Field, Column, String, Relationship
 
 from app.models.base import Base
+from app.models.organization import Organization
 
-if TYPE_CHECKING:
-    from app.models.event import UserMessage
 
 
 class Persona(Base, table=True):
@@ -14,12 +13,25 @@ class Persona(Base, table=True):
     description: Optional[str] = Field(
         default=None, description="A description of the persona"
     )
-    project_id: UUID = Field(
+    _organizataion_uid: UUID = Field(
         ...,
-        foreign_key="project.uid",
-        description="The ID of the project this persona belongs to",
+        foreign_key="organization.uid",
+        description="The ID of the organization this persona belongs to",
     )
+
     avatar_url: Optional[HttpUrl] = Field(
         None, description="The URL of the persona's avatar", sa_column=Column(String)
     )
-    user_messages: list["UserMessage"] = Relationship(back_populates="persona")
+
+    @property
+    def organization_id(self) -> str:
+        if uid := self._organization_uid:
+            return f"organization-{uid}"
+        return None
+
+    @organization_id.setter
+    def organization_id(self, value:str) -> None:
+        self._organization_uid = Organization.to_uid(value)
+
+    # relationships
+    organization: "Organization" = Relationship(join_column="_organization_uid", back_populates="personas")

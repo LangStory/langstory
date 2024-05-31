@@ -29,6 +29,7 @@ class Organization(Base, table=True):
 
     @classmethod
     def default(cls, db_session: "Generator[Session, None, None]"):
+        """manages the default org lookup"""
         if org := db_session.query(cls).first():
             return org
         return Organization(name=settings.organization_name).create(db_session)

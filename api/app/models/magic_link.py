@@ -19,9 +19,20 @@ class MagicLink(Base, table=True):
     expiration: datetime = Field(
         default_factory=ten_minutes, description="The expiration date of the magic link"
     )
-    user_uid: UUID = Field(
+    _user_uid: UUID = Field(
         ..., foreign_key="user.uid", description="The user this magic link is for"
     )
+
+    @property
+    def user_id(self) -> str:
+        if uid := self._user_uid:
+            return f"user-{uid}"
+        return None
+
+    @user_id.setter
+    def user_id(self, value:str) -> None:
+        self._user_uid = User.to_uid(value)
+
 
     # relationships
     user: "User" = Relationship(sa_relationship_kwargs={"lazy": "joined"})
@@ -32,9 +43,11 @@ class MagicLink(Base, table=True):
 
     @classmethod
     def clear_for_user(cls, db_session: "Session", user_uid: UUID):
-        db_session.query(cls).filter(cls.user_uid == user_uid).delete()
+        db_session.query(cls).filter(cls._user_uid == user_uid).delete()
         db_session.commit()
 
     @classmethod
-    def read(cls, db_session: "Session", user_uid: "UUID") -> Optional["MagicLink"]:
-        return db_session.query(cls).where(cls.user_uid == user_uid).one()
+    def read(cls, db_session: "Session", identifier: str) -> Optional["MagicLink"]:
+        # look up by user_id, not the magic link id
+        user_uid = User.to_uid(identifier)
+        return db_session.query(cls).where(cls._user_uid == user_uid).one_or_none()

@@ -19,11 +19,22 @@ class Project(AuditedBase, table=True):
     description: Optional[str] = Field(
         default=None, description="A description of the project"
     )
-    organization_id: UUID = Field(
+    _organization_uid: UUID = Field(
         ...,
         foreign_key="organization.uid",
         description="The ID of the organization that owns this project",
     )
 
+    @property
+    def organization_id(self) -> str:
+        if uid := self._organization_uid:
+            return f"organization-{uid}"
+        return None
+
+    @organization_id.setter
+    def organization_id(self, value:str) -> None:
+        self._organization_uid = Organization.to_uid(value)
+
     # relationships
-    organization: Organization = Relationship(back_populates="projects")
+    organization: Organization = Relationship(join_column="_organization_uid" back_populates="projects")
+
