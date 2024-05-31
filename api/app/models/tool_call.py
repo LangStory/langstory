@@ -24,10 +24,10 @@ class ToolCall(Base, table=True):
     )
 
     # relationship
-    _tool_uid: UUID = Field(
+    fkey_tool_uid: UUID = Field(
         ..., foreign_key="tool.uid", description="The ID of the tool being called"
     )
-    _assistant_message_uid: UUID = Field(
+    fkey_assistant_message_uid: UUID = Field(
         ...,
         foreign_key="assistantmessage.uid",
         description="The assistant message associated with this tool call",
@@ -35,24 +35,23 @@ class ToolCall(Base, table=True):
 
     @property
     def tool_id(self) -> str:
-        if uid := self._tool_uid:
+        if uid := self.fkey_tool_uid:
             return f"tool-{uid}"
         return None
 
     @tool_id.setter
     def tool_id(self, value:str) -> None:
-        self._tool_uid = Tool.to_uid(value)
+        self.fkey_tool_uid = Tool.to_uid(value)
 
-    @property
     def assistant_message_id(self) -> str:
-        if uid := self._assistant_message_uid:
+        if uid := self.fkey_assistant_message_uid:
             return f"assistantmessage-{uid}"
         return None
 
     @assistant_message_id.setter
     def assistant_message_id(self, value:str) -> None:
-        self._assistant_message_uid = AssistantMessage.to_uid(value)
+        self.fkey_assistant_message_uid = AssistantMessage.to_uid(value)
 
     # relationships
-    assistant_message: AssistantMessage = Relationship(join_column="_assistant_message_uid", back_populates="tool_calls")
-    tool: Tool = Relationship(join_column="_tool_uid", back_populates="tool_calls")
+    assistant_message: AssistantMessage = Relationship(join_column="fkey_assistant_message_uid", back_populates="tool_calls")
+    tool: Tool = Relationship(join_column="fkey_tool_uid", back_populates="tool_calls")

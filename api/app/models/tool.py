@@ -19,7 +19,7 @@ class Tool(Base, table=True):
     description: Optional[str] = Field(
         default=None, description="A displayable description of the tool"
     )
-    _project_uid: UUID = Field(
+    fkey_project_uid: UUID = Field(
         ...,
         foreign_key="project.uid",
         description="The ID of the project this tool belongs to",
@@ -27,10 +27,10 @@ class Tool(Base, table=True):
 
     @property
     def project_id(self) -> str:
-        if uid := self._project_uid:
+        if uid := self.fkey_project_uid:
             return f"project-{uid}"
         return None
 
     @project_id.setter
     def project_id(self, value:str) -> None:
-        self._project_uid = Project.to_uid(value)
+        self.fkey_project_uid = Project.to_uid(value)

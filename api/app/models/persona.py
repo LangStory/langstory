@@ -13,7 +13,7 @@ class Persona(Base, table=True):
     description: Optional[str] = Field(
         default=None, description="A description of the persona"
     )
-    _organizataion_uid: UUID = Field(
+    fkey_organization_uid: UUID = Field(
         ...,
         foreign_key="organization.uid",
         description="The ID of the organization this persona belongs to",
@@ -25,13 +25,13 @@ class Persona(Base, table=True):
 
     @property
     def organization_id(self) -> str:
-        if uid := self._organization_uid:
+        if uid := self.fkey_organization_uid:
             return f"organization-{uid}"
         return None
 
     @organization_id.setter
     def organization_id(self, value:str) -> None:
-        self._organization_uid = Organization.to_uid(value)
+        self.fkey_organization_uid = Organization.to_uid(value)
 
     # relationships
-    organization: "Organization" = Relationship(join_column="_organization_uid", back_populates="personas")
+    organization: "Organization" = Relationship(join_column="fkey_organization_uid", back_populates="personas")

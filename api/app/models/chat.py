@@ -17,7 +17,7 @@ class Chat(AuditedBase, table=True):
     description: Optional[str] = Field(
         default=None, description="A description of the chat"
     )
-    _project_uid: UUID = Field(
+    fkey_project_uid: UUID = Field(
         ...,
         foreign_key="project.uid",
         description="The ID of the project this chat belongs to",
@@ -25,17 +25,17 @@ class Chat(AuditedBase, table=True):
 
     @property
     def project_id(self) -> str:
-        if uid := self._project_uid:
+        if uid := self.fkey_project_uid:
             return f"project-{uid}"
         return None
 
     @project_id.setter
     def project_id(self, value:str) -> None:
-        self._project_uid = Project.to_uid(value)
+        self.fkey_project_uid = Project.to_uid(value)
 
 
     # relationships
-    project: "Project" = Relationship(join_column="_project_uid", back_populates="chats")
+    project: "Project" = Relationship(join_column="fkey_project_uid", back_populates="chats")
 
 
 

@@ -19,7 +19,7 @@ class MagicLink(Base, table=True):
     expiration: datetime = Field(
         default_factory=ten_minutes, description="The expiration date of the magic link"
     )
-    _user_uid: UUID = Field(
+    fkey_user_uid: UUID = Field(
         ..., foreign_key="user.uid", description="The user this magic link is for"
     )
 
