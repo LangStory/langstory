@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from uuid import UUID
 
 from pydantic import HttpUrl
@@ -7,7 +7,8 @@ from sqlmodel import Field, Column, Relationship
 
 from app.models.base import AuditedBase
 from app.models.organization import Organization
-
+if TYPE_CHECKING:
+    from app.models.chat import Chat
 
 class Project(AuditedBase, table=True):
     name: str = Field(..., description="The name of the project")
@@ -36,5 +37,6 @@ class Project(AuditedBase, table=True):
         self.fkey_organization_uid = Organization.to_uid(value)
 
     # relationships
-    organization: Organization = Relationship(sa_relationship_kwargs={"foreign_keys":["fkey_organization_uid"]}, back_populates="projects")
+    organization: Organization = Relationship(sa_relationship_kwargs={"primaryjoin":"Project.fkey_organization_uid==Organization.uid"}, back_populates="projects")
+    chats: list["Chat"] = Relationship(back_populates="project")
 

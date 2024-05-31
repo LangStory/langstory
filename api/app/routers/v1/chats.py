@@ -38,7 +38,7 @@ def update_chat(
     chat_id: str,
     chat_data: ChatCreate,
 ):
-    chat = Chat.read(id_=chat_id)
+    chat = Chat.read(chat_id)
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
 
@@ -46,7 +46,7 @@ def update_chat(
 
 @router.delete("/{chat_id}")
 def delete_chat(chat_id: str, db: Session = Depends(get_db_session)):
-    chat = Chat.read(db, id_=chat_id)
+    chat = Chat.read(db, chat_id)
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
     chat.deleted = True
@@ -65,7 +65,7 @@ def add_message(
 
 @router.get("/{chat_id}/messages", response_model=List[MessageRead])
 def get_messages(chat_id: str, db: Session = Depends(get_db_session)):
-    chat = Chat.read(db, id_=chat_id)
+    chat = Chat.read(db, chat_id)
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
     if not chat.messages:

@@ -35,7 +35,7 @@ class Chat(AuditedBase, table=True):
 
 
     # relationships
-    project: "Project" = Relationship(sa_relationship_kwargs={"foreign_keys":["fkey_project_uid"]}, back_populates="chats")
+    project: "Project" = Relationship(sa_relationship_kwargs={"primaryjoin":"Chat.fkey_project_uid==Project.uid"}, back_populates="chats")
 
 
 

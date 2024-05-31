@@ -10,7 +10,7 @@ from app.settings import settings
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
     from app.models.project import Project
-
+    from app.models.persona import Persona
 
 class Organization(Base, table=True):
     name: str = Field(..., description="The name of the organization")
@@ -26,6 +26,7 @@ class Organization(Base, table=True):
 
     # relationships
     projects: List["Project"] = Relationship(back_populates="organization", sa_relationship_kwargs={"lazy":"dynamic"})
+    personas: List["Persona"] = Relationship(back_populates="organization", sa_relationship_kwargs={"lazy":"dynamic"})
 
     @classmethod
     def default(cls, db_session: "Generator[Session, None, None]"):

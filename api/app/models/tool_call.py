@@ -53,5 +53,5 @@ class ToolCall(Base, table=True):
         self.fkey_assistant_message_uid = Base.to_uid(value, prefix="assistantmessage")
 
     # relationships
-    assistant_message: "AssistantMessage" = Relationship(sa_relationship_kwargs={"foreign_keys":["fkey_assistant_message_uid"]}, back_populates="tool_calls")
-    tool: "Tool" = Relationship(sa_relationship_kwargs={"foreign_keys":["fkey_tool_uid"]}, back_populates="tool_calls")
+    assistant_message: "AssistantMessage" = Relationship(sa_relationship_kwargs={"primaryjoin": "ToolCall.fkey_assistant_message_uid == AssistantMessage.uid"})
+    tool: "Tool" = Relationship(sa_relationship_kwargs={"primaryjoin":"ToolCall.fkey_tool_uid == Tool.uid"})

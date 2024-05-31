@@ -72,8 +72,8 @@ class ScopedUser:
     def refresh(self, db_session: "Session") -> "ScopedUser":
         """refresh the user object from the database"""
         return ScopedUser(
-            user=User.read(db_session, id_=self.user.id),
-            organization=Organization.read(db_session, id_=self.organization.id),
+            user=User.read(db_session, self.user.id),
+            organization=Organization.read(db_session, self.organization.id),
         )
 
     def to_pydantic(self) -> Type["BaseSchema"]:
