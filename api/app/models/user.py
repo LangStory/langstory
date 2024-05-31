@@ -1,8 +1,8 @@
-from typing import Optional
+from typing import Optional, Union
 from uuid import UUID
 
 from pydantic import HttpUrl
-from sqlalchemy import String
+from sqlalchemy import String, select
 from sqlmodel import Field, Column, Relationship
 
 from app.models.base import Base
@@ -40,18 +40,9 @@ class User(Base, table=True):
     def read(
         cls,
         db_session,
-        id_: Optional[str] = None,
-        uid: Optional[UUID] = None,
-        email_address: Optional[str] = None,
+        identifier: Union[str, UUID] = None, 
     ):
-        if id_:
-            try:
-                uid = UUID(id_.split("user-")[1])
-            except (IndexError, ValueError) as e:
-                raise ValueError("id_ must be a valid user id")
-        if uid:
-            return super().read(db_session, uid=uid)
-        if not email_address:
-            raise ValueError("id_, uid or email_address is required")
-        with db_session as session:
-            return session.query(cls).filter(cls.email_address == email_address).one()
+        # email address lookup
+        if "@" in identifier:
+            return db_session.query(cls).filter(cls.email_address == identifier).one()
+        return super().read(db_session, identifier)

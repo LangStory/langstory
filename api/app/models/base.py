@@ -1,8 +1,9 @@
-from typing import Optional, TYPE_CHECKING, Type, Self, List, Literal, Union
+from typing import Optional, TYPE_CHECKING, Type, Self, List, Literal, Union, Any
 from datetime import datetime
 from sqlmodel import Field, SQLModel
 from pydantic import ConfigDict
-from sqlalchemy import func
+from sqlalchemy import func, select
+from sqlalchemy.exc import NoResultFound
 from uuid import UUID, uuid4
 from humps import depascalize, camelize
 
@@ -49,13 +50,14 @@ class Base(SQLModel):
 
     @classmethod
     def read(
-        cls, db_session: "Session", uid: Optional[UUID] = None, **kwargs
+        cls, db_session: "Session",
+        identifier: Union[str, UUID], **kwargs
     ) -> Type[Self]:
         del kwargs
-        if uid is None:
-            raise ValueError("uid is required")
-        with db_session as session:
-            return session.query(cls).where(cls.uid == uid).one()
+        identifier = cls.to_uid(identifier)
+        if found := db_session.get(cls, identifier):
+            return found
+        raise NoResultFound(f"{cls.__name__} with id {identifier} not found")
 
     def create(self, db_session: "Session") -> Type[Self]:
         with db_session as session:
@@ -70,16 +72,27 @@ class Base(SQLModel):
 
     def update(self, db_session: "Session") -> Type[Self]:
         with db_session as session:
+            session.add(self)
             session.commit()
             session.refresh(self)
             return self
 
     @classmethod
-    def id_to_uid(cls, id: str) -> UUID:
+    def to_uid(cls, identifier: Union[str, UUID], prefix:Optional[str] = None) -> UUID:
+        """takes any possible format of a classes ID and returns the UUID
+        Args:
+            identifier (Union[str, UUID]): the flexible identifier to convert
+            prefix (Optional[str], optional): makes it possible to set the class name and avoid circular imports
+        """
         try:
-            return UUID(id.split(f"{cls.__name__.lower()}-")[-1])
-        except (ValueError, IndexError):
-            raise ValueError(f"Invalid ID: {id}")
+            # a valid ID for the class was passed, or the uid was passed as a string
+            uid = UUID(identifier.split(f"{cls.__name__.lower()}-")[-1])
+        except AttributeError:
+            # a UUID was passed
+            uid = identifier
+        except ValueError as e:
+            raise ValueError(f"{identifier} is not a valid id for {cls.__name__}") from e
+        return uid
 
     @classmethod
     def apply_access_predicate(
@@ -99,10 +112,10 @@ class Base(SQLModel):
         return query.where(cls.organization_id == org_uid)
 
     @classmethod
-    def related_lookup(cls, value: str):
+    def related_lookup(cls, value: Any):
         """When searching a related field that targets a model class, this is the default sql constructor for that search.
         Note: the ilike values need to be managed during lookup build
-        Example: for a user, we want to look up first_name, last_name, username, and full name in that order. so override on User would be:
+        Example: for a user, if we wanted to look up first_name, last_name, username, and full name in that order, the override on User would be:
         return (
             cls.first_name.ilike(value)
             | cls.last_name.ilike(value)
@@ -110,18 +123,45 @@ class Base(SQLModel):
             | (cls.first_name + " " + cls.last_name).ilike(value)
         )
         """
-        return cls.uid == value
+        return str(cls.uid) == str(value)
 
 
 class AuditedBase(Base):
     __abstract__ = True
-    created_by: Optional[UUID] = Field(
+
+    fkey_creator_uid: Optional[UUID] = Field(
         default=None,
         foreign_key="user.uid",
         description="The ID of the user that owns this entity",
     )
-    last_updated_by: Optional[UUID] = Field(
+    fkey_last_updater_uid: Optional[UUID] = Field(
         default=None,
         foreign_key="user.uid",
         description="The ID of the user that last updated this entity",
     )
+
+    @property
+    def creator_id(self) -> Optional[str]:
+        if uid := self.fkey_creator_uid:
+            return f"user-{uid}"
+        return None
+
+    @creator_id.setter
+    def creator_id(self, value:Union[str, UUID, "User", "ScopedUser"]) -> None:
+        try:
+            uid = getattr(value, "user", value).uid
+        except AttributeError:
+            uid = self.to_uid(value)
+        self.fkey_creator_uid = uid
+
+    @property
+    def updater_id(self) -> Optional[str]:
+        return f"user-{self.fkey_last_updater_uid}"
+
+    @updater_id.setter
+    def updater_id(self, value:Union[str, UUID, "User", "ScopedUser"]) -> None:
+        try:
+            uid = getattr(value, "user", value).uid
+        except AttributeError:
+            uid = self.to_uid(value)
+        self.fkey_last_updater_uid = uid

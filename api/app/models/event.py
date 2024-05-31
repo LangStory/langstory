@@ -74,7 +74,7 @@ class UserMessage(Message, table=True):
         foreign_key="persona.uid",
         description="The optional persona ID for user messages",
     )
-    persona: Optional[Persona] = Relationship(back_populates="user_messages")
+    persona: Optional[Persona] = Relationship()
 
     @property
     def name(self) -> str:
@@ -93,11 +93,12 @@ class AssistantMessage(Message, table=True):
 
 class ToolMessage(Message, table=True):
     role: MessageRole = Field(MessageRole.tool, description="The role of the message")
-    tool_call_request_id: Optional[UUID] = Field(
-        default=None,
-        foreign_key="toolcall.request_id",
-        description="The tool call request ID if a tool call initiated this response",
-    )
+    # note - put this back in, this is only to get throught the migration SINCE we're refactoring this all anyway
+    #tool_call_request_id: Optional[str] = Field(
+        #default=None,
+        #foreign_key="toolcall.request_id",
+        #description="The tool call request ID if a tool call initiated this response",
+    #)
     thread: Optional[Thread] = Relationship(back_populates="tool_messages")
 
 

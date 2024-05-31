@@ -24,7 +24,7 @@ class AuthenticateUsernamePasswordFlow(AuthMixin, PasswordMixin):
     def authenticate(self, email_address: str, password: str) -> User:
         """authenticate the user or raise an exception"""
         try:
-            user = User.read(self.db_session, email_address=email_address)
+            user = User.read(self.db_session, email_address)
             if self.password_context.verify(password, user.password):
                 return user
             raise ValueError("password is incorrect")
@@ -63,7 +63,7 @@ class JWTTokenFlow(AuthMixin):
             decoded["exp"] > datetime.now(timezone.utc).timestamp()
         ), "token is expired"
         try:
-            user = User.read(self.db_session, id_=decoded["sub"])
+            user = User.read(self.db_session, decoded["sub"])
         except (MultipleResultsFound, NoResultFound, ValueError) as e:
             unauthorized(e=e, message="User not found")
         org_data = {}

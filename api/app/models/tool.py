@@ -4,6 +4,7 @@ from sqlmodel import Field, Column
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app.models.base import Base
+from app.models.project import Project
 
 
 class Tool(Base, table=True):
@@ -18,8 +19,18 @@ class Tool(Base, table=True):
     description: Optional[str] = Field(
         default=None, description="A displayable description of the tool"
     )
-    project_id: UUID = Field(
+    fkey_project_uid: UUID = Field(
         ...,
         foreign_key="project.uid",
         description="The ID of the project this tool belongs to",
     )
+
+    @property
+    def project_id(self) -> str:
+        if uid := self.fkey_project_uid:
+            return f"project-{uid}"
+        return None
+
+    @project_id.setter
+    def project_id(self, value:str) -> None:
+        self.fkey_project_uid = Project.to_uid(value)
