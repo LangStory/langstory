@@ -30,6 +30,7 @@ def create_chat(
     actor: ScopedUser = Depends(get_current_user),
 ):
     controller = ChatController(db_session)
+
     return controller.create_chat_for_actor(chat_data, actor)
 
 @router.put("/{chat_id}", response_model=ChatRead)
