@@ -34,4 +34,4 @@ class Persona(Base, table=True):
         self.fkey_organization_uid = Organization.to_uid(value)
 
     # relationships
-    organization: "Organization" = Relationship(join_column="fkey_organization_uid", back_populates="personas")
+    organization: "Organization" = Relationship(sa_relationship_kwargs={"foreign_keys":["fkey_organization_uid"]}, back_populates="personas")

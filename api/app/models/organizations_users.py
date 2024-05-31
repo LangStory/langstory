@@ -1,8 +1,6 @@
 from uuid import UUID
 from sqlmodel import Field
 from app.models.base import Base
-from app.models.user import User
-from app.models.organization import Organization
 
 
 class OrganizationsUsers(Base, table=True):
@@ -18,7 +16,7 @@ class OrganizationsUsers(Base, table=True):
 
     @user_id.setter
     def user_id(self, value:str) -> None:
-        self.fkey_user_uid = User.to_uid(value)
+        self.fkey_user_uid = Base.to_uid(value, prefix="user")
 
     @property
     def organization_id(self) -> str:
@@ -28,4 +26,4 @@ class OrganizationsUsers(Base, table=True):
 
     @organization_id.setter
     def organization_id(self, value:str) -> None:
-        self.fkey_organization_uid = Organization.to_uid(value)
+        self.fkey_organization_uid = Base.to_uid(value, prefix="organization")

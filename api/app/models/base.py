@@ -78,8 +78,12 @@ class Base(SQLModel):
             return self
 
     @classmethod
-    def to_uid(cls, identifier: Union[str, UUID]) -> UUID:
-        """takes any possible format of a classes ID and returns the UUID"""
+    def to_uid(cls, identifier: Union[str, UUID], prefix:Optional[str] = None) -> UUID:
+        """takes any possible format of a classes ID and returns the UUID
+        Args:
+            identifier (Union[str, UUID]): the flexible identifier to convert
+            prefix (Optional[str], optional): makes it possible to set the class name and avoid circular imports
+        """
         try:
             # a valid ID for the class was passed, or the uid was passed as a string
             uid = UUID(identifier.split(f"{cls.__name__.lower()}-")[-1])

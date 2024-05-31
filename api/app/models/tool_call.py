@@ -1,14 +1,13 @@
 from typing import TYPE_CHECKING
-from uuid import UUID, uuid4
+from uuid import UUID
 from sqlmodel import Field, Relationship
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app.models.base import Base
-from app.models.tool import Tool
-from app.models.event import AssistantMessage
 
 if TYPE_CHECKING:
     from app.models.event import AssistantMessage
+    from app.models.tool import Tool
 
 
 class ToolCall(Base, table=True):
@@ -43,6 +42,7 @@ class ToolCall(Base, table=True):
     def tool_id(self, value:str) -> None:
         self.fkey_tool_uid = Tool.to_uid(value)
 
+    @property
     def assistant_message_id(self) -> str:
         if uid := self.fkey_assistant_message_uid:
             return f"assistantmessage-{uid}"
@@ -50,8 +50,8 @@ class ToolCall(Base, table=True):
 
     @assistant_message_id.setter
     def assistant_message_id(self, value:str) -> None:
-        self.fkey_assistant_message_uid = AssistantMessage.to_uid(value)
+        self.fkey_assistant_message_uid = Base.to_uid(value, prefix="assistantmessage")
 
     # relationships
-    assistant_message: AssistantMessage = Relationship(join_column="fkey_assistant_message_uid", back_populates="tool_calls")
-    tool: Tool = Relationship(join_column="fkey_tool_uid", back_populates="tool_calls")
+    assistant_message: "AssistantMessage" = Relationship(sa_relationship_kwargs={"foreign_keys":["fkey_assistant_message_uid"]}, back_populates="tool_calls")
+    tool: "Tool" = Relationship(sa_relationship_kwargs={"foreign_keys":["fkey_tool_uid"]}, back_populates="tool_calls")
