@@ -125,12 +125,12 @@ class Base(SQLModel):
 class AuditedBase(Base):
     __abstract__ = True
 
-    _creator_uid: Optional[UUID] = Field(
+    fkey_creator_uid: Optional[UUID] = Field(
         default=None,
         foreign_key="user.uid",
         description="The ID of the user that owns this entity",
     )
-    _last_updater_uid: Optional[UUID] = Field(
+    fkey_last_updater_uid: Optional[UUID] = Field(
         default=None,
         foreign_key="user.uid",
         description="The ID of the user that last updated this entity",
@@ -138,7 +138,7 @@ class AuditedBase(Base):
 
     @property
     def creator_id(self) -> Optional[str]:
-        if uid := self._creator_uid:
+        if uid := self.fkey_creator_uid:
             return f"user-{uid}"
         return None
 
@@ -148,11 +148,11 @@ class AuditedBase(Base):
             uid = getattr(value, "user", value).uid
         except AttributeError:
             uid = self.to_uid(value)
-        self._creator_uid = uid
+        self.fkey_creator_uid = uid
 
     @property
     def updater_id(self) -> Optional[str]:
-        return f"user-{self._last_updater_uid}"
+        return f"user-{self.fkey_last_updater_uid}"
 
     @updater_id.setter
     def updater_id(self, value:Union[str, UUID, "User", "ScopedUser"]) -> None:
@@ -160,4 +160,4 @@ class AuditedBase(Base):
             uid = getattr(value, "user", value).uid
         except AttributeError:
             uid = self.to_uid(value)
-        self._last_updater_uid = uid
+        self.fkey_last_updater_uid = uid
