@@ -4,10 +4,10 @@ from sqlmodel import Field, Relationship
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app.models.base import Base
+from app.models.tool import Tool
 
 if TYPE_CHECKING:
     from app.models.event import AssistantMessage
-    from app.models.tool import Tool
 
 
 class ToolCall(Base, table=True):
@@ -54,4 +54,4 @@ class ToolCall(Base, table=True):
 
     # relationships
     assistant_message: "AssistantMessage" = Relationship(sa_relationship_kwargs={"primaryjoin": "ToolCall.fkey_assistant_message_uid == AssistantMessage.uid"})
-    tool: "Tool" = Relationship(sa_relationship_kwargs={"primaryjoin":"ToolCall.fkey_tool_uid == Tool.uid"})
+    tool: Tool = Relationship(sa_relationship_kwargs={"primaryjoin":"ToolCall.fkey_tool_uid == Tool.uid"})

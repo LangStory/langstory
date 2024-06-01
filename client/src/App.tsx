@@ -1,6 +1,5 @@
 import { ErrorBoundary, Provider } from '@rollbar/react'
 import { BrowserRouter } from 'react-router-dom'
-import Rollbar from 'rollbar'
 import { Toaster } from 'react-hot-toast'
 import init from 'lib/init.ts'
 import { AuthProvider, useAuth } from 'hooks/use-auth.tsx'

@@ -2,7 +2,7 @@ from typing import Optional, Union
 from uuid import UUID
 
 from pydantic import HttpUrl
-from sqlalchemy import String, select
+from sqlalchemy import String
 from sqlmodel import Field, Column, Relationship
 
 from app.models.base import Base
@@ -38,9 +38,9 @@ class User(Base, table=True):
 
     @classmethod
     def read(
-        cls,
-        db_session,
-        identifier: Union[str, UUID] = None, 
+            cls,
+            db_session,
+            identifier: Union[str, UUID] = None,
     ):
         # email address lookup
         if "@" in identifier:

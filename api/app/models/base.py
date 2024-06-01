@@ -50,8 +50,8 @@ class Base(SQLModel):
 
     @classmethod
     def read(
-        cls, db_session: "Session",
-        identifier: Union[str, UUID], **kwargs
+            cls, db_session: "Session",
+            identifier: Union[str, UUID], **kwargs
     ) -> Type[Self]:
         del kwargs
         identifier = cls.to_uid(identifier)
@@ -78,7 +78,7 @@ class Base(SQLModel):
             return self
 
     @classmethod
-    def to_uid(cls, identifier: Union[str, UUID], prefix:Optional[str] = None) -> UUID:
+    def to_uid(cls, identifier: Union[str, UUID], prefix: Optional[str] = None) -> UUID:
         """takes any possible format of a classes ID and returns the UUID
         Args:
             identifier (Union[str, UUID]): the flexible identifier to convert
@@ -96,10 +96,10 @@ class Base(SQLModel):
 
     @classmethod
     def apply_access_predicate(
-        cls,
-        query: "Select",
-        actor: Union["ScopedUser", "User"],
-        access: List[Literal["read", "write", "admin"]],
+            cls,
+            query: "Select",
+            actor: Union["ScopedUser", "User"],
+            access: List[Literal["read", "write", "admin"]],
     ) -> "Select":
         """applies a WHERE clause restricting results to the given actor and access level"""
         del access  # not used by default, will be used for more complex access control
@@ -147,7 +147,7 @@ class AuditedBase(Base):
         return None
 
     @creator_id.setter
-    def creator_id(self, value:Union[str, UUID, "User", "ScopedUser"]) -> None:
+    def creator_id(self, value: Union[str, UUID, "User", "ScopedUser"]) -> None:
         try:
             uid = getattr(value, "user", value).uid
         except AttributeError:
@@ -159,7 +159,7 @@ class AuditedBase(Base):
         return f"user-{self.fkey_last_updater_uid}"
 
     @updater_id.setter
-    def updater_id(self, value:Union[str, UUID, "User", "ScopedUser"]) -> None:
+    def updater_id(self, value: Union[str, UUID, "User", "ScopedUser"]) -> None:
         try:
             uid = getattr(value, "user", value).uid
         except AttributeError:

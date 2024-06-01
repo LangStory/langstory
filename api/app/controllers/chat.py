@@ -27,7 +27,7 @@ class ChatController(DatabaseMixin):
         """retrieve a chat if the actor can access it"""
         query = Chat.apply_access_predicate(select(Chat), actor, "read")
         try:
-            return self.db_session.execute(query.where(Chat.uid == chat_id).one()).scalar()
+            return self.db_session.execute(query.where(Chat.uid == chat_id)).one()
         except (NoResultFound, MultipleResultsFound) as e:
             not_found(e=e)
 
