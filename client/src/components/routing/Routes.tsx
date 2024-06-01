@@ -45,15 +45,7 @@ function withRollbarContext(name: string, children: ReactNode): ReactNode {
 }
 
 function withAuthNavbarRollbar(name: string, children: ReactNode): ReactNode {
-    return (
-        <AuthRoute>
-            <Navbar>
-                <RollbarContext context={name}>
-                    {children}
-                </RollbarContext>
-            </Navbar>
-        </AuthRoute>
-    )
+    return withAuth(withNavbar(withRollbarContext(name, children)))
 }
 
 // ==========================================
@@ -65,26 +57,33 @@ export default function AppRoutes() {
 
     return (
         <Routes>
-            {/*------- PRIVATE ROUTES -------*/}
+            {/*=================================*/}
+            {/*PRIVATE ROUTES*/}
+            {/*=================================*/}
             <Route path="/chats">
-                <Route index element={withAuth(withNavbar(<ChatsList/>))}/>
-                <Route path=":id" element={withAuth(withNavbar(<ChatComponent/>))}/>
-                {/*<Route index element={withAuthNavbarRollbar('receiving-tasks', <ChatsList/>)}/>*/}
-                {/*<Route path=":id" element={withAuthNavbarRollbar('receiving-task/details', <Chat/>)}/>*/}
-
+                <Route index element={withAuthNavbarRollbar('chats-list', <ChatsList/>)}/>
+                <Route path=":id" element={withAuthNavbarRollbar('chat', <ChatComponent/>)}/>
             </Route>
+
             <Route path="/settings" element={withAuthNavbarRollbar('settings', <Settings/>)}/>
 
 
-            {/*------- PUBLIC ROUTES -------*/}
+            {/*=================================*/}
+            {/*PUBLIC ROUTES*/}
+            {/*=================================*/}
             <Route path="login" element={withNoAuth(withRollbarContext('login', <Login/>))}/>
             <Route path="magic-link" element={withNoAuth(withRollbarContext('magic-link-login', <MagicLinkLogin/>))}/>
 
 
+            {/*=================================*/}
             {/*REDIRECT FROM AN AUTH ROUTE OR GOING TO '/' */}
+            {/*=================================*/}
             <Route index element={navigateToDefault()}/>
 
+
+            {/*=================================*/}
             {/*REDIRECT WHEN ROUTE IS NOT FOUND */}
+            {/*=================================*/}
             <Route path="*" element={navigateToDefault()}/>
         </Routes>
     )
