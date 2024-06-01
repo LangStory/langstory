@@ -1,6 +1,5 @@
 from datetime import datetime, timezone, timedelta
 from typing import Optional
-from uuid import UUID
 
 import jwt
 from sqlalchemy.exc import MultipleResultsFound, NoResultFound

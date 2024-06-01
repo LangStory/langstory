@@ -5,13 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound, MultipleResultsFound
 
 from app.models.chat import Chat
-from app.models.event import (
-    Message,
-    UserMessage,
-    AssistantMessage,
-    SystemMessage,
-    ToolMessage,
-)
+from app.models.message import Message
 from app.controllers.mixins.database_mixin import DatabaseMixin
 from app.controllers.project import ProjectController
 from app.http_errors import not_found
@@ -43,15 +37,9 @@ class ChatController(DatabaseMixin):
 
         return ChatRead.model_validate(chat)
 
-
-
     def add_message(self, chat_id: str, message_data: MessageCreate) -> Message:
-        message_class = {
-            "user": UserMessage,
-            "assistant": AssistantMessage,
-            "system": SystemMessage,
-            "tool": ToolMessage,
-        }.get(message_data.role)
+        message = Message()
+        message_class = .get(message_data.role)
 
         message = message_class(
             chat_id=chat_id, **message_data.model_dump(exclude={"role"})

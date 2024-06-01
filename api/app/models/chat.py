@@ -5,7 +5,6 @@ from sqlmodel import Field, Relationship
 from app.models.base import AuditedBase
 from app.models.project import Project
 
-
 if TYPE_CHECKING:
     from sqlalchemy.sql.selectable import Select
     from app.schemas.user_schemas import ScopedUser
@@ -24,21 +23,17 @@ class Chat(AuditedBase, table=True):
     )
 
     @property
-    def project_id(self) -> str:
+    def project_id(self) -> Optional[str]:
         if uid := self.fkey_project_uid:
             return f"project-{uid}"
         return None
 
     @project_id.setter
-    def project_id(self, value:str) -> None:
+    def project_id(self, value: str) -> None:
         self.fkey_project_uid = Project.to_uid(value)
 
-
     # relationships
-    project: "Project" = Relationship(sa_relationship_kwargs={"primaryjoin":"Chat.fkey_project_uid==Project.uid"}, back_populates="chats")
-
-
-
+    project: "Project" = Relationship(sa_relationship_kwargs={"primaryjoin": "Chat.fkey_project_uid==Project.uid"}, back_populates="chats")
 
     @classmethod
     def apply_access_predicate(

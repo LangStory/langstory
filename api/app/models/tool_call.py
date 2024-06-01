@@ -7,7 +7,7 @@ from app.models.base import Base
 from app.models.tool import Tool
 
 if TYPE_CHECKING:
-    from app.models.event import AssistantMessage
+    from app.models.message import Message
 
 
 class ToolCall(Base, table=True):
@@ -28,8 +28,13 @@ class ToolCall(Base, table=True):
     )
     fkey_assistant_message_uid: UUID = Field(
         ...,
-        foreign_key="assistantmessage.uid",
+        foreign_key="message.uid",
         description="The assistant message associated with this tool call",
+    )
+    fkey_tool_message_uid: UUID = Field(
+        ...,
+        foreign_key="message.uid",
+        description="The tool message associated with this tool call",
     )
 
     @property
@@ -39,7 +44,7 @@ class ToolCall(Base, table=True):
         return None
 
     @tool_id.setter
-    def tool_id(self, value:str) -> None:
+    def tool_id(self, value: str) -> None:
         self.fkey_tool_uid = Tool.to_uid(value)
 
     @property
@@ -49,9 +54,9 @@ class ToolCall(Base, table=True):
         return None
 
     @assistant_message_id.setter
-    def assistant_message_id(self, value:str) -> None:
+    def assistant_message_id(self, value: str) -> None:
         self.fkey_assistant_message_uid = Base.to_uid(value, prefix="assistantmessage")
 
     # relationships
-    assistant_message: "AssistantMessage" = Relationship(sa_relationship_kwargs={"primaryjoin": "ToolCall.fkey_assistant_message_uid == AssistantMessage.uid"})
-    tool: Tool = Relationship(sa_relationship_kwargs={"primaryjoin":"ToolCall.fkey_tool_uid == Tool.uid"})
+    assistant_message: "Message" = Relationship(sa_relationship_kwargs={"primaryjoin": "ToolCall.fkey_assistant_message_uid == Message.uid"})
+    tool: Tool = Relationship(sa_relationship_kwargs={"primaryjoin": "ToolCall.fkey_tool_uid == Tool.uid"})

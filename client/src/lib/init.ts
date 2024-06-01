@@ -41,7 +41,6 @@ export default function init(updatedAuth: () => void): { rollbar: Rollbar } {
         }
     )
 
-    const debouncedOfflineWarning = debounce(() => toast('You have no internet connection', {icon: '⚠️', duration: 5000}), 1000)
     axios.interceptors.response.use(undefined, (error: AxiosError) => {
         if (error.response) {
             if (error.response.status === StatusCodes.UNAUTHORIZED && window.location.pathname !== '/login') {
@@ -49,8 +48,6 @@ export default function init(updatedAuth: () => void): { rollbar: Rollbar } {
                 updatedAuth()
                 window.location.replace('/login')
             }
-        } else if ((error.toJSON() as Error).message === 'Network Error' && !window.navigator.onLine) {
-            debouncedOfflineWarning()
         } else {
             rollbar.error(error)
         }

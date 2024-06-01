@@ -3,7 +3,7 @@ from typing import Optional, Union
 from uuid import UUID
 from pydantic import Field, field_validator
 
-from app.models.event import MessageRole
+from app.models.message import MessageRole
 from app.schemas.base_schema import BaseSchema, id_regex_pattern, id_example, id_description
 
 
