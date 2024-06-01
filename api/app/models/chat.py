@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from sqlalchemy.sql.selectable import Select
     from app.schemas.user_schemas import ScopedUser
     from app.schemas.user_schemas import User
+    from app.models.message import Message
 
 
 class Chat(AuditedBase, table=True):
@@ -34,6 +35,7 @@ class Chat(AuditedBase, table=True):
 
     # relationships
     project: "Project" = Relationship(sa_relationship_kwargs={"primaryjoin": "Chat.fkey_project_uid==Project.uid"}, back_populates="chats")
+    messages: List["Message"] = Relationship(back_populates="chat", sa_relationship_kwargs={"lazy":"dynamic"})
 
     @classmethod
     def apply_access_predicate(

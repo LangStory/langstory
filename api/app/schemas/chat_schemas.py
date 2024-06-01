@@ -1,10 +1,10 @@
 from datetime import datetime
 from typing import Optional, Union, List
 from uuid import UUID
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from app.models.message import EventType
-from app.schemas.tool_call_schemas import ToolCallCreate
+from app.schemas.tool_call_schemas import ToolCallCreate, ToolCallRead
 from app.schemas.base_schema import BaseSchema, id_regex_pattern, id_example, id_description
 
 
@@ -33,15 +33,32 @@ class MessageCreate(BaseSchema):
     name: Optional[str] = Field(None, description="The name of the user", max_length=255, examples=["John Doe"])
     persona_id: Optional[str] = Field(None, pattern=id_regex_pattern("persona"), examples=id_example("persona"), description=id_description("persona"))
 
+    # TODO: fast followup here, be able to edit the tool calls as related objects on the message directly.
+
     # assistant
     tool_calls_requested: Optional[List[Optional[ToolCallCreate]]] = Field(None, description="The tool calls requested by the assistant")
 
+    # tool
+    tool_call_response: Optional[ToolCallCreate] = Field(None, description="The tool call associated with the response from executing the tool call")
 
+    @model_validator(mode="before")
+    def check_event_type_params(cls, values):
+        try:
+            if values["type"] == EventType.tool_message:
+                assert values["tool_call_response"] is not None, "tool_call_response is required for tool_message events"
+                assert values["tool_calls_requested"] is None, "tool_calls_requested is not allowed for tool_message events"
+            elif not values["type"] == EventType.assistant_message:
+                assert values["tool_calls_requested"] is None, "tool_calls_requested is not allowed for non-assistant_message events"
+            return values
+        except AssertionError as e:
+            raise ValueError(e)
 
-
-class MessageRead(BaseSchema):
+class MessageRead(MessageCreate):
     id: str = Field(..., pattern=id_regex_pattern("message"), examples=id_example("message"), description=id_description("message"))
-    role: MessageRole
-    content: str
-    timestamp: datetime
-    chat_id: str = Field(..., pattern=id_regex_pattern("chat"), examples=id_example("chat"), description=id_description("chat"))
+    chat_id: str = Field(..., pattern=id_regex_pattern("chat"), examples=id_example("chat"), description=id_description("chat"), validation_alias="chat_id")
+
+    # assistant
+    tool_calls_requested: Optional[List[Optional[Union[ToolCallRead,str]]]] = Field(None, description="The tool calls requested by the assistant")
+
+    # tool
+    tool_call_response: Optional[Union[ToolCallRead,str]] = Field(None, description="The tool call associated with the response from executing the tool call")

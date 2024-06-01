@@ -1,4 +1,3 @@
-from .base import Base
 from .archives import Archives
 from .user import User
 from .organization import Organization
