@@ -1,18 +1,23 @@
+from typing import Optional, TYPE_CHECKING, List, Union, Literal
 from datetime import datetime
 from enum import Enum
-from typing import Optional, TYPE_CHECKING, List
 from uuid import UUID
 
 from pydantic import Field
 from sqlmodel import Relationship
 
 from app.models.base import AuditedBase
+from app.models.project import Project
 
 if TYPE_CHECKING:
     from app.models.persona import Persona
     from app.models.chat import Chat
     from app.models.thread import Thread
     from app.models.tool_call import ToolCall
+    from app.models.user import User
+    from app.schemas.user_schemas import ScopedUser
+    from sqlalchemy import Select
+
 
 
 class EventType(str, Enum):
@@ -188,3 +193,20 @@ class Message(AuditedBase):
                 return "Assistant"
             case _:
                 return None
+
+    @classmethod
+    def apply_access_predicate(
+            cls,
+            query: "Select",
+            actor: Union["ScopedUser", "User"],
+            access: List[Literal["read", "write", "admin"]],
+    ) -> "Select":
+        """applies a WHERE clause restricting results to the given actor and access level"""
+        del access  # not used by default, will be used for more complex access control
+        org_uid = getattr(
+            actor, "organization_id", getattr(actor.organization, "uid", None)
+        )
+        if not org_uid:
+            raise ValueError("object %s has no organization accessor", actor)
+        # TODO: access roles on chats goes here!
+        return query.join(Chat).join(Project).where(Project.fkey_organization_uid == org_uid)
