@@ -4,8 +4,8 @@ import Rollbar from 'rollbar'
 import { Toaster } from 'react-hot-toast'
 import init from 'lib/init.ts'
 import { AuthProvider, useAuth } from 'hooks/use-auth.tsx'
-import ErrorFallbackUI from 'components/ErrorFallbackUI.tsx'
-import Routes from 'components/core/Routes.tsx'
+import ErrorFallbackUI from 'components/core/ErrorFallbackUI.tsx'
+import Routes from 'components/routing/Routes.tsx'
 
 const rollbar = new Rollbar({
     accessToken: 'notavalidtoken',
