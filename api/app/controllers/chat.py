@@ -21,7 +21,8 @@ class ChatController(DatabaseMixin):
         """retrieve a chat if the actor can access it"""
         query = Chat.apply_access_predicate(select(Chat), actor, "read")
         try:
-            return self.db_session.execute(query.where(Chat.uid == chat_id)).one()
+            chat_uid = Chat.to_uid(chat_id)
+            return self.db_session.execute(query.where(Chat.uid == chat_uid)).one()
         except (NoResultFound, MultipleResultsFound) as e:
             not_found(e=e)
 
@@ -29,8 +30,8 @@ class ChatController(DatabaseMixin):
         # make sure actor can access the project first
         project = ProjectController(self.db_session).read_for_actor(actor, chat_data.project_id)
         chat = Chat(
-            created_by=actor.uid,
-            last_updated_by=actor.uid,
+            creator_id=actor.id,
+            updator_id=actor.id,
             project_id=project.uid,
             **chat_data.model_dump(exclude_none=True, exclude={"project_id"})
         ).create(self.db_session)

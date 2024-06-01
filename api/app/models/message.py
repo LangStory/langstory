@@ -35,7 +35,7 @@ class MessageRole(str, Enum):
     tool = "tool"
 
 
-class Message(AuditedBase):
+class Message(AuditedBase, table=True):
     """All entries into a conversation are messages"""
     type: EventType = Field(..., description="The type of message")
     role: MessageRole = Field(..., description="The role of the message")

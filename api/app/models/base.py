@@ -134,7 +134,7 @@ class AuditedBase(Base):
         foreign_key="user.uid",
         description="The ID of the user that owns this entity",
     )
-    fkey_last_updater_uid: Optional[UUID] = Field(
+    fkey_last_editor_uid: Optional[UUID] = Field(
         default=None,
         foreign_key="user.uid",
         description="The ID of the user that last updated this entity",
@@ -155,13 +155,13 @@ class AuditedBase(Base):
         self.fkey_creator_uid = uid
 
     @property
-    def updater_id(self) -> Optional[str]:
-        return f"user-{self.fkey_last_updater_uid}"
+    def editor_id(self) -> Optional[str]:
+        return f"user-{self.fkey_last_editor_uid}"
 
-    @updater_id.setter
-    def updater_id(self, value: Union[str, UUID, "User", "ScopedUser"]) -> None:
+    @editor_id.setter
+    def editor_id(self, value: Union[str, UUID, "User", "ScopedUser"]) -> None:
         try:
             uid = getattr(value, "user", value).uid
         except AttributeError:
             uid = self.to_uid(value)
-        self.fkey_last_updater_uid = uid
+        self.fkey_last_editor_uid = uid

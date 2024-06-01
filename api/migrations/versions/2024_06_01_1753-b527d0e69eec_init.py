@@ -1,8 +1,8 @@
 """init
 
-Revision ID: ad3e48deb233
+Revision ID: b527d0e69eec
 Revises: 
-Create Date: 2024-05-31 19:52:47.638490
+Create Date: 2024-06-01 17:53:13.813696
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlmodel
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'ad3e48deb233'
+revision: str = 'b527d0e69eec'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -64,27 +64,24 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('uid'),
     sa.UniqueConstraint('email_address')
     )
-    op.create_table('externalevent',
+    op.create_table('message',
     sa.Column('uid', sqlmodel.sql.sqltypes.GUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('deleted', sa.Boolean(), nullable=False),
-    sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('fkey_creator_uid', sqlmodel.sql.sqltypes.GUID(), nullable=True),
+    sa.Column('fkey_last_editor_uid', sqlmodel.sql.sqltypes.GUID(), nullable=True),
+    sa.Column('type', sa.Enum('system_message', 'user_message', 'assistant_message', 'tool_message', 'external_event', name='eventtype'), nullable=False),
+    sa.Column('role', sa.Enum('user', 'system', 'assistant', 'tool', name='messagerole'), nullable=False),
+    sa.Column('display_name', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('content', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('timestamp', sa.DateTime(), nullable=False),
-    sa.Column('thread_id', sqlmodel.sql.sqltypes.GUID(), nullable=True),
-    sa.ForeignKeyConstraint(['thread_id'], ['thread.uid'], ),
-    sa.PrimaryKeyConstraint('uid')
-    )
-    op.create_table('magiclink',
-    sa.Column('uid', sqlmodel.sql.sqltypes.GUID(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('deleted', sa.Boolean(), nullable=False),
-    sa.Column('token_hash', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('expiration', sa.DateTime(), nullable=False),
-    sa.Column('fkey_user_uid', sqlmodel.sql.sqltypes.GUID(), nullable=False),
-    sa.ForeignKeyConstraint(['fkey_user_uid'], ['user.uid'], ),
+    sa.Column('fkey_chat_uid', sqlmodel.sql.sqltypes.GUID(), nullable=False),
+    sa.Column('fkey_thread_uid', sqlmodel.sql.sqltypes.GUID(), nullable=True),
+    sa.Column('private_user_message_fkey_persona_uid', sqlmodel.sql.sqltypes.GUID(), nullable=True),
+    sa.Column('private_tool_message_fkey_tool_call_uid', sqlmodel.sql.sqltypes.GUID(), nullable=False),
+    sa.ForeignKeyConstraint(['fkey_creator_uid'], ['user.uid'], ),
+    sa.ForeignKeyConstraint(['fkey_last_editor_uid'], ['user.uid'], ),
     sa.PrimaryKeyConstraint('uid')
     )
     op.create_table('organizationsusers',
@@ -116,13 +113,13 @@ def upgrade() -> None:
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('deleted', sa.Boolean(), nullable=False),
     sa.Column('fkey_creator_uid', sqlmodel.sql.sqltypes.GUID(), nullable=True),
-    sa.Column('fkey_last_updater_uid', sqlmodel.sql.sqltypes.GUID(), nullable=True),
+    sa.Column('fkey_last_editor_uid', sqlmodel.sql.sqltypes.GUID(), nullable=True),
     sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('avatar_url', sa.String(), nullable=True),
     sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('fkey_organization_uid', sqlmodel.sql.sqltypes.GUID(), nullable=False),
     sa.ForeignKeyConstraint(['fkey_creator_uid'], ['user.uid'], ),
-    sa.ForeignKeyConstraint(['fkey_last_updater_uid'], ['user.uid'], ),
+    sa.ForeignKeyConstraint(['fkey_last_editor_uid'], ['user.uid'], ),
     sa.ForeignKeyConstraint(['fkey_organization_uid'], ['organization.uid'], ),
     sa.PrimaryKeyConstraint('uid')
     )
@@ -132,12 +129,12 @@ def upgrade() -> None:
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('deleted', sa.Boolean(), nullable=False),
     sa.Column('fkey_creator_uid', sqlmodel.sql.sqltypes.GUID(), nullable=True),
-    sa.Column('fkey_last_updater_uid', sqlmodel.sql.sqltypes.GUID(), nullable=True),
+    sa.Column('fkey_last_editor_uid', sqlmodel.sql.sqltypes.GUID(), nullable=True),
     sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('fkey_project_uid', sqlmodel.sql.sqltypes.GUID(), nullable=False),
     sa.ForeignKeyConstraint(['fkey_creator_uid'], ['user.uid'], ),
-    sa.ForeignKeyConstraint(['fkey_last_updater_uid'], ['user.uid'], ),
+    sa.ForeignKeyConstraint(['fkey_last_editor_uid'], ['user.uid'], ),
     sa.ForeignKeyConstraint(['fkey_project_uid'], ['project.uid'], ),
     sa.PrimaryKeyConstraint('uid')
     )
@@ -153,92 +150,6 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['fkey_project_uid'], ['project.uid'], ),
     sa.PrimaryKeyConstraint('uid')
     )
-    op.create_table('assistantmessage',
-    sa.Column('uid', sqlmodel.sql.sqltypes.GUID(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('deleted', sa.Boolean(), nullable=False),
-    sa.Column('fkey_creator_uid', sqlmodel.sql.sqltypes.GUID(), nullable=True),
-    sa.Column('fkey_last_updater_uid', sqlmodel.sql.sqltypes.GUID(), nullable=True),
-    sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('timestamp', sa.DateTime(), nullable=False),
-    sa.Column('thread_id', sqlmodel.sql.sqltypes.GUID(), nullable=True),
-    sa.Column('chat_index', sa.Integer(), nullable=False),
-    sa.Column('content', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('chat_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
-    sa.Column('role', sa.Enum('user', 'system', 'assistant', 'tool', name='messagerole'), nullable=False),
-    sa.ForeignKeyConstraint(['chat_id'], ['chat.uid'], ),
-    sa.ForeignKeyConstraint(['fkey_creator_uid'], ['user.uid'], ),
-    sa.ForeignKeyConstraint(['fkey_last_updater_uid'], ['user.uid'], ),
-    sa.ForeignKeyConstraint(['thread_id'], ['thread.uid'], ),
-    sa.PrimaryKeyConstraint('uid')
-    )
-    op.create_table('systemmessage',
-    sa.Column('uid', sqlmodel.sql.sqltypes.GUID(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('deleted', sa.Boolean(), nullable=False),
-    sa.Column('fkey_creator_uid', sqlmodel.sql.sqltypes.GUID(), nullable=True),
-    sa.Column('fkey_last_updater_uid', sqlmodel.sql.sqltypes.GUID(), nullable=True),
-    sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('timestamp', sa.DateTime(), nullable=False),
-    sa.Column('thread_id', sqlmodel.sql.sqltypes.GUID(), nullable=True),
-    sa.Column('chat_index', sa.Integer(), nullable=False),
-    sa.Column('role', sa.Enum('user', 'system', 'assistant', 'tool', name='messagerole'), nullable=False),
-    sa.Column('content', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('chat_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
-    sa.ForeignKeyConstraint(['chat_id'], ['chat.uid'], ),
-    sa.ForeignKeyConstraint(['fkey_creator_uid'], ['user.uid'], ),
-    sa.ForeignKeyConstraint(['fkey_last_updater_uid'], ['user.uid'], ),
-    sa.ForeignKeyConstraint(['thread_id'], ['thread.uid'], ),
-    sa.PrimaryKeyConstraint('uid')
-    )
-    op.create_table('toolmessage',
-    sa.Column('uid', sqlmodel.sql.sqltypes.GUID(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('deleted', sa.Boolean(), nullable=False),
-    sa.Column('fkey_creator_uid', sqlmodel.sql.sqltypes.GUID(), nullable=True),
-    sa.Column('fkey_last_updater_uid', sqlmodel.sql.sqltypes.GUID(), nullable=True),
-    sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('timestamp', sa.DateTime(), nullable=False),
-    sa.Column('thread_id', sqlmodel.sql.sqltypes.GUID(), nullable=True),
-    sa.Column('chat_index', sa.Integer(), nullable=False),
-    sa.Column('content', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('chat_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
-    sa.Column('role', sa.Enum('user', 'system', 'assistant', 'tool', name='messagerole'), nullable=False),
-    sa.ForeignKeyConstraint(['chat_id'], ['chat.uid'], ),
-    sa.ForeignKeyConstraint(['fkey_creator_uid'], ['user.uid'], ),
-    sa.ForeignKeyConstraint(['fkey_last_updater_uid'], ['user.uid'], ),
-    sa.ForeignKeyConstraint(['thread_id'], ['thread.uid'], ),
-    sa.PrimaryKeyConstraint('uid')
-    )
-    op.create_table('usermessage',
-    sa.Column('uid', sqlmodel.sql.sqltypes.GUID(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('deleted', sa.Boolean(), nullable=False),
-    sa.Column('fkey_creator_uid', sqlmodel.sql.sqltypes.GUID(), nullable=True),
-    sa.Column('fkey_last_updater_uid', sqlmodel.sql.sqltypes.GUID(), nullable=True),
-    sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('timestamp', sa.DateTime(), nullable=False),
-    sa.Column('thread_id', sqlmodel.sql.sqltypes.GUID(), nullable=True),
-    sa.Column('chat_index', sa.Integer(), nullable=False),
-    sa.Column('content', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('chat_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
-    sa.Column('role', sa.Enum('user', 'system', 'assistant', 'tool', name='messagerole'), nullable=False),
-    sa.Column('persona_id', sqlmodel.sql.sqltypes.GUID(), nullable=True),
-    sa.ForeignKeyConstraint(['chat_id'], ['chat.uid'], ),
-    sa.ForeignKeyConstraint(['fkey_creator_uid'], ['user.uid'], ),
-    sa.ForeignKeyConstraint(['fkey_last_updater_uid'], ['user.uid'], ),
-    sa.ForeignKeyConstraint(['persona_id'], ['persona.uid'], ),
-    sa.ForeignKeyConstraint(['thread_id'], ['thread.uid'], ),
-    sa.PrimaryKeyConstraint('uid')
-    )
     op.create_table('toolcall',
     sa.Column('uid', sqlmodel.sql.sqltypes.GUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
@@ -248,7 +159,9 @@ def upgrade() -> None:
     sa.Column('arguments', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
     sa.Column('fkey_tool_uid', sqlmodel.sql.sqltypes.GUID(), nullable=False),
     sa.Column('fkey_assistant_message_uid', sqlmodel.sql.sqltypes.GUID(), nullable=False),
-    sa.ForeignKeyConstraint(['fkey_assistant_message_uid'], ['assistantmessage.uid'], ),
+    sa.Column('fkey_tool_message_uid', sqlmodel.sql.sqltypes.GUID(), nullable=False),
+    sa.ForeignKeyConstraint(['fkey_assistant_message_uid'], ['message.uid'], ),
+    sa.ForeignKeyConstraint(['fkey_tool_message_uid'], ['message.uid'], ),
     sa.ForeignKeyConstraint(['fkey_tool_uid'], ['tool.uid'], ),
     sa.PrimaryKeyConstraint('uid')
     )
@@ -258,17 +171,12 @@ def upgrade() -> None:
 def downgrade() -> None:
     # ### commands auto generated by Alembic - please adjust! ###
     op.drop_table('toolcall')
-    op.drop_table('usermessage')
-    op.drop_table('toolmessage')
-    op.drop_table('systemmessage')
-    op.drop_table('assistantmessage')
     op.drop_table('tool')
     op.drop_table('chat')
     op.drop_table('project')
     op.drop_table('persona')
     op.drop_table('organizationsusers')
-    op.drop_table('magiclink')
-    op.drop_table('externalevent')
+    op.drop_table('message')
     op.drop_table('user')
     op.drop_table('thread')
     op.drop_table('organization')
