@@ -3,13 +3,27 @@ import Rollbar from 'rollbar'
 import { StatusCodes } from 'http-status-codes'
 import toast from 'react-hot-toast'
 import mixpanel from 'mixpanel-browser'
+import { debounce } from 'lodash'
 import { deleteValue, getValue, STORAGE_KEYS } from './session-manager.ts'
 
-export default function init(rollbar: Rollbar, updatedAuth: () => void) {
+export default function init(updatedAuth: () => void): { rollbar: Rollbar } {
+    //==============================
+    // ROLLBAR
+    //==============================
+    const rollbar = new Rollbar({
+        accessToken: 'notavalidtoken',
+        captureUncaught: true,
+        captureUnhandledRejections: true,
+        enabled: process.env.NODE_ENV === 'production',
+        payload: {
+            environment: process.env.NODE_ENV,
+            server: {root: 'https://app.langstory.org'}
+        }
+    })
 
-    //--------------------
+    //==============================
     // AXIOS
-    //--------------------
+    //==============================
     axios.interceptors.request.use(
         (config: InternalAxiosRequestConfig) => {
             const jwt: string = getValue(STORAGE_KEYS.ACCESS_TOKEN)
@@ -27,6 +41,7 @@ export default function init(rollbar: Rollbar, updatedAuth: () => void) {
         }
     )
 
+    const debouncedOfflineWarning = debounce(() => toast('You have no internet connection', {icon: '⚠️', duration: 5000}), 1000)
     axios.interceptors.response.use(undefined, (error: AxiosError) => {
         if (error.response) {
             if (error.response.status === StatusCodes.UNAUTHORIZED && window.location.pathname !== '/login') {
@@ -35,7 +50,7 @@ export default function init(rollbar: Rollbar, updatedAuth: () => void) {
                 window.location.replace('/login')
             }
         } else if ((error.toJSON() as Error).message === 'Network Error' && !window.navigator.onLine) {
-            toast('You have no internet connection', {icon: '⚠️', duration: 5000})
+            debouncedOfflineWarning()
         } else {
             rollbar.error(error)
         }
@@ -44,9 +59,14 @@ export default function init(rollbar: Rollbar, updatedAuth: () => void) {
     })
 
 
-    //--------------------
+    //==============================
     // MIXPANEL
-    //--------------------
+    //==============================
     if (process.env.NODE_ENV === 'production') mixpanel.init('notavalidtoken', {track_pageview: true, persistence: 'localStorage'})
     else mixpanel.init('notavalidtoken', {track_pageview: true, persistence: 'localStorage'})
+
+    //==============================
+    // RETURN ROLLBAR INSTANCE
+    //==============================
+    return {rollbar}
 }

@@ -7,27 +7,16 @@ import { AuthProvider, useAuth } from 'hooks/use-auth.tsx'
 import ErrorFallbackUI from 'components/core/ErrorFallbackUI.tsx'
 import Routes from 'components/routing/Routes.tsx'
 
-const rollbar = new Rollbar({
-    accessToken: 'notavalidtoken',
-    captureUncaught: true,
-    captureUnhandledRejections: true,
-    enabled: process.env.NODE_ENV === 'production',
-    payload: {
-        environment: process.env.NODE_ENV,
-        server: {root: 'https://app.langstory.org'}
-    }
-})
-
 export default function App() {
     const {updateAuth} = useAuth()
-    init(rollbar, updateAuth)
+    const {rollbar} = init(updateAuth)
 
     return (
         <Provider instance={rollbar}>
             <ErrorBoundary fallbackUI={ErrorFallbackUI}>
                 <AuthProvider>
                     <BrowserRouter>
-                        <Toaster position="top-center" reverseOrder={false}/>
+                        <Toaster position="bottom-right" reverseOrder={false}/>
                         <Routes/>
                     </BrowserRouter>
                 </AuthProvider>
