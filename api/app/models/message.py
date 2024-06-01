@@ -38,13 +38,24 @@ class MessageRole(str, Enum):
 class Message(AuditedBase, table=True):
     """All entries into a conversation are messages"""
     type: EventType = Field(..., description="The type of message")
-    role: MessageRole = Field(..., description="The role of the message")
     display_name: Optional[str] = Field(default=None, description="The assignable name of the message sender. DO NOT ACCESS DIRECTLY - use the name property to correctly access the name value")
     content: str = Field(..., description="The content of the message")
     timestamp: datetime = Field(
         ...,
         description="The timestamp of the event in the chat. This is used as the chat index and controls the order in which chat messages are displayed.",
     )
+
+    @property
+    def role(self) -> MessageRole:
+        match self.type:
+            case EventType.user_message:
+                return MessageRole.user
+            case EventType.assistant_message:
+                return MessageRole.assistant
+            case EventType.tool_message:
+                return MessageRole.tool
+            case self.type if self.type in (EventType.system_message, EventType.external_event,):
+                return MessageRole.system
 
     # =========================
     # CHAT

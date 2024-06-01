@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 class ChatController(DatabaseMixin):
 
-    def get_chat_for_actor(self, chat_id: str, actor: "ScopedActor"):
+    def get_chat_for_actor(self, chat_id: str, actor: "ScopedActor") -> Chat:
         """retrieve a chat if the actor can access it"""
         query = Chat.apply_access_predicate(select(Chat), actor, "read")
         try:
@@ -26,17 +26,23 @@ class ChatController(DatabaseMixin):
         except (NoResultFound, MultipleResultsFound) as e:
             not_found(e=e)
 
-    def create_chat_for_actor(self, chat_data: ChatCreate, actor: "ScopedActor") -> ChatRead:
+    def create_chat_for_actor(self, chat_data: ChatCreate, actor: "ScopedActor") -> Chat:
         # make sure actor can access the project first
         project = ProjectController(self.db_session).read_for_actor(actor, chat_data.project_id)
-        chat = Chat(
+        return Chat(
             creator_id=actor.id,
-            updator_id=actor.id,
-            project_id=project.uid,
+            editor_id=actor.id,
+            project_id=project.id,
             **chat_data.model_dump(exclude_none=True, exclude={"project_id"})
         ).create(self.db_session)
 
-        return ChatRead.model_validate(chat)
+    def update_chat_for_actor(self, chat_data: ChatCreate, actor: "ScopedActor") -> Chat:
+        # make sure actor can access the project first
+        chat = self.get_chat_for_actor(chat_data.id, actor)
+        chat.editor_id = actor.id
+        for key, value in chat_data.model_dump(exclude_none=True).items():
+            setattr(chat, key, value)
+        return chat.update(self.db_session)
 
     def add_message(self, chat_id: str, message_data: MessageCreate) -> Message:
         message = Message()
