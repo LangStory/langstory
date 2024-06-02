@@ -2,11 +2,12 @@ from typing import Optional, TYPE_CHECKING, List, Union, Literal
 from datetime import datetime
 from enum import Enum
 from uuid import UUID
-
-from pydantic import Field
-from sqlmodel import Relationship
+from sqlalchemy import ForeignKey
+from sqlalchemy.dialects.postgresql import UUID as SQLUUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import AuditedBase
+from app.models.mixins import ChatMixin, ThreadMixin
 from app.models.project import Project
 
 if TYPE_CHECKING:
@@ -34,17 +35,13 @@ class MessageRole(str, Enum):
     assistant = "assistant"
     tool = "tool"
 
+class Message(AuditedBase, ChatMixin, ThreadMixin):
+    __tablename__ = "message"
 
-class Message(AuditedBase, table=True):
-    """All entries into a conversation are messages"""
-    type: EventType = Field(..., description="The type of message")
-    fkey_chat_uid: UUID = Field(..., foreign_key="chat.uid", description="The ID of the chat this message belongs to")
-    display_name: Optional[str] = Field(default=None, description="The assignable name of the message sender. DO NOT ACCESS DIRECTLY - use the name property to correctly access the name value")
-    content: str = Field(..., description="The content of the message")
-    timestamp: datetime = Field(
-        ...,
-        description="The timestamp of the event in the chat. This is used as the chat index and controls the order in which chat messages are displayed.",
-    )
+    type: Mapped[EventType] = mapped_column(nullable=False, doc="The type of message")
+    display_name: Mapped[Optional[str]] = mapped_column(default=None, doc="The assignable name of the message sender. DO NOT ACCESS DIRECTLY - use the name property to correctly access the name value")
+    content: Mapped[str] = mapped_column(nullable=False, doc="The content of the message")
+    timestamp: Mapped[datetime] = mapped_column(nullable=False, doc="The timestamp of the event in the chat. This is used as the chat index and controls the order in which chat messages are displayed.")
 
     @property
     def role(self) -> MessageRole:
@@ -58,56 +55,21 @@ class Message(AuditedBase, table=True):
             case self.type if self.type in (EventType.system_message, EventType.external_event,):
                 return MessageRole.system
 
-    # =========================
-    # CHAT
-    # =========================
-
-    @property
-    def chat_id(self) -> str:
-        return f"chat-{self.fkey_chat_uid}"
-
-    @chat_id.setter
-    def chat_id(self, value: str) -> None:
-        self.fkey_chat_uid = AuditedBase.to_uid(value, prefix="chat")
-
-    chat: "Chat" = Relationship(sa_relationship_kwargs={"primaryjoin": "Message.fkey_chat_uid==Chat.uid"}, back_populates="messages")
-
-    fkey_thread_uid: Optional[UUID] = Field(
-        default=None,
-        foreign_key="thread.uid",
-        description="The ID of the thread this event belongs to (if any)",
-    )
-
-    # =========================
-    # THREAD
-    # =========================
-    @property
-    def thread_id(self) -> Optional[str]:
-        if uid := self.fkey_thread_uid:
-            return f"thread-{uid}"
-        return None
-
-    @thread_id.setter
-    def thread_id(self, value: str) -> None:
-        self.fkey_thread_uid = AuditedBase.to_uid(value, prefix="thread")
-
-    thread: Optional["Thread"] = Relationship(sa_relationship_kwargs={"primaryjoin": "Message.fkey_thread_uid==Thread.uid"}, back_populates="messages")
+    # relationships
+    chat: Mapped["Chat"] = relationship("Chat", back_populates="messages")
+    thread: Mapped[Optional["Thread"]] = relationship("Thread", back_populates="messages")
 
     # =========================
     # USER MESSAGES PROPS
     # =========================
-    private_user_message_fkey_persona_uid: Optional[UUID] = Field(
-        default=None,
-        foreign_key="persona.uid",
-        description="The ID of the persona this message belongs to (if any); only valid for user messages",
-    )
-    private_user_message_persona: Optional["Persona"] = Relationship(sa_relationship_kwargs={"primaryjoin": "Message.private_user_message_fkey_persona_uid==Persona.uid"})
+    _user_message_persona_uid: Mapped[Optional[UUID]] = mapped_column(SQLUUID(), ForeignKey("persona.uid"), nullable=True, doc="The ID of the persona this message belongs to (if any); only valid for user messages")
+    _user_message_persona: Mapped[Optional["Persona"]] = relationship("Persona", primaryjoin="Message._message_persona_uid==Persona.uid")
 
     @property
     def persona_id(self) -> Optional[str]:
         if not self.type == EventType.user_message:
             raise ValueError("persona_id is only valid for user messages")
-        if uid := self.private_user_message_fkey_persona_uid:
+        if uid := self._user_message_persona_uid:
             return f"persona-{uid}"
         return None
 
@@ -115,24 +77,24 @@ class Message(AuditedBase, table=True):
     def persona_id(self, value: str) -> None:
         if not self.type == EventType.user_message:
             raise ValueError("persona_id is only valid for user messages")
-        self.private_user_message_fkey_persona_uid = AuditedBase.to_uid(value, prefix="persona")
+        self._user_message_persona_uid = AuditedBase.to_uid(value, prefix="persona")
 
     @property
     def persona(self) -> Optional["Persona"]:
         if not self.type == EventType.user_message:
             raise ValueError("persona is only accessible for user messages")
-        return self.private_user_message_persona
+        return self._user_message_persona
 
     @persona.setter
     def persona(self, value: "Persona") -> None:
         if not self.type == EventType.user_message:
             raise ValueError("persona is only accessible for user messages")
-        self.private_user_message_persona = value
+        self._user_message_persona = value
 
     # =========================
     # ASSISTANT MESSAGES PROPS
     # =========================
-    private_assistant_message_tool_calls: Optional[List["ToolCall"]] = Relationship(
+    _assistant_message_tool_calls: Mapped[Optional[List["ToolCall"]]] = relationship(
         back_populates="assistant_message"
     )
 
@@ -140,54 +102,48 @@ class Message(AuditedBase, table=True):
     def tool_calls_requested(self) -> Optional[List["ToolCall"]]:
         if not self.type == EventType.tool_message:
             raise ValueError("tool calls requested are only accessible for assistant messages")
-        return self.private_assistant_message_tool_calls
+        return self._assistant_message_tool_calls
 
     @tool_calls_requested.setter
     def tool_calls_requested(self, value: List["ToolCall"]) -> None:
         if not self.type == EventType.assistant_message:
             raise ValueError("tool calls requested are only accessible for assistant messages")
-        self.private_assistant_message_tool_calls = value
+        self._assistant_message_tool_calls = value
 
     # =========================
     # TOOL MESSAGES PROPS
     # =========================
-    private_tool_message_fkey_tool_call_uid: UUID = Field(
-        ...,
-        foreign_key="tool_call.uid",
-        description="The ID of the tool call this message belongs to (if any); only valid for tool messages",
-    )
+    _tool_message_tool_call_uid: Mapped[UUID] = mapped_column(ForeignKey("tool_call.uid"), nullable=False, doc="The ID of the tool call this message belongs to; only valid for tool messages")
 
-    private_tool_message_tool_call: "ToolCall" = Relationship(
-        back_populates="tool_message"
-    )
+    _tool_message_tool_call: Mapped["ToolCall"] = relationship("ToolCall", back_populates="tool_message", primaryjoin="Message._tool_message_tool_call_uid==ToolCall.uid")
 
     @property
     def tool_call_response_id(self) -> str:
         if not self.type == EventType.tool_message:
             raise ValueError("tool call response id is only valid for tool messages")
-        if uid := self.private_tool_message_fkey_tool_call_uid:
+        if uid := self._tool_message_tool_call_uid:
             return f"toolcall-{uid}"
 
     @tool_call_response_id.setter
     def tool_call_response_id(self, value: UUID) -> None:
         if not self.type == EventType.tool_message:
             raise ValueError("tool call response is only valid for tool messages")
-        self.private_tool_message_fkey_tool_call_uid = AuditedBase.to_uid(value, prefix="toolcall")
+        self._tool_message_tool_call_uid = AuditedBase.to_uid(value, prefix="toolcall")
 
     @property
     def tool_call_response(self) -> "ToolCall":
         if not self.type == EventType.tool_message:
             raise ValueError("tool call response is only accessible for tool messages")
-        return self.private_tool_message_tool_call
+        return self._tool_message_tool_call
 
     @tool_call_response.setter
     def tool_call_response(self, value: "ToolCall") -> None:
         if not self.type == EventType.tool_message:
             raise ValueError("tool call response is only accessible for tool messages")
-        self.private_tool_message_tool_call = value
+        self._tool_message_tool_call = value
 
     # =========================
-    # MESSAGES PROPS
+    # GENERAL MESSAGES PROPS
     # =========================
     @property
     def name(self) -> Optional[str]:

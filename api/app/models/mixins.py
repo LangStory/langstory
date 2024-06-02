@@ -87,3 +87,33 @@ class UserMixin(Base):
     @user_id.setter
     def user_id(self, value: str) -> None:
         return _relation_setter(self, "user", value)
+
+class ChatMixin(Base):
+    """1:1 mixin for Chats"""
+
+    __abstract__ = True
+
+    _chat_id: Mapped[UUID] = mapped_column(SQLUUID(), ForeignKey("chat.uid"))
+
+    @property
+    def chat_id(self) -> str:
+        return _relation_getter(self, "chat")
+
+    @chat_id.setter
+    def chat_id(self, value: str) -> None:
+        return _relation_setter(self, "chat", value)
+
+class ThreadMixin(Base):
+    """1:1 mixin for threads"""
+
+    __abstract__ = True
+
+    _thread_id: Mapped[UUID] = mapped_column(SQLUUID(), ForeignKey("thread.uid"))
+
+    @property
+    def thread_id(self) -> str:
+        return _relation_getter(self, "thread")
+
+    @thread_id.setter
+    def thread_id(self, value: str) -> None:
+        return _relation_setter(self, "thread", value)
