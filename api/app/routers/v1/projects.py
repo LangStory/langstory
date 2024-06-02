@@ -14,9 +14,9 @@ router = APIRouter(prefix="/projects", tags=["projects"])
 
 @router.post("/")
 def create_project(
-        project_data: ProjectCreate,
-        db_session: Session = Depends(get_db_session),
-        actor: ScopedUser = Depends(get_current_user),
+    project_data: ProjectCreate,
+    db_session: Session = Depends(get_db_session),
+    actor: ScopedUser = Depends(get_current_user),
 ) -> ProjectRead:
     # since the scoped user is from the jwt and detached, we need to connect it
     db_session.merge(actor.organization)
@@ -42,13 +42,13 @@ def create_project(
 
 @router.get("/", response_model=CollectionResponse)
 def list_projects(
-        perPage: int = None,
-        page: int = None,
-        query: str = None,
-        orderBy: str = None,
-        orderDir: str = None,
-        db_session: Session = Depends(get_db_session),
-        actor: ScopedUser = Depends(get_current_user),
+    perPage: int = None,
+    page: int = None,
+    query: str = None,
+    orderBy: str = None,
+    orderDir: str = None,
+    db_session: Session = Depends(get_db_session),
+    actor: ScopedUser = Depends(get_current_user),
 ):
     query_args = {}
     # drop the None values
@@ -62,9 +62,9 @@ def list_projects(
 
 @router.get("/{project_id}", response_model=ProjectRead)
 def read_project(
-        project_id: str,
-        actor: ScopedUser = Depends(get_current_user),
-        db_session: Session = Depends(get_db_session),
+    project_id: str,
+    actor: ScopedUser = Depends(get_current_user),
+    db_session: Session = Depends(get_db_session),
 ):
     controller = ProjectController(db_session)
     return controller.read_for_actor(actor, project_id)

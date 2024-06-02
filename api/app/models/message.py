@@ -9,10 +9,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import AuditedBase
 from app.models._mixins import ChatMixin, ThreadMixin
 from app.models.project import Project
+from app.models.chat import Chat
 
 if TYPE_CHECKING:
     from app.models.persona import Persona
-    from app.models.chat import Chat
     from app.models.thread import Thread
     from app.models.tool_call import ToolCall
     from app.models.user import User
@@ -49,6 +49,11 @@ class Message(AuditedBase, ChatMixin, ThreadMixin):
     timestamp: Mapped[datetime] = mapped_column(
         nullable=False,
         doc="The timestamp of the event in the chat. This is used as the chat index and controls the order in which chat messages are displayed.",
+    )
+
+    # overload thread mixin to make it optional
+    _thread_uid: Mapped[Optional[UUID]] = mapped_column(
+        SQLUUID(), ForeignKey("thread.uid"), nullable=True
     )
 
     @property
@@ -175,6 +180,10 @@ class Message(AuditedBase, ChatMixin, ThreadMixin):
             case _:
                 return None
 
+    @name.setter
+    def name(self, value: str) -> None:
+        self.display_name = value
+
     @classmethod
     def apply_access_predicate(
         cls,
@@ -185,13 +194,11 @@ class Message(AuditedBase, ChatMixin, ThreadMixin):
         """applies a WHERE clause restricting results to the given actor and access level"""
         del access  # not used by default, will be used for more complex access control
         org_uid = getattr(
-            actor, "organization_id", getattr(actor.organization, "uid", None)
+            actor, "_organization_uid", getattr(actor.organization, "uid", None)
         )
         if not org_uid:
             raise ValueError("object %s has no organization accessor", actor)
         # TODO: access roles on chats goes here!
         return (
-            query.join(Chat)
-            .join(Project)
-            .where(Project.fkey_organization_uid == org_uid)
+            query.join(Chat).join(Project).where(Project._organization_uid == org_uid)
         )

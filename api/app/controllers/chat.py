@@ -1,28 +1,57 @@
-from typing import TYPE_CHECKING, Union, Optional
+from typing import TYPE_CHECKING, List, Union, Optional
 
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound, MultipleResultsFound
 
 from app.controllers.mixins.database_mixin import DatabaseMixin
+from app.controllers.mixins.collection_mixin import CollectionMixin
 from app.controllers.project import ProjectController
 from app.http_errors import not_found
 from app.models.chat import Chat
 from app.models.message import Message
-from app.schemas.chat_schemas import MessageCreate, ChatCreate, ToolCallCreate
+from app.schemas.chat_schemas import (
+    MessageCreate,
+    ChatCreate,
+    ChatRead,
+    ToolCallCreate,
+    MessageRead,
+    MessageUpdate,
+)
+from app.schemas.collection_schemas import CollectionResponse, CollectionRequest
 
 if TYPE_CHECKING:
     from app.schemas.user_schemas import ScopedUser
     from app.models.tool_call import ToolCall
+    from sqlalchemy.orm import Session
 
 
-class ChatController(DatabaseMixin):
+class ChatController(CollectionMixin, DatabaseMixin):
+
+    def __init__(self, db_session: "Session"):
+        super().__init__(db_session=db_session, ModelClass=Chat)
+
+    def list_for_actor(self, request: "CollectionRequest") -> "CollectionResponse":
+        items, page_count = self.get_collection(request)
+        refined_items = [
+            ChatRead(
+                id=item.id,
+                name=item.name,
+                project_id=item.project_id,
+            )
+            for item in items
+        ]
+        return CollectionResponse(
+            items=refined_items, page=request.page, pages=page_count
+        )
 
     def get_chat_for_actor(self, chat_id: str, actor: "ScopedUser") -> Chat:
         """retrieve a chat if the actor can access it"""
         query = Chat.apply_access_predicate(select(Chat), actor, ["read"])
         try:
             chat_uid = Chat.to_uid(chat_id)
-            return self.db_session.execute(query.where(Chat.uid == chat_uid)).one()
+            return self.db_session.execute(
+                query.where(Chat.uid == chat_uid)
+            ).scalar_one()
         except (NoResultFound, MultipleResultsFound) as e:
             not_found(e=e)
 
@@ -47,9 +76,9 @@ class ChatController(DatabaseMixin):
         return chat.update(self.db_session)
 
     def add_message(
-            self, chat_id: str, message_data: MessageCreate, actor: "ScopedUser"
+        self, chat_id: str, message_data: MessageCreate, actor: "ScopedUser"
     ) -> Message:
-        chat = self.get_chat_for_actor(chat_id)
+        chat = self.get_chat_for_actor(chat_id, actor)
 
         if message_data.type == "tool_message":
             message_data.tool_call_response = self._to_tool_call(
@@ -65,15 +94,16 @@ class ChatController(DatabaseMixin):
             )
         ).create(self.db_session)
 
-        if tool_call in message_data.tool_calls_requested:
+        for tool_call in message_data.tool_calls_requested or []:
             tool_call = self._to_tool_call(tool_call, message.id)
+        self.db_session.add(message)
         self.db_session.refresh(message)
         return message
 
     def _to_tool_call(
-            self,
-            tool_call: Union[ToolCallCreate, str],
-            assistant_message_id: Optional[str] = None,
+        self,
+        tool_call: Union[ToolCallCreate, str],
+        assistant_message_id: Optional[str] = None,
     ) -> "ToolCall":
         """a flexible input that takes either a definition or an existing uuid and returns the ToolCall object
         Args:
@@ -91,3 +121,60 @@ class ChatController(DatabaseMixin):
             return ToolCall(**tool_call.model_dump(exclude_none=True)).create(
                 self.db_session
             )
+
+
+class MessageController(CollectionMixin):
+
+    def __init__(self, db_session: "Session"):
+        super().__init__(db_session=db_session, ModelClass=Message)
+
+    def get_message_for_actor(self, message_id: str, actor: "ScopedUser") -> Message:
+        """retrieve a message if the actor can access it"""
+        query = Message.apply_access_predicate(select(Message), actor, ["read"])
+        try:
+            message_uid = Message.to_uid(message_id)
+            return self.db_session.execute(
+                query.where(Message.uid == message_uid)
+            ).scalar_one()
+        except (NoResultFound, MultipleResultsFound) as e:
+            not_found(e=e)
+
+    def list_chat_messages_for_actor(
+        self, chat_id: str, request: "CollectionRequest"
+    ) -> CollectionResponse:
+        chat = ChatController(self.db_session).get_chat_for_actor(
+            chat_id, request.actor
+        )
+        items, page_count = self.get_collection(request, select_=chat.messages)
+        refined_items = [
+            MessageRead(
+                id=item.id,
+                type=item.type,
+                timestamp=item.timestamp,
+                content=item.content,
+                chat_id=item.chat_id,
+            )
+            for item in items
+        ]
+        return CollectionResponse(
+            items=refined_items, page=request.page, pages=page_count
+        )
+
+    def update_message_for_actor(
+        self, message_data: MessageUpdate, actor: "ScopedUser"
+    ) -> Message:
+        # make sure actor can access the project first
+        chat_controller = ChatController(self.db_session)
+
+        chat = chat_controller.get_chat_for_actor(message_data.chat_id, actor)
+        chat.editor_id = actor.id
+        message = self.get_message_for_actor(message_data.id, actor)
+        message.editor_id = actor.id
+        for key, value in message_data.model_dump(
+            exclude_none=True, exclude=["id", "chat_id"]
+        ).items():
+            setattr(message, key, value)
+        self.db_session.add(chat)
+        self.db_session.add(message)
+        _ = chat.update(self.db_session)
+        return message.update(self.db_session)
