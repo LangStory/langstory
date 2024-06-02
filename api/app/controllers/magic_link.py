@@ -33,9 +33,7 @@ class MagicLinkFlow(AuthMixin, PasswordMixin):
             raise NotImplementedError("email settings are not configured")
         logger.info("requested magic link for email %s", email_address)
         try:
-            user = User.read(
-                self.db_session, self.standardized_email(email_address)
-            )
+            user = User.read(self.db_session, self.standardized_email(email_address))
         except (NoResultFound, MultipleResultsFound):
             logger.error("user not found for email %s", email_address)
             return
@@ -45,7 +43,7 @@ class MagicLinkFlow(AuthMixin, PasswordMixin):
         _ = MagicLink.clear_for_user(self.db_session, user.uid)
         logger.debug("creating magic link for user %s", user.id)
         _ = MagicLink(
-            fkey_user_uid=user.uid,
+            _user_uid=user.uid,
             token_hash=self.password_context.hash(raw_password),
         ).create(self.db_session)
         logger.info("new magic link created for user %s", user.id)

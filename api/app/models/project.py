@@ -1,42 +1,37 @@
-from typing import Optional, TYPE_CHECKING
-from uuid import UUID
+from typing import Optional, TYPE_CHECKING, List
 
-from pydantic import HttpUrl
 from sqlalchemy import String
-from sqlmodel import Field, Column, Relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.models._mixins import OrganizationMixin
 from app.models.base import AuditedBase
-from app.models.organization import Organization
+
 if TYPE_CHECKING:
     from app.models.chat import Chat
+    from app.models.organization import Organization
+    from app.models.tool import Tool
 
-class Project(AuditedBase, table=True):
-    name: str = Field(..., description="The name of the project")
-    avatar_url: Optional[HttpUrl] = Field(
-        default=None,
-        description="The URL of the project's avatar",
-        sa_column=Column(String),
-    )
-    description: Optional[str] = Field(
-        default=None, description="A description of the project"
-    )
-    fkey_organization_uid: UUID = Field(
-        ...,
-        foreign_key="organization.uid",
-        description="The ID of the organization that owns this project",
-    )
 
-    @property
-    def organization_id(self) -> str:
-        if uid := self.fkey_organization_uid:
-            return f"organization-{uid}"
-        return None
+class Project(OrganizationMixin, AuditedBase):
+    __tablename__ = "project"
 
-    @organization_id.setter
-    def organization_id(self, value:str) -> None:
-        self.fkey_organization_uid = Organization.to_uid(value)
+    name: Mapped[str] = mapped_column(
+        String, nullable=False, doc="The name of the project"
+    )
+    avatar_url: Mapped[Optional[str]] = mapped_column(
+        String, default=None, doc="The URL of the project's avatar"
+    )
+    description: Mapped[Optional[str]] = mapped_column(
+        String, default=None, doc="A description of the project"
+    )
 
     # relationships
-    organization: Organization = Relationship(sa_relationship_kwargs={"primaryjoin":"Project.fkey_organization_uid==Organization.uid"}, back_populates="projects")
-    chats: list["Chat"] = Relationship(back_populates="project")
+    organization: Mapped["Organization"] = relationship(
+        "Organization", back_populates="projects"
+    )
+    chats: Mapped[List["Chat"]] = relationship("Chat", back_populates="project")
+    tools: Mapped[List["Tool"]] = relationship("Tool", back_populates="project")
 
+    @classmethod
+    def id_to_uid(cls, project_id):
+        pass

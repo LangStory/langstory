@@ -6,16 +6,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from app.models.archives import Archives
-from app.models.organization import Organization
-from app.models.event import AssistantMessage, SystemMessage, UserMessage, ToolMessage
-from app.models.chat import Chat
-from app.models.magic_link import MagicLink
-from app.models.tool_call import ToolCall
-from app.models.persona import Persona
-from app.models.project import Project
-from app.models.tool import Tool
-from app.models.user import User
+from app.models.all import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -31,7 +22,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
-target_metadata = SQLModel.metadata
+target_metadata = Base.metadata
 
 
 # other values from the config, defined by the needs of env.py,

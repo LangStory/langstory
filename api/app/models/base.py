@@ -1,11 +1,12 @@
-from typing import Optional, TYPE_CHECKING, Type, Self, List, Literal, Union, Any
 from datetime import datetime
-from sqlmodel import Field, SQLModel
-from pydantic import ConfigDict
-from sqlalchemy import func, select
-from sqlalchemy.exc import NoResultFound
+from typing import Optional, TYPE_CHECKING, Type, Self, List, Literal, Union, Any
 from uuid import UUID, uuid4
-from humps import depascalize, camelize
+
+from humps import depascalize
+from sqlalchemy import func, DateTime, text, Boolean, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID as SQLUUID
+from sqlalchemy.exc import NoResultFound
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 if TYPE_CHECKING:
     from sqlalchemy.sql.selectable import Select
@@ -14,26 +15,23 @@ if TYPE_CHECKING:
     from app.schemas.user_schemas import User
 
 
-class Base(SQLModel):
+class AbsoluteBase(DeclarativeBase):
+    pass
+
+
+class Base(AbsoluteBase):
     __abstract__ = True
 
     __order_by_default__ = "created_at"
 
-    model_config = ConfigDict(
-        alias_generator=camelize,
-        extra="forbid",
+    uid: Mapped[UUID] = mapped_column(SQLUUID(), primary_key=True, default=uuid4)
+    created_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
     )
-
-    uid: UUID = Field(default_factory=uuid4, primary_key=True)
-    created_at: datetime = Field(
-        default=datetime.now(),
-        sa_column_kwargs={"server_default": func.now()},
+    updated_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), server_onupdate=func.now()
     )
-    updated_at: datetime = Field(
-        default=datetime.now(),
-        sa_column_kwargs={"server_default": func.now(), "onupdate": func.now()},
-    )
-    deleted: bool = Field(default=False, exclude=True)
+    deleted: Mapped[bool] = mapped_column(Boolean, server_default=text("FALSE"))
 
     @property
     def __prefix__(self) -> str:
@@ -50,8 +48,7 @@ class Base(SQLModel):
 
     @classmethod
     def read(
-            cls, db_session: "Session",
-            identifier: Union[str, UUID], **kwargs
+            cls, db_session: "Session", identifier: Union[str, UUID], **kwargs
     ) -> Type[Self]:
         del kwargs
         identifier = cls.to_uid(identifier)
@@ -86,12 +83,15 @@ class Base(SQLModel):
         """
         try:
             # a valid ID for the class was passed, or the uid was passed as a string
-            uid = UUID(identifier.split(f"{cls.__name__.lower()}-")[-1])
+            prefix = prefix or cls.__name__.lower()
+            uid = UUID(identifier.split(f"{prefix}-")[-1])
         except AttributeError:
             # a UUID was passed
             uid = identifier
         except ValueError as e:
-            raise ValueError(f"{identifier} is not a valid id for {cls.__name__}") from e
+            raise ValueError(
+                f"{identifier} is not a valid id for {cls.__name__}"
+            ) from e
         return uid
 
     @classmethod
@@ -129,20 +129,22 @@ class Base(SQLModel):
 class AuditedBase(Base):
     __abstract__ = True
 
-    fkey_creator_uid: Optional[UUID] = Field(
-        default=None,
-        foreign_key="user.uid",
-        description="The ID of the user that owns this entity",
+    _creator_uid: Mapped[Optional[UUID]] = mapped_column(
+        SQLUUID(),
+        ForeignKey("user.uid"),
+        nullable=True,
+        doc="The ID of the user that owns this entity",
     )
-    fkey_last_updater_uid: Optional[UUID] = Field(
-        default=None,
-        foreign_key="user.uid",
-        description="The ID of the user that last updated this entity",
+    _last_editor_uid: Mapped[Optional[UUID]] = mapped_column(
+        SQLUUID(),
+        ForeignKey("user.uid"),
+        nullable=True,
+        doc="The ID of the user that last updated this entity",
     )
 
     @property
     def creator_id(self) -> Optional[str]:
-        if uid := self.fkey_creator_uid:
+        if uid := self._creator_uid:
             return f"user-{uid}"
         return None
 
@@ -151,17 +153,17 @@ class AuditedBase(Base):
         try:
             uid = getattr(value, "user", value).uid
         except AttributeError:
-            uid = self.to_uid(value)
-        self.fkey_creator_uid = uid
+            uid = self.to_uid(value, prefix="user")
+        self._creator_uid = uid
 
     @property
-    def updater_id(self) -> Optional[str]:
-        return f"user-{self.fkey_last_updater_uid}"
+    def editor_id(self) -> Optional[str]:
+        return f"user-{self._last_editor_uid}"
 
-    @updater_id.setter
-    def updater_id(self, value: Union[str, UUID, "User", "ScopedUser"]) -> None:
+    @editor_id.setter
+    def editor_id(self, value: Union[str, UUID, "User", "ScopedUser"]) -> None:
         try:
             uid = getattr(value, "user", value).uid
         except AttributeError:
-            uid = self.to_uid(value)
-        self.fkey_last_updater_uid = uid
+            uid = self.to_uid(value, prefix="user")
+        self._last_editor_uid = uid

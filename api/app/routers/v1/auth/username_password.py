@@ -6,7 +6,7 @@ from app.settings import settings
 from app.schemas.jtw_schema import JWTResponse
 from app.routers.utilities import get_db_session
 from app.schemas.user_schemas import NewUser
-from app.models.organization import Organization
+from app.models.all import Organization
 from app.controllers.auth import JWTTokenFlow, AuthenticateUsernamePasswordFlow
 from app.controllers.user import CreateNewUserFlow
 
