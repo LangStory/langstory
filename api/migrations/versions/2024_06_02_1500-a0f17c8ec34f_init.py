@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 99001b2cdace
+Revision ID: a0f17c8ec34f
 Revises: 
-Create Date: 2024-06-02 14:40:51.787040
+Create Date: 2024-06-02 15:00:10.245393
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlmodel
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = '99001b2cdace'
+revision: str = 'a0f17c8ec34f'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -61,33 +61,33 @@ def upgrade() -> None:
     sa.UniqueConstraint('email_address')
     )
     op.create_table('organizations_users',
-    sa.Column('_user_id', sa.UUID(), nullable=False),
-    sa.Column('_organization_id', sa.UUID(), nullable=False),
+    sa.Column('_user_uid', sa.UUID(), nullable=False),
+    sa.Column('_organization_uid', sa.UUID(), nullable=False),
     sa.Column('uid', sa.UUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('deleted', sa.Boolean(), server_default=sa.text('FALSE'), nullable=False),
-    sa.ForeignKeyConstraint(['_organization_id'], ['organization.uid'], ),
-    sa.ForeignKeyConstraint(['_user_id'], ['user.uid'], ),
+    sa.ForeignKeyConstraint(['_organization_uid'], ['organization.uid'], ),
+    sa.ForeignKeyConstraint(['_user_uid'], ['user.uid'], ),
     sa.PrimaryKeyConstraint('uid')
     )
     op.create_table('persona',
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('description', sa.String(), nullable=True),
     sa.Column('avatar_url', sa.String(), nullable=True),
-    sa.Column('_organization_id', sa.UUID(), nullable=False),
+    sa.Column('_organization_uid', sa.UUID(), nullable=False),
     sa.Column('uid', sa.UUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('deleted', sa.Boolean(), server_default=sa.text('FALSE'), nullable=False),
-    sa.ForeignKeyConstraint(['_organization_id'], ['organization.uid'], ),
+    sa.ForeignKeyConstraint(['_organization_uid'], ['organization.uid'], ),
     sa.PrimaryKeyConstraint('uid')
     )
     op.create_table('project',
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('avatar_url', sa.String(), nullable=True),
     sa.Column('description', sa.String(), nullable=True),
-    sa.Column('_organization_id', sa.UUID(), nullable=False),
+    sa.Column('_organization_uid', sa.UUID(), nullable=False),
     sa.Column('_creator_uid', sa.UUID(), nullable=True),
     sa.Column('_last_editor_uid', sa.UUID(), nullable=True),
     sa.Column('uid', sa.UUID(), nullable=False),
@@ -96,7 +96,7 @@ def upgrade() -> None:
     sa.Column('deleted', sa.Boolean(), server_default=sa.text('FALSE'), nullable=False),
     sa.ForeignKeyConstraint(['_creator_uid'], ['user.uid'], ),
     sa.ForeignKeyConstraint(['_last_editor_uid'], ['user.uid'], ),
-    sa.ForeignKeyConstraint(['_organization_id'], ['organization.uid'], ),
+    sa.ForeignKeyConstraint(['_organization_uid'], ['organization.uid'], ),
     sa.PrimaryKeyConstraint('uid')
     )
     op.create_table('chat',
@@ -104,36 +104,36 @@ def upgrade() -> None:
     sa.Column('description', sa.TEXT(), nullable=True),
     sa.Column('_creator_uid', sa.UUID(), nullable=True),
     sa.Column('_last_editor_uid', sa.UUID(), nullable=True),
-    sa.Column('_project_id', sa.UUID(), nullable=False),
+    sa.Column('_project_uid', sa.UUID(), nullable=False),
     sa.Column('uid', sa.UUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('deleted', sa.Boolean(), server_default=sa.text('FALSE'), nullable=False),
     sa.ForeignKeyConstraint(['_creator_uid'], ['user.uid'], ),
     sa.ForeignKeyConstraint(['_last_editor_uid'], ['user.uid'], ),
-    sa.ForeignKeyConstraint(['_project_id'], ['project.uid'], ),
+    sa.ForeignKeyConstraint(['_project_uid'], ['project.uid'], ),
     sa.PrimaryKeyConstraint('uid')
     )
     op.create_table('tool',
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('json_schema', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
     sa.Column('description', sa.String(), nullable=True),
-    sa.Column('_project_id', sa.UUID(), nullable=False),
+    sa.Column('_project_uid', sa.UUID(), nullable=False),
     sa.Column('uid', sa.UUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('deleted', sa.Boolean(), server_default=sa.text('FALSE'), nullable=False),
-    sa.ForeignKeyConstraint(['_project_id'], ['project.uid'], ),
+    sa.ForeignKeyConstraint(['_project_uid'], ['project.uid'], ),
     sa.PrimaryKeyConstraint('uid')
     )
     op.create_table('thread',
     sa.Column('name', sa.String(), nullable=False),
-    sa.Column('_chat_id', sa.UUID(), nullable=False),
+    sa.Column('_chat_uid', sa.UUID(), nullable=False),
     sa.Column('uid', sa.UUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('deleted', sa.Boolean(), server_default=sa.text('FALSE'), nullable=False),
-    sa.ForeignKeyConstraint(['_chat_id'], ['chat.uid'], ),
+    sa.ForeignKeyConstraint(['_chat_uid'], ['chat.uid'], ),
     sa.PrimaryKeyConstraint('uid')
     )
     op.create_table('message',
@@ -144,16 +144,16 @@ def upgrade() -> None:
     sa.Column('_user_message_persona_uid', sa.UUID(), nullable=True),
     sa.Column('_creator_uid', sa.UUID(), nullable=True),
     sa.Column('_last_editor_uid', sa.UUID(), nullable=True),
-    sa.Column('_chat_id', sa.UUID(), nullable=False),
-    sa.Column('_thread_id', sa.UUID(), nullable=False),
+    sa.Column('_chat_uid', sa.UUID(), nullable=False),
+    sa.Column('_thread_uid', sa.UUID(), nullable=False),
     sa.Column('uid', sa.UUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('deleted', sa.Boolean(), server_default=sa.text('FALSE'), nullable=False),
-    sa.ForeignKeyConstraint(['_chat_id'], ['chat.uid'], ),
+    sa.ForeignKeyConstraint(['_chat_uid'], ['chat.uid'], ),
     sa.ForeignKeyConstraint(['_creator_uid'], ['user.uid'], ),
     sa.ForeignKeyConstraint(['_last_editor_uid'], ['user.uid'], ),
-    sa.ForeignKeyConstraint(['_thread_id'], ['thread.uid'], ),
+    sa.ForeignKeyConstraint(['_thread_uid'], ['thread.uid'], ),
     sa.ForeignKeyConstraint(['_user_message_persona_uid'], ['persona.uid'], ),
     sa.PrimaryKeyConstraint('uid')
     )
@@ -164,7 +164,7 @@ def upgrade() -> None:
     sa.Column('_tool_message_uid', sa.UUID(), nullable=True),
     sa.Column('_creator_uid', sa.UUID(), nullable=True),
     sa.Column('_last_editor_uid', sa.UUID(), nullable=True),
-    sa.Column('_tool_id', sa.UUID(), nullable=False),
+    sa.Column('_tool_uid', sa.UUID(), nullable=False),
     sa.Column('uid', sa.UUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
@@ -172,8 +172,8 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['_assistant_message_uid'], ['message.uid'], name='fk_tool_call_assistant_message_id', onupdate='CASCADE', ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['_creator_uid'], ['user.uid'], ),
     sa.ForeignKeyConstraint(['_last_editor_uid'], ['user.uid'], ),
-    sa.ForeignKeyConstraint(['_tool_id'], ['tool.uid'], ),
     sa.ForeignKeyConstraint(['_tool_message_uid'], ['message.uid'], name='fk_tool_call_tool_message_id', onupdate='CASCADE', ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['_tool_uid'], ['tool.uid'], ),
     sa.PrimaryKeyConstraint('uid')
     )
     # ### end Alembic commands ###

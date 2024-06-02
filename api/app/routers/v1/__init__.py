@@ -1,4 +1,3 @@
-# from app.routers.v1.auth.google import router as google_auth_router
 from app.routers.v1.auth.username_password import router as username_password_router
 from app.routers.v1.auth.token import router as token_router
 from app.routers.v1.auth.magic_link import router as magic_link_router
