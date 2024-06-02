@@ -128,11 +128,11 @@ class MessageController(CollectionMixin):
         super().__init__(db_session=db_session, ModelClass=Message)
 
     def list_chat_messages_for_actor(
-        self,
-        chat_id: str,
-        request: "CollectionRequest"
+        self, chat_id: str, request: "CollectionRequest"
     ) -> CollectionResponse:
-        chat = ChatController(self.db_session).get_chat_for_actor(chat_id, request.actor)
+        chat = ChatController(self.db_session).get_chat_for_actor(
+            chat_id, request.actor
+        )
         items, page_count = self.get_collection(request, select_=chat.messages)
         refined_items = [
             MessageRead(

@@ -27,7 +27,9 @@ class CollectionMixin(DatabaseMixin):
         super().__init__(db_session)
         self.ModelClass = ModelClass
 
-    def get_collection(self, request: "CollectionRequest", select_:Optional["Select"]=None) -> "CollectionResponse":
+    def get_collection(
+        self, request: "CollectionRequest", select_: Optional["Select"] = None
+    ) -> "CollectionResponse":
         """shorthand for get_paginated_collection"""
         # cannot infer type of ScopedUser at this time
         return self.get_paginated_collection(

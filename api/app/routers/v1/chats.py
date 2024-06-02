@@ -13,6 +13,7 @@ from app.schemas.collection_schemas import CollectionResponse, CollectionRequest
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
+
 @router.get("/", response_model=CollectionResponse)
 def list_chats(
     perPage: int = None,
@@ -31,6 +32,7 @@ def list_chats(
     request = CollectionRequest(actor=actor, **query_args)
     controller = ChatController(db_session)
     return controller.list_for_actor(request)
+
 
 @router.get("/{chat_id}", response_model=ChatRead)
 def get_chat(
