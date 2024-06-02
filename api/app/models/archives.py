@@ -1,24 +1,24 @@
 from typing import Optional
 from datetime import datetime
 from sqlalchemy import Integer, UUID as SQLUUID, BOOLEAN
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import JSONB, TEXT, TIMESTAMP
 from uuid import UUID
-from sqlmodel import SQLModel, Field
 
 from app.models.base import Base
 
 
-class Archives(SQLModel, table=True):
+class Archives(Base):
     """Reflection of table created manually by migration"""
 
     __tablename__ = "archives"
 
-    id: int = Field(primary_key=True, sa_type=Integer)
-    table_name: str = Field(..., nullable=False, sa_type=TEXT)
-    record_type: str = Field(..., nullable=False, sa_type=TEXT)
-    record_id: UUID = Field(..., nullable=False, sa_type=SQLUUID)
-    operation: str = Field(nullable=False, sa_type=TEXT)
-    old_values: Optional[dict] = Field(nullable=True, sa_type=JSONB)
-    new_values: Optional[dict] = Field(nullable=True, sa_type=JSONB)
-    most_recent: Optional[bool] = Field(nullable=False, default=True, sa_type=BOOLEAN)
-    recorded_at: datetime = Field(..., nullable=False, sa_type=TIMESTAMP)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    table_name: Mapped[str] = mapped_column(TEXT(), nullable=False)
+    record_type: Mapped[str] = mapped_column(TEXT(), nullable=False)
+    record_id: Mapped[UUID] = mapped_column(SQLUUID(), nullable=False)
+    operation: Mapped[str] = mapped_column(TEXT(), nullable=False)
+    old_values: Mapped[dict] = mapped_column(JSONB(), nullable=True)
+    new_values: Mapped[dict] = mapped_column(JSONB(), nullable=True)
+    most_recent: Mapped[bool] = mapped_column(Boolean(), nullable=False, default=True)
+    recorded_at: Mapped[datetime] = mapped_column(TIMESTAMP(), nullable=False)

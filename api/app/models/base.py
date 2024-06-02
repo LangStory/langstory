@@ -1,7 +1,7 @@
 from typing import Optional, TYPE_CHECKING, Type, Self, List, Literal, Union, Any
 from datetime import datetime
 from pydantic import ConfigDict
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import func, select, DateTime, text, Boolean, ForeignKey
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.dialects.postgresql import UUID as SQLUUID
@@ -10,7 +10,7 @@ from humps import depascalize, camelize
 
 if TYPE_CHECKING:
     from sqlalchemy.sql.selectable import Select
-    from sqlalchemy.orm import Session, Mapped, mapped_column
+    from sqlalchemy.orm import Session
     from app.schemas.user_schemas import ScopedUser
     from app.schemas.user_schemas import User
 
@@ -125,20 +125,20 @@ class AuditedBase(Base):
 
     _creator_uid: Optional[Mapped[UUID]] = mapped_column(
         SQLUUID(),
+        ForeignKey("user.uid"),
         nullable=True,
-        foreign_key="user.uid",
-        description="The ID of the user that owns this entity",
+        doc="The ID of the user that owns this entity",
     )
     _last_editor_uid: Optional[Mapped[UUID]] = mapped_column(
         SQLUUID(),
-        default=None,
-        foreign_key="user.uid",
-        description="The ID of the user that last updated this entity",
+        ForeignKey("user.uid"),
+        nullable=True,
+        doc="The ID of the user that last updated this entity",
     )
 
     @property
     def creator_id(self) -> Optional[str]:
-        if uid := self.fkey_creator_uid:
+        if uid := self._creator_uid:
             return f"user-{uid}"
         return None
 
@@ -148,11 +148,11 @@ class AuditedBase(Base):
             uid = getattr(value, "user", value).uid
         except AttributeError:
             uid = self.to_uid(value)
-        self.fkey_creator_uid = uid
+        self._creator_uid = uid
 
     @property
     def editor_id(self) -> Optional[str]:
-        return f"user-{self.fkey_last_editor_uid}"
+        return f"user-{self._last_editor_uid}"
 
     @editor_id.setter
     def editor_id(self, value: Union[str, UUID, "User", "ScopedUser"]) -> None:
@@ -160,4 +160,4 @@ class AuditedBase(Base):
             uid = getattr(value, "user", value).uid
         except AttributeError:
             uid = self.to_uid(value)
-        self.fkey_last_editor_uid = uid
+        self._last_editor_uid = uid

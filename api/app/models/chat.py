@@ -1,8 +1,9 @@
 from typing import Optional, Union, List, Literal, TYPE_CHECKING
-from uuid import UUID
-from sqlmodel import Field, Relationship
+from sqlalchemy import TEXT
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import AuditedBase
+from app.models.mixins import ProjectMixin
 from app.models.project import Project
 
 if TYPE_CHECKING:
@@ -12,30 +13,16 @@ if TYPE_CHECKING:
     from app.models.message import Message
 
 
-class Chat(AuditedBase, table=True):
-    name: str = Field(..., description="The name of the chat")
-    description: Optional[str] = Field(
-        default=None, description="A description of the chat"
-    )
-    fkey_project_uid: UUID = Field(
-        ...,
-        foreign_key="project.uid",
-        description="The ID of the project this chat belongs to",
-    )
+class Chat(AuditedBase, ProjectMixin):
+    __tablename__ = "chat"
 
-    @property
-    def project_id(self) -> Optional[str]:
-        if uid := self.fkey_project_uid:
-            return f"project-{uid}"
-        return None
+    name: Mapped[str] = mapped_column(TEXT(), nullable=False, doc="The name of the chat")
+    description: Mapped[Optional[str]] = mapped_column(TEXT(), default=None, doc="A description of the chat")
 
-    @project_id.setter
-    def project_id(self, value: str) -> None:
-        self.fkey_project_uid = Project.to_uid(value)
 
     # relationships
-    project: "Project" = Relationship(sa_relationship_kwargs={"primaryjoin": "Chat.fkey_project_uid==Project.uid"}, back_populates="chats")
-    messages: List["Message"] = Relationship(back_populates="chat", sa_relationship_kwargs={"lazy":"dynamic"})
+    project: "Project" = relationship("Project", back_populates="chats", primaryjoin="Chat._project_uid==Project.uid")
+    messages: List["Message"] = relationship("Message", back_populates="chat", lazy="dynamic")
 
     @classmethod
     def apply_access_predicate(
