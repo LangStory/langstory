@@ -1,19 +1,19 @@
-from typing import Optional
 from datetime import datetime
-from sqlalchemy import Integer, UUID as SQLUUID, BOOLEAN
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import JSONB, TEXT, TIMESTAMP
 from uuid import UUID
 
-from app.models.base import Base
+from sqlalchemy import Integer, UUID as SQLUUID, BOOLEAN
+from sqlalchemy.dialects.postgresql import JSONB, TEXT, TIMESTAMP
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.models.base import AbsoluteBase
 
 
-class Archives(Base):
+class Archives(AbsoluteBase):
     """Reflection of table created manually by migration"""
 
     __tablename__ = "archives"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     table_name: Mapped[str] = mapped_column(TEXT, nullable=False)
     record_type: Mapped[str] = mapped_column(TEXT, nullable=False)
     record_id: Mapped[UUID] = mapped_column(SQLUUID, nullable=False)

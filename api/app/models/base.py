@@ -15,7 +15,11 @@ if TYPE_CHECKING:
     from app.schemas.user_schemas import User
 
 
-class Base(DeclarativeBase):
+class AbsoluteBase(DeclarativeBase):
+    pass
+
+
+class Base(AbsoluteBase):
     __abstract__ = True
 
     __order_by_default__ = "created_at"
@@ -44,7 +48,7 @@ class Base(DeclarativeBase):
 
     @classmethod
     def read(
-        cls, db_session: "Session", identifier: Union[str, UUID], **kwargs
+            cls, db_session: "Session", identifier: Union[str, UUID], **kwargs
     ) -> Type[Self]:
         del kwargs
         identifier = cls.to_uid(identifier)
@@ -91,10 +95,10 @@ class Base(DeclarativeBase):
 
     @classmethod
     def apply_access_predicate(
-        cls,
-        query: "Select",
-        actor: Union["ScopedUser", "User"],
-        access: List[Literal["read", "write", "admin"]],
+            cls,
+            query: "Select",
+            actor: Union["ScopedUser", "User"],
+            access: List[Literal["read", "write", "admin"]],
     ) -> "Select":
         """applies a WHERE clause restricting results to the given actor and access level"""
         del access  # not used by default, will be used for more complex access control
