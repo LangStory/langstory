@@ -105,16 +105,20 @@ class MessageCreate(BaseSchema):
     @model_validator(mode="before")
     def check_event_type_params(cls, values):
         try:
-            if values["type"] == EventType.tool_message:
+            vtype = values["type"]
+        except TypeError:
+            return values
+        try:
+            if vtype == EventType.tool_message:
                 assert (
                     values["tool_call_response"] is not None
                 ), "tool_call_response is required for tool_message events"
                 assert (
                     values["tool_calls_requested"] is None
                 ), "tool_calls_requested is not allowed for tool_message events"
-            elif not values["type"] == EventType.assistant_message:
+            elif not vtype == EventType.assistant_message:
                 assert (
-                    values["tool_calls_requested"] is None
+                    values.get("tool_calls_requested", None) is None
                 ), "tool_calls_requested is not allowed for non-assistant_message events"
             return values
         except AssertionError as e:

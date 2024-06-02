@@ -1,5 +1,6 @@
 from typing import Optional, TYPE_CHECKING
 from sqlalchemy.exc import NoResultFound, MultipleResultsFound
+from sqlalchemy import select
 
 from app.models.project import Project
 from app.controllers.mixins.collection_mixin import CollectionMixin
@@ -36,15 +37,14 @@ class ProjectController(CollectionMixin):
     def read_for_actor(self, actor: ScopedUser, project_id: str) -> Optional["Project"]:
         self.db_session.merge(actor.organization)
         try:
-            uid = Project.id_to_uid(project_id)
-        except ValueError as e:
-            bad_request(e=e, message="Invalid project id")
-        try:
-            # TODO: use the predicate method to check if the actor has access to the project
-            bound_org = actor.organization.read(
-                self.db_session, uid=actor.organization.uid
-            )
-            self.db_session.add(bound_org)
-            return bound_org.projects.filter_by(uid=uid).one()
+            project_uid = Project.to_uid(project_id)
+            query = Project.apply_access_predicate(select(Project), actor, ["read"])
+            project = self.db_session.execute(query.where(Project.uid == project_uid)).scalar_one()
         except (NoResultFound, MultipleResultsFound) as e:
-            not_found(e=e, message="Project not found")
+            not_found(e=e)
+        try:
+            message = "Project is not in the organization the actor is currently bound to"
+            assert project.organization_id == actor.organization.id, message
+            return project
+        except AssertionError as e:
+            bad_request(e=e, message=message)

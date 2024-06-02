@@ -22,7 +22,7 @@ class ChatController(DatabaseMixin):
         query = Chat.apply_access_predicate(select(Chat), actor, ["read"])
         try:
             chat_uid = Chat.to_uid(chat_id)
-            return self.db_session.execute(query.where(Chat.uid == chat_uid)).one()
+            return self.db_session.execute(query.where(Chat.uid == chat_uid)).scalar_one()
         except (NoResultFound, MultipleResultsFound) as e:
             not_found(e=e)
 
@@ -49,7 +49,7 @@ class ChatController(DatabaseMixin):
     def add_message(
             self, chat_id: str, message_data: MessageCreate, actor: "ScopedUser"
     ) -> Message:
-        chat = self.get_chat_for_actor(chat_id)
+        chat = self.get_chat_for_actor(chat_id, actor)
 
         if message_data.type == "tool_message":
             message_data.tool_call_response = self._to_tool_call(
@@ -65,8 +65,9 @@ class ChatController(DatabaseMixin):
             )
         ).create(self.db_session)
 
-        if tool_call in message_data.tool_calls_requested:
+        for tool_call in message_data.tool_calls_requested or []:
             tool_call = self._to_tool_call(tool_call, message.id)
+        self.db_session.add(message)
         self.db_session.refresh(message)
         return message
 

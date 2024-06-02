@@ -24,14 +24,20 @@ def get_chat(
     return chat
 
 
-@router.post("/", response_model=ChatRead)
+@router.post("/")
 def create_chat(
     chat_data: ChatCreate,
     db_session: Session = Depends(get_db_session),
     actor: ScopedUser = Depends(get_current_user),
 ):
     controller = ChatController(db_session)
-    return controller.create_chat_for_actor(chat_data, actor)
+    chat = controller.create_chat_for_actor(chat_data, actor)
+    return ChatRead(
+        id=chat.id,
+        name=chat.name,
+        description=chat.description,
+        project_id=chat_data.project_id, # need to do this explicitly because it is a prop
+    )
 
 
 @router.put("/{chat_id}", response_model=ChatRead)

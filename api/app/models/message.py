@@ -51,6 +51,10 @@ class Message(AuditedBase, ChatMixin, ThreadMixin):
         doc="The timestamp of the event in the chat. This is used as the chat index and controls the order in which chat messages are displayed.",
     )
 
+    # overload thread mixin to make it optional
+    _thread_uid: Mapped[Optional[UUID]] = mapped_column(SQLUUID(), ForeignKey("thread.uid"), nullable=True)
+
+
     @property
     def role(self) -> MessageRole:
         match self.type:
@@ -174,6 +178,10 @@ class Message(AuditedBase, ChatMixin, ThreadMixin):
                 return "Assistant"
             case _:
                 return None
+
+    @name.setter
+    def name(self, value: str) -> None:
+        self.display_name = value
 
     @classmethod
     def apply_access_predicate(
