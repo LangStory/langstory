@@ -200,7 +200,5 @@ class Message(AuditedBase, ChatMixin, ThreadMixin):
             raise ValueError("object %s has no organization accessor", actor)
         # TODO: access roles on chats goes here!
         return (
-            query.join(Chat)
-            .join(Project)
-            .where(Project._organization_uid == org_uid)
+            query.join(Chat).join(Project).where(Project._organization_uid == org_uid)
         )

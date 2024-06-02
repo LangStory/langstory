@@ -9,7 +9,12 @@ from app.controllers.project import ProjectController
 from app.http_errors import not_found
 from app.models.chat import Chat
 from app.models.message import Message
-from app.schemas.chat_schemas import MessageCreate, ChatCreate, ToolCallCreate, MessageRead
+from app.schemas.chat_schemas import (
+    MessageCreate,
+    ChatCreate,
+    ToolCallCreate,
+    MessageRead,
+)
 from app.schemas.collection_schemas import CollectionResponse, CollectionRequest
 
 if TYPE_CHECKING:
@@ -76,7 +81,6 @@ class ChatController(DatabaseMixin):
         self.db_session.refresh(message)
         return message
 
-
     def _to_tool_call(
         self,
         tool_call: Union[ToolCallCreate, str],
@@ -99,13 +103,15 @@ class ChatController(DatabaseMixin):
                 self.db_session
             )
 
-class MessageController(CollectionMixin):
 
+class MessageController(CollectionMixin):
 
     def __init__(self, db_session: "Session"):
         super().__init__(db_session=db_session, ModelClass=Message)
 
-    def list_messages_for_actor(self, request: "CollectionRequest") -> CollectionResponse:
+    def list_messages_for_actor(
+        self, request: "CollectionRequest"
+    ) -> CollectionResponse:
         items, page_count = self.get_collection(request)
         refined_items = [
             MessageRead(
@@ -113,7 +119,7 @@ class MessageController(CollectionMixin):
                 type=item.type,
                 timestamp=item.timestamp,
                 content=item.content,
-                chat_id=item.chat_id
+                chat_id=item.chat_id,
             )
             for item in items
         ]
