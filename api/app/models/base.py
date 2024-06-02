@@ -1,39 +1,33 @@
 from typing import Optional, TYPE_CHECKING, Type, Self, List, Literal, Union, Any
 from datetime import datetime
-from sqlmodel import Field, SQLModel
 from pydantic import ConfigDict
-from sqlalchemy import func, select
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import func, select, DateTime, text, Boolean, ForeignKey
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy.dialects.postgresql import UUID as SQLUUID
 from uuid import UUID, uuid4
 from humps import depascalize, camelize
 
 if TYPE_CHECKING:
     from sqlalchemy.sql.selectable import Select
-    from sqlalchemy.orm import Session
+    from sqlalchemy.orm import Session, Mapped, mapped_column
     from app.schemas.user_schemas import ScopedUser
     from app.schemas.user_schemas import User
 
 
-class Base(SQLModel):
+class Base(DeclarativeBase):
     __abstract__ = True
 
     __order_by_default__ = "created_at"
 
-    model_config = ConfigDict(
-        alias_generator=camelize,
-        extra="forbid",
+    uid: Mapped[UUID] = mapped_column(SQLUUID(), primary_key=True, default=uuid4)
+    created_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
     )
-
-    uid: UUID = Field(default_factory=uuid4, primary_key=True)
-    created_at: datetime = Field(
-        default=datetime.now(),
-        sa_column_kwargs={"server_default": func.now()},
+    updated_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), server_onupdate=func.now()
     )
-    updated_at: datetime = Field(
-        default=datetime.now(),
-        sa_column_kwargs={"server_default": func.now(), "onupdate": func.now()},
-    )
-    deleted: bool = Field(default=False, exclude=True)
+    deleted: Mapped[bool] = mapped_column(Boolean, server_default=text("FALSE"))
 
     @property
     def __prefix__(self) -> str:
@@ -129,12 +123,14 @@ class Base(SQLModel):
 class AuditedBase(Base):
     __abstract__ = True
 
-    fkey_creator_uid: Optional[UUID] = Field(
-        default=None,
+    _creator_uid: Optional[Mapped[UUID]] = mapped_column(
+        SQLUUID(),
+        nullable=True,
         foreign_key="user.uid",
         description="The ID of the user that owns this entity",
     )
-    fkey_last_editor_uid: Optional[UUID] = Field(
+    _last_editor_uid: Optional[Mapped[UUID]] = mapped_column(
+        SQLUUID(),
         default=None,
         foreign_key="user.uid",
         description="The ID of the user that last updated this entity",
