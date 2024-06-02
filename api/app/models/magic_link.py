@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from uuid import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base
+from app.models.base import AuditedBase
 from app.models.mixins import UserMixin
 
 if TYPE_CHECKING:
@@ -15,14 +15,14 @@ def ten_minutes():
     return datetime.now(timezone.utc) + timedelta(minutes=10)
 
 
-class MagicLink(Base, UserMixin):
+class MagicLink(AuditedBase, UserMixin):
     __tablename__ = "magic_link"
 
     token_hash: Mapped[str] = mapped_column(nullable=False, doc="The token to verify against")
-    expiration: Mapped[datetime] = mapped_column(default_factory=ten_minutes, doc="The expiration date of the magic link")
+    expiration: Mapped[datetime] = mapped_column(default=ten_minutes, doc="The expiration date of the magic link")
 
     # relationships
-    user: "User" = relationship("User")
+    user: Mapped["User"] = relationship("User")
 
     @property
     def is_expired(self) -> bool:

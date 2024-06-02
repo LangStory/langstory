@@ -123,13 +123,13 @@ class Base(DeclarativeBase):
 class AuditedBase(Base):
     __abstract__ = True
 
-    _creator_uid: Optional[Mapped[UUID]] = mapped_column(
+    _creator_uid: Mapped[Optional[UUID]] = mapped_column(
         SQLUUID(),
         ForeignKey("user.uid"),
         nullable=True,
         doc="The ID of the user that owns this entity",
     )
-    _last_editor_uid: Optional[Mapped[UUID]] = mapped_column(
+    _last_editor_uid: Mapped[Optional[UUID]] = mapped_column(
         SQLUUID(),
         ForeignKey("user.uid"),
         nullable=True,

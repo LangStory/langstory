@@ -21,8 +21,8 @@ class Chat(AuditedBase, ProjectMixin):
 
 
     # relationships
-    project: "Project" = relationship("Project", back_populates="chats", primaryjoin="Chat._project_uid==Project.uid")
-    messages: List["Message"] = relationship("Message", back_populates="chat", lazy="dynamic")
+    project: Mapped["Project"] = relationship("Project", back_populates="chats")
+    messages: Mapped[List["Message"]] = relationship("Message", back_populates="chat", lazy="dynamic")
 
     @classmethod
     def apply_access_predicate(

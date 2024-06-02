@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from sqlalchemy.orm import Session
     from app.models.project import Project
     from app.models.persona import Persona
+    from app.models.user import User
 
 class Organization(Base):
     __tablename__ = "organization"
@@ -22,6 +23,8 @@ class Organization(Base):
     # relationships
     projects: Mapped[List["Project"]] = relationship("Project", back_populates="organization", lazy="dynamic")
     personas: Mapped[List["Persona"]] = relationship("Persona", back_populates="organization", lazy="dynamic")
+
+    users: Mapped[List["User"]] = relationship("User", secondary="organizations_users", lazy="selectin")
 
     @classmethod
     def default(cls, db_session: "Generator[Session, None, None]"):

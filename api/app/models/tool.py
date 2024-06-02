@@ -1,36 +1,24 @@
-from typing import Optional
-from uuid import UUID
-from sqlmodel import Field, Column
+from typing import Optional, TYPE_CHECKING
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app.models.base import Base
-from app.models.project import Project
+from app.models.mixins import ProjectMixin
+
+if TYPE_CHECKING:
+    from app.models.project import Project
 
 
-class Tool(Base, table=True):
+class Tool(ProjectMixin, Base):
     """The callable function as presented to the LLM"""
+    __tablename__ = "tool"
 
-    name: str = Field(..., description="The name of the tool to be called")
-    json_schema: dict = Field(
-        default_factory=dict,
-        description="The jsonschema for the tool",
-        sa_column=Column(JSONB),
+    name: Mapped[str] = mapped_column(String, doc="The name of the tool to be called")
+    json_schema: Mapped[dict] = mapped_column(
+        JSONB,
+        doc="The jsonschema for the tool",
     )
-    description: Optional[str] = Field(
-        default=None, description="A displayable description of the tool"
-    )
-    fkey_project_uid: UUID = Field(
-        ...,
-        foreign_key="project.uid",
-        description="The ID of the project this tool belongs to",
-    )
+    description: Mapped[Optional[str]] = mapped_column(String, doc="A displayable description of the tool")
 
-    @property
-    def project_id(self) -> str:
-        if uid := self.fkey_project_uid:
-            return f"project-{uid}"
-        return None
-
-    @project_id.setter
-    def project_id(self, value:str) -> None:
-        self.fkey_project_uid = Project.to_uid(value)
+    project:Mapped["Project"] = relationship("Project", back_populates="tools")
