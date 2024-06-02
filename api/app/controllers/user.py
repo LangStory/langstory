@@ -7,9 +7,12 @@ from sqlalchemy.exc import IntegrityError
 from app.settings import settings
 from app.controllers.mixins.auth_mixin import AuthMixin
 from app.controllers.mixins.password_mixin import PasswordMixin
+from app.controllers.mixins.collection_mixin import CollectionMixin
 from app.http_errors import bad_request
 from app.models.organization import Organization
 from app.models.user import User
+from app.schemas.collection_schemas import CollectionResponse
+from app.schemas.user_schemas import UserRead
 
 if TYPE_CHECKING:
     from app.schemas.user_schemas import NewUser, ScopedUser, PydanticScopedUser
@@ -67,3 +70,27 @@ class UpdateUserFlow(AuthMixin, PasswordMixin):
         self.db_session.refresh(sql_user)
         user.user = sql_user
         return user.to_pydantic()
+
+
+class UserController(CollectionMixin):
+    """User controller"""
+
+    def __init__(self, db_session):
+        super().__init__(db_session=db_session, ModelClass=User)
+
+    def list_for_actor(self, request):
+        """list users"""
+        items, page_count = self.get_collection(request)
+        refined_items = [
+            UserRead(
+                id=item.id,
+                emailAddress=item.email_address,
+                firstName=item.first_name,
+                lastName=item.last_name,
+                avatarUrl=item.avatar_url,
+            )
+            for item in items
+        ]
+        return CollectionResponse(
+            items=refined_items, page=request.page, pages=page_count
+        )

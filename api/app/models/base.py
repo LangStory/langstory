@@ -105,11 +105,11 @@ class Base(AbsoluteBase):
         del access  # not used by default, will be used for more complex access control
         # by default, just check for matching organizations
         org_uid = getattr(
-            actor, "organization_id", getattr(actor.organization, "uid", None)
+            actor, "_organization_uid", getattr(actor.organization, "uid", None)
         )
         if not org_uid:
             raise ValueError("object %s has no organization accessor", actor)
-        return query.where(cls.organization_id == org_uid)
+        return query.where(cls._organization_uid == org_uid)
 
     @classmethod
     def related_lookup(cls, value: Any):
