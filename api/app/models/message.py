@@ -52,8 +52,9 @@ class Message(AuditedBase, ChatMixin, ThreadMixin):
     )
 
     # overload thread mixin to make it optional
-    _thread_uid: Mapped[Optional[UUID]] = mapped_column(SQLUUID(), ForeignKey("thread.uid"), nullable=True)
-
+    _thread_uid: Mapped[Optional[UUID]] = mapped_column(
+        SQLUUID(), ForeignKey("thread.uid"), nullable=True
+    )
 
     @property
     def role(self) -> MessageRole:

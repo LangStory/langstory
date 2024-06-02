@@ -32,8 +32,8 @@ def _relation_setter(instance: Type["Base"], prop: str, value: str) -> None:
     assert (
         # TODO: should be able to get this from the Mapped typing, not sure how though
         # prefix = getattr(?, "prefix")
-            found_prefix
-            == prefix
+        found_prefix
+        == prefix
     ), f"{found_prefix} is not a valid id prefix, expecting {prefix}"
     try:
         setattr(instance, formatted_prop, UUID(id_))

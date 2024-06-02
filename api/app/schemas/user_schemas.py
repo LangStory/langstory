@@ -25,7 +25,9 @@ class NewUser(BaseSchema):
     first_name: str = Field(..., description="the user's display name")
     last_name: str = Field(..., description="the user's display name")
     password: Optional[str] = Field(
-        default=None, description="the user's password, required if not using SSO", exclude=True
+        default=None,
+        description="the user's password, required if not using SSO",
+        exclude=True,
     )
 
 
@@ -46,8 +48,10 @@ class ReadUser(UpdateUser):
         description=id_description("user"),
     )
 
+
 class UserRead(ReadUser):
     """TODO: deprcate - one or the other here"""
+
 
 class ScopedUser:
     """a user scoped to an organization"""

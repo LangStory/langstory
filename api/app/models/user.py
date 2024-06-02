@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from sqlalchemy.orm import Select
     from app.schemas.user_schemas import ScopedUser
 
+
 class User(Base):
     __tablename__ = "user"
 
@@ -50,10 +51,10 @@ class User(Base):
 
     @classmethod
     def apply_access_predicate(
-            cls,
-            query: "Select",
-            actor: Union["ScopedUser", "User"],
-            access: List[Literal["read", "write", "admin"]],
+        cls,
+        query: "Select",
+        actor: Union["ScopedUser", "User"],
+        access: List[Literal["read", "write", "admin"]],
     ) -> "Select":
         """applies a WHERE clause restricting results to the given actor and access level"""
         del access  # not used by default, will be used for more complex access control
@@ -63,5 +64,7 @@ class User(Base):
         )
         if not org_uid:
             raise ValueError("object %s has no organization accessor", actor)
-        query = query.join(OrganizationsUsers).where(OrganizationsUsers._organization_uid == org_uid)
+        query = query.join(OrganizationsUsers).where(
+            OrganizationsUsers._organization_uid == org_uid
+        )
         return query

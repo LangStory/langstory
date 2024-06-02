@@ -36,7 +36,7 @@ def create_chat(
         id=chat.id,
         name=chat.name,
         description=chat.description,
-        project_id=chat_data.project_id, # need to do this explicitly because it is a prop
+        project_id=chat_data.project_id,  # need to do this explicitly because it is a prop
     )
 
 

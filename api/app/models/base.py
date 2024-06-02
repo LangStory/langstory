@@ -48,7 +48,7 @@ class Base(AbsoluteBase):
 
     @classmethod
     def read(
-            cls, db_session: "Session", identifier: Union[str, UUID], **kwargs
+        cls, db_session: "Session", identifier: Union[str, UUID], **kwargs
     ) -> Type[Self]:
         del kwargs
         identifier = cls.to_uid(identifier)
@@ -96,10 +96,10 @@ class Base(AbsoluteBase):
 
     @classmethod
     def apply_access_predicate(
-            cls,
-            query: "Select",
-            actor: Union["ScopedUser", "User"],
-            access: List[Literal["read", "write", "admin"]],
+        cls,
+        query: "Select",
+        actor: Union["ScopedUser", "User"],
+        access: List[Literal["read", "write", "admin"]],
     ) -> "Select":
         """applies a WHERE clause restricting results to the given actor and access level"""
         del access  # not used by default, will be used for more complex access control

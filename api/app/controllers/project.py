@@ -39,11 +39,15 @@ class ProjectController(CollectionMixin):
         try:
             project_uid = Project.to_uid(project_id)
             query = Project.apply_access_predicate(select(Project), actor, ["read"])
-            project = self.db_session.execute(query.where(Project.uid == project_uid)).scalar_one()
+            project = self.db_session.execute(
+                query.where(Project.uid == project_uid)
+            ).scalar_one()
         except (NoResultFound, MultipleResultsFound) as e:
             not_found(e=e)
         try:
-            message = "Project is not in the organization the actor is currently bound to"
+            message = (
+                "Project is not in the organization the actor is currently bound to"
+            )
             assert project.organization_id == actor.organization.id, message
             return project
         except AssertionError as e:

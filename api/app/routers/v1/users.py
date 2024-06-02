@@ -11,15 +11,16 @@ if TYPE_CHECKING:
 
 router = APIRouter(prefix="/users", tags=["user"])
 
+
 @router.get("/", response_model=CollectionResponse)
 def list_users(
-        perPage: int = None,
-        page: int = None,
-        query: str = None,
-        orderBy: str = None,
-        orderDir: str = None,
-        db_session: "Session" = Depends(get_db_session),
-        actor: "ScopedUser" = Depends(get_current_user),
+    perPage: int = None,
+    page: int = None,
+    query: str = None,
+    orderBy: str = None,
+    orderDir: str = None,
+    db_session: "Session" = Depends(get_db_session),
+    actor: "ScopedUser" = Depends(get_current_user),
 ):
     query_args = {}
     # drop the None values
@@ -29,4 +30,3 @@ def list_users(
     request = CollectionRequest(actor=actor, **query_args)
     controller = UserController(db_session)
     return controller.list_for_actor(request)
-

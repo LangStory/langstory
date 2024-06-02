@@ -22,7 +22,9 @@ class ChatController(DatabaseMixin):
         query = Chat.apply_access_predicate(select(Chat), actor, ["read"])
         try:
             chat_uid = Chat.to_uid(chat_id)
-            return self.db_session.execute(query.where(Chat.uid == chat_uid)).scalar_one()
+            return self.db_session.execute(
+                query.where(Chat.uid == chat_uid)
+            ).scalar_one()
         except (NoResultFound, MultipleResultsFound) as e:
             not_found(e=e)
 
@@ -47,7 +49,7 @@ class ChatController(DatabaseMixin):
         return chat.update(self.db_session)
 
     def add_message(
-            self, chat_id: str, message_data: MessageCreate, actor: "ScopedUser"
+        self, chat_id: str, message_data: MessageCreate, actor: "ScopedUser"
     ) -> Message:
         chat = self.get_chat_for_actor(chat_id, actor)
 
@@ -72,9 +74,9 @@ class ChatController(DatabaseMixin):
         return message
 
     def _to_tool_call(
-            self,
-            tool_call: Union[ToolCallCreate, str],
-            assistant_message_id: Optional[str] = None,
+        self,
+        tool_call: Union[ToolCallCreate, str],
+        assistant_message_id: Optional[str] = None,
     ) -> "ToolCall":
         """a flexible input that takes either a definition or an existing uuid and returns the ToolCall object
         Args:
