@@ -14,13 +14,13 @@ def _relation_getter(instance: "Base", prop: str) -> Optional[str]:
     if not getattr(instance, prop):
         return None
     prefix = prop.replace("_", "")
-    formatted_prop = f"_{prop}_id"
+    formatted_prop = f"_{prop}_uid"
     uuid_ = getattr(instance, formatted_prop)
     return f"{prefix}-{uuid_}"
 
 
 def _relation_setter(instance: Type["Base"], prop: str, value: str) -> None:
-    formatted_prop = f"_{prop}_id"
+    formatted_prop = f"_{prop}_uid"
     prefix = prop.replace("_", "")
     if not value:
         setattr(instance, formatted_prop, None)
@@ -46,7 +46,7 @@ class OrganizationMixin(Base):
 
     __abstract__ = True
 
-    _organization_id: Mapped[UUID] = mapped_column(
+    _organization_uid: Mapped[UUID] = mapped_column(
         SQLUUID(), ForeignKey("organization.uid")
     )
 
@@ -63,7 +63,7 @@ class ProjectMixin(Base):
 
     __abstract__ = True
 
-    _project_id: Mapped[UUID] = mapped_column(SQLUUID(), ForeignKey("project.uid"))
+    _project_uid: Mapped[UUID] = mapped_column(SQLUUID(), ForeignKey("project.uid"))
 
     @property
     def project_id(self) -> str:
@@ -78,7 +78,7 @@ class ToolMixin(Base):
 
     __abstract__ = True
 
-    _tool_id: Mapped[UUID] = mapped_column(SQLUUID(), ForeignKey("tool.uid"))
+    _tool_uid: Mapped[UUID] = mapped_column(SQLUUID(), ForeignKey("tool.uid"))
 
     @property
     def tool_id(self) -> str:
@@ -93,7 +93,7 @@ class UserMixin(Base):
 
     __abstract__ = True
 
-    _user_id: Mapped[UUID] = mapped_column(SQLUUID(), ForeignKey("user.uid"))
+    _user_uid: Mapped[UUID] = mapped_column(SQLUUID(), ForeignKey("user.uid"))
 
     @property
     def user_id(self) -> str:
@@ -108,7 +108,7 @@ class ChatMixin(Base):
 
     __abstract__ = True
 
-    _chat_id: Mapped[UUID] = mapped_column(SQLUUID(), ForeignKey("chat.uid"))
+    _chat_uid: Mapped[UUID] = mapped_column(SQLUUID(), ForeignKey("chat.uid"))
 
     @property
     def chat_id(self) -> str:
@@ -123,7 +123,7 @@ class ThreadMixin(Base):
 
     __abstract__ = True
 
-    _thread_id: Mapped[UUID] = mapped_column(SQLUUID(), ForeignKey("thread.uid"))
+    _thread_uid: Mapped[UUID] = mapped_column(SQLUUID(), ForeignKey("thread.uid"))
 
     @property
     def thread_id(self) -> str:
