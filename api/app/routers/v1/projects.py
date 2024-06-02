@@ -17,11 +17,11 @@ def create_project(
     project_data: ProjectCreate,
     db_session: Session = Depends(get_db_session),
     actor: ScopedUser = Depends(get_current_user),
-)-> ProjectRead:
+) -> ProjectRead:
     # since the scoped user is from the jwt and detached, we need to connect it
     db_session.merge(actor.organization)
     ## TODO: this goes in a controller since it's business logic
-    project =  Project(
+    project = Project(
         organization_id=actor.organization.uid,
         # especially this part
         created_by=actor.uid,
@@ -30,7 +30,14 @@ def create_project(
     ).create(db_session)
     db_session.add(project)
     db_session.refresh(project)
-    return ProjectRead(id=project.id, name=project.name, avatarUrl=project.avatar_url, description=project.description, organizationId=project.organization.id)
+    return ProjectRead(
+        id=project.id,
+        name=project.name,
+        avatarUrl=project.avatar_url,
+        description=project.description,
+        organizationId=project.organization.id,
+    )
+
 
 @router.get("/", response_model=CollectionResponse)
 def list_projects(

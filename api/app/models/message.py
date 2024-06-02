@@ -7,7 +7,7 @@ from sqlalchemy.dialects.postgresql import UUID as SQLUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import AuditedBase
-from app.models.mixins import ChatMixin, ThreadMixin
+from app.models._mixins import ChatMixin, ThreadMixin
 from app.models.project import Project
 
 if TYPE_CHECKING:
@@ -18,7 +18,6 @@ if TYPE_CHECKING:
     from app.models.user import User
     from app.schemas.user_schemas import ScopedUser
     from sqlalchemy import Select
-
 
 
 class EventType(str, Enum):
@@ -35,13 +34,22 @@ class MessageRole(str, Enum):
     assistant = "assistant"
     tool = "tool"
 
+
 class Message(AuditedBase, ChatMixin, ThreadMixin):
     __tablename__ = "message"
 
     type: Mapped[EventType] = mapped_column(nullable=False, doc="The type of message")
-    display_name: Mapped[Optional[str]] = mapped_column(default=None, doc="The assignable name of the message sender. DO NOT ACCESS DIRECTLY - use the name property to correctly access the name value")
-    content: Mapped[str] = mapped_column(nullable=False, doc="The content of the message")
-    timestamp: Mapped[datetime] = mapped_column(nullable=False, doc="The timestamp of the event in the chat. This is used as the chat index and controls the order in which chat messages are displayed.")
+    display_name: Mapped[Optional[str]] = mapped_column(
+        default=None,
+        doc="The assignable name of the message sender. DO NOT ACCESS DIRECTLY - use the name property to correctly access the name value",
+    )
+    content: Mapped[str] = mapped_column(
+        nullable=False, doc="The content of the message"
+    )
+    timestamp: Mapped[datetime] = mapped_column(
+        nullable=False,
+        doc="The timestamp of the event in the chat. This is used as the chat index and controls the order in which chat messages are displayed.",
+    )
 
     @property
     def role(self) -> MessageRole:
@@ -52,18 +60,30 @@ class Message(AuditedBase, ChatMixin, ThreadMixin):
                 return MessageRole.assistant
             case EventType.tool_message:
                 return MessageRole.tool
-            case self.type if self.type in (EventType.system_message, EventType.external_event,):
+            case self.type if self.type in (
+                EventType.system_message,
+                EventType.external_event,
+            ):
                 return MessageRole.system
 
     # relationships
     chat: Mapped["Chat"] = relationship("Chat", back_populates="messages")
-    thread: Mapped[Optional["Thread"]] = relationship("Thread", back_populates="messages")
+    thread: Mapped[Optional["Thread"]] = relationship(
+        "Thread", back_populates="messages"
+    )
 
     # =========================
     # USER MESSAGES PROPS
     # =========================
-    _user_message_persona_uid: Mapped[Optional[UUID]] = mapped_column(SQLUUID(), ForeignKey("persona.uid"), nullable=True, doc="The ID of the persona this message belongs to (if any); only valid for user messages")
-    _user_message_persona: Mapped[Optional["Persona"]] = relationship("Persona", primaryjoin="Message._user_message_persona_uid==Persona.uid")
+    _user_message_persona_uid: Mapped[Optional[UUID]] = mapped_column(
+        SQLUUID(),
+        ForeignKey("persona.uid"),
+        nullable=True,
+        doc="The ID of the persona this message belongs to (if any); only valid for user messages",
+    )
+    _user_message_persona: Mapped[Optional["Persona"]] = relationship(
+        "Persona", primaryjoin="Message._user_message_persona_uid==Persona.uid"
+    )
 
     @property
     def persona_id(self) -> Optional[str]:
@@ -102,19 +122,27 @@ class Message(AuditedBase, ChatMixin, ThreadMixin):
     @property
     def tool_calls_requested(self) -> Optional[List["ToolCall"]]:
         if not self.type == EventType.tool_message:
-            raise ValueError("tool calls requested are only accessible for assistant messages")
+            raise ValueError(
+                "tool calls requested are only accessible for assistant messages"
+            )
         return self._assistant_message_tool_calls
 
     @tool_calls_requested.setter
     def tool_calls_requested(self, value: List["ToolCall"]) -> None:
         if not self.type == EventType.assistant_message:
-            raise ValueError("tool calls requested are only accessible for assistant messages")
+            raise ValueError(
+                "tool calls requested are only accessible for assistant messages"
+            )
         self._assistant_message_tool_calls = value
 
     # =========================
     # TOOL MESSAGES PROPS
     # =========================
-    _tool_message_tool_call: Mapped["ToolCall"] = relationship("ToolCall", back_populates="tool_message", foreign_keys="ToolCall._tool_message_uid")
+    _tool_message_tool_call: Mapped["ToolCall"] = relationship(
+        "ToolCall",
+        back_populates="tool_message",
+        foreign_keys="ToolCall._tool_message_uid",
+    )
 
     @property
     def tool_call_response(self) -> "ToolCall":
@@ -149,10 +177,10 @@ class Message(AuditedBase, ChatMixin, ThreadMixin):
 
     @classmethod
     def apply_access_predicate(
-            cls,
-            query: "Select",
-            actor: Union["ScopedUser", "User"],
-            access: List[Literal["read", "write", "admin"]],
+        cls,
+        query: "Select",
+        actor: Union["ScopedUser", "User"],
+        access: List[Literal["read", "write", "admin"]],
     ) -> "Select":
         """applies a WHERE clause restricting results to the given actor and access level"""
         del access  # not used by default, will be used for more complex access control
@@ -162,4 +190,8 @@ class Message(AuditedBase, ChatMixin, ThreadMixin):
         if not org_uid:
             raise ValueError("object %s has no organization accessor", actor)
         # TODO: access roles on chats goes here!
-        return query.join(Chat).join(Project).where(Project.fkey_organization_uid == org_uid)
+        return (
+            query.join(Chat)
+            .join(Project)
+            .where(Project.fkey_organization_uid == org_uid)
+        )

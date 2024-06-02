@@ -26,14 +26,14 @@ def _relation_setter(instance: Type["Base"], prop: str, value: str) -> None:
         setattr(instance, formatted_prop, None)
         return
     try:
-        found_prefix, id_ = value.split("-",1)
+        found_prefix, id_ = value.split("-", 1)
     except ValueError as e:
         raise MalformedIdError(f"{value} is not a valid ID.") from e
     assert (
         # TODO: should be able to get this from the Mapped typing, not sure how though
         # prefix = getattr(?, "prefix")
-        found_prefix
-        == prefix
+            found_prefix
+            == prefix
     ), f"{found_prefix} is not a valid id prefix, expecting {prefix}"
     try:
         setattr(instance, formatted_prop, UUID(id_))
@@ -56,7 +56,8 @@ class OrganizationMixin(Base):
 
     @organization_id.setter
     def organization_id(self, value: str) -> None:
-        return _relation_setter(self, "organization", value)
+        _relation_setter(self, "organization", value)
+
 
 class ProjectMixin(Base):
     """1:1 mixin for Projects"""
@@ -71,7 +72,8 @@ class ProjectMixin(Base):
 
     @project_id.setter
     def project_id(self, value: str) -> None:
-        return _relation_setter(self, "project", value)
+        _relation_setter(self, "project", value)
+
 
 class ToolMixin(Base):
     """1:1 mixin for Tools"""
@@ -88,6 +90,7 @@ class ToolMixin(Base):
     def tool_id(self, value: str) -> None:
         return _relation_setter(self, "tool", value)
 
+
 class UserMixin(Base):
     """1:1 mixin for Users"""
 
@@ -101,7 +104,8 @@ class UserMixin(Base):
 
     @user_id.setter
     def user_id(self, value: str) -> None:
-        return _relation_setter(self, "user", value)
+        _relation_setter(self, "user", value)
+
 
 class ChatMixin(Base):
     """1:1 mixin for Chats"""
@@ -116,7 +120,8 @@ class ChatMixin(Base):
 
     @chat_id.setter
     def chat_id(self, value: str) -> None:
-        return _relation_setter(self, "chat", value)
+        _relation_setter(self, "chat", value)
+
 
 class ThreadMixin(Base):
     """1:1 mixin for threads"""
@@ -131,4 +136,4 @@ class ThreadMixin(Base):
 
     @thread_id.setter
     def thread_id(self, value: str) -> None:
-        return _relation_setter(self, "thread", value)
+        _relation_setter(self, "thread", value)

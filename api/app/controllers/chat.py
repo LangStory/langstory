@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from app.schemas.user_schemas import ScopedUser
     from app.models.tool_call import ToolCall
 
+
 class ChatController(DatabaseMixin):
 
     def get_chat_for_actor(self, chat_id: str, actor: "ScopedUser") -> Chat:
@@ -30,7 +31,9 @@ class ChatController(DatabaseMixin):
 
     def create_chat_for_actor(self, chat_data: ChatCreate, actor: "ScopedUser") -> Chat:
         # make sure actor can access the project first
-        project = ProjectController(self.db_session).read_for_actor(actor, chat_data.project_id)
+        project = ProjectController(self.db_session).read_for_actor(
+            actor, chat_data.project_id
+        )
         return Chat(
             creator_id=actor.id,
             editor_id=actor.id,
@@ -46,17 +49,23 @@ class ChatController(DatabaseMixin):
             setattr(chat, key, value)
         return chat.update(self.db_session)
 
-    def add_message(self, chat_id: str, message_data: MessageCreate, actor:"ScopedUser") -> Message:
+    def add_message(
+        self, chat_id: str, message_data: MessageCreate, actor: "ScopedUser"
+    ) -> Message:
         chat = self.get_chat_for_actor(chat_id)
 
         if message_data.type == "tool_message":
-            message_data.tool_call_response = self._to_tool_call(message_data.tool_call_response)
+            message_data.tool_call_response = self._to_tool_call(
+                message_data.tool_call_response
+            )
 
         message = Message(
             chat_id=chat.id,
             creator_id=actor.id,
             editor_id=actor.id,
-            **message_data.model_dump(exclude={"tool_calls_requested"}, exclude_none=True)
+            **message_data.model_dump(
+                exclude={"tool_calls_requested"}, exclude_none=True
+            )
         ).create(self.db_session)
 
         if tool_call in message_data.tool_calls_requested:
@@ -64,8 +73,11 @@ class ChatController(DatabaseMixin):
         self.db_session.refresh(message)
         return message
 
-
-    def _to_tool_call(self, tool_call: Union[ToolCallCreate, str], assistant_message_id:Optional[str]=None) -> "ToolCall":
+    def _to_tool_call(
+        self,
+        tool_call: Union[ToolCallCreate, str],
+        assistant_message_id: Optional[str] = None,
+    ) -> "ToolCall":
         """a flexible input that takes either a definition or an existing uuid and returns the ToolCall object
         Args:
             tool_call (Union[ToolCallCreate, str]): the tool call to convert
@@ -73,8 +85,12 @@ class ChatController(DatabaseMixin):
         """
         try:
             uid = ToolCall.to_uid(tool_call)
-            query = ToolCall.apply_access_predicate(select(ToolCall).where(ToolCall.uid==uid), self.actor, "read")
+            query = ToolCall.apply_access_predicate(
+                select(ToolCall).where(ToolCall.uid == uid), self.actor, "read"
+            )
             return self.db_session.execute(query).one()
         except (ValueError, AttributeError):
             # not an id, so it must be a definition
-            return ToolCall(**tool_call.model_dump(exclude_none=True)).create(self.db_session)
+            return ToolCall(**tool_call.model_dump(exclude_none=True)).create(
+                self.db_session
+            )

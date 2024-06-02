@@ -52,14 +52,14 @@ class JWTTokenFlow(AuthMixin):
         return JWTResponse(token=token, data=data)
 
     def get_auth_token(
-            self, refresh_token: "JWTBase", org: Optional["str"] = None
+        self, refresh_token: "JWTBase", org: Optional["str"] = None
     ) -> "JWTResponse":
         """generate a detailed token and readable data for a given user and org"""
         decoded = jwt.decode(
             refresh_token.token, settings.jwt_secret_key, algorithms=[self.algorithm]
         )
         assert (
-                decoded["exp"] > datetime.now(timezone.utc).timestamp()
+            decoded["exp"] > datetime.now(timezone.utc).timestamp()
         ), "token is expired"
         try:
             user = User.read(self.db_session, decoded["sub"])
@@ -71,7 +71,7 @@ class JWTTokenFlow(AuthMixin):
             sql_org = Organization.read(self.db_session, org_uid)
             try:
                 assert (
-                        sql_org in user.organizations
+                    sql_org in user.organizations
                 ), f"User {user.uid} is not a member of org {org}"
             except AssertionError as e:
                 forbidden(

@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import AuditedBase
-from app.models.mixins import UserMixin
+from app.models._mixins import UserMixin
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
@@ -18,11 +18,17 @@ def ten_minutes():
 class MagicLink(AuditedBase, UserMixin):
     __tablename__ = "magic_link"
 
-    token_hash: Mapped[str] = mapped_column(nullable=False, doc="The token to verify against")
-    expiration: Mapped[datetime] = mapped_column(default=ten_minutes, doc="The expiration date of the magic link")
+    token_hash: Mapped[str] = mapped_column(
+        nullable=False, doc="The token to verify against"
+    )
+    expiration: Mapped[datetime] = mapped_column(
+        default=ten_minutes, doc="The expiration date of the magic link"
+    )
 
     # relationships
-    user: Mapped["User"] = relationship("User", primaryjoin="MagicLink._user_uid == User.uid")
+    user: Mapped["User"] = relationship(
+        "User", primaryjoin="MagicLink._user_uid == User.uid"
+    )
 
     @property
     def is_expired(self) -> bool:

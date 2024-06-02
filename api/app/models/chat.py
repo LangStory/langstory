@@ -3,7 +3,7 @@ from sqlalchemy import TEXT
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import AuditedBase
-from app.models.mixins import ProjectMixin
+from app.models._mixins import ProjectMixin
 from app.models.project import Project
 
 if TYPE_CHECKING:
@@ -16,20 +16,25 @@ if TYPE_CHECKING:
 class Chat(AuditedBase, ProjectMixin):
     __tablename__ = "chat"
 
-    name: Mapped[str] = mapped_column(TEXT(), nullable=False, doc="The name of the chat")
-    description: Mapped[Optional[str]] = mapped_column(TEXT(), default=None, doc="A description of the chat")
-
+    name: Mapped[str] = mapped_column(
+        TEXT(), nullable=False, doc="The name of the chat"
+    )
+    description: Mapped[Optional[str]] = mapped_column(
+        TEXT(), default=None, doc="A description of the chat"
+    )
 
     # relationships
     project: Mapped["Project"] = relationship("Project", back_populates="chats")
-    messages: Mapped[List["Message"]] = relationship("Message", back_populates="chat", lazy="dynamic")
+    messages: Mapped[List["Message"]] = relationship(
+        "Message", back_populates="chat", lazy="dynamic"
+    )
 
     @classmethod
     def apply_access_predicate(
-            cls,
-            query: "Select",
-            actor: Union["ScopedUser", "User"],
-            access: List[Literal["read", "write", "admin"]],
+        cls,
+        query: "Select",
+        actor: Union["ScopedUser", "User"],
+        access: List[Literal["read", "write", "admin"]],
     ) -> "Select":
         """applies a WHERE clause restricting results to the given actor and access level"""
         del access  # not used by default, will be used for more complex access control

@@ -1,12 +1,12 @@
-from typing import Optional, TYPE_CHECKING, Type, Self, List, Literal, Union, Any
 from datetime import datetime
-from pydantic import ConfigDict
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import func, select, DateTime, text, Boolean, ForeignKey
-from sqlalchemy.exc import NoResultFound
-from sqlalchemy.dialects.postgresql import UUID as SQLUUID
+from typing import Optional, TYPE_CHECKING, Type, Self, List, Literal, Union, Any
 from uuid import UUID, uuid4
-from humps import depascalize, camelize
+
+from humps import depascalize
+from sqlalchemy import func, DateTime, text, Boolean, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID as SQLUUID
+from sqlalchemy.exc import NoResultFound
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 if TYPE_CHECKING:
     from sqlalchemy.sql.selectable import Select
@@ -44,8 +44,7 @@ class Base(DeclarativeBase):
 
     @classmethod
     def read(
-            cls, db_session: "Session",
-            identifier: Union[str, UUID], **kwargs
+        cls, db_session: "Session", identifier: Union[str, UUID], **kwargs
     ) -> Type[Self]:
         del kwargs
         identifier = cls.to_uid(identifier)
@@ -85,15 +84,17 @@ class Base(DeclarativeBase):
             # a UUID was passed
             uid = identifier
         except ValueError as e:
-            raise ValueError(f"{identifier} is not a valid id for {cls.__name__}") from e
+            raise ValueError(
+                f"{identifier} is not a valid id for {cls.__name__}"
+            ) from e
         return uid
 
     @classmethod
     def apply_access_predicate(
-            cls,
-            query: "Select",
-            actor: Union["ScopedUser", "User"],
-            access: List[Literal["read", "write", "admin"]],
+        cls,
+        query: "Select",
+        actor: Union["ScopedUser", "User"],
+        access: List[Literal["read", "write", "admin"]],
     ) -> "Select":
         """applies a WHERE clause restricting results to the given actor and access level"""
         del access  # not used by default, will be used for more complex access control

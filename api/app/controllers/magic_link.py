@@ -33,9 +33,7 @@ class MagicLinkFlow(AuthMixin, PasswordMixin):
             raise NotImplementedError("email settings are not configured")
         logger.info("requested magic link for email %s", email_address)
         try:
-            user = User.read(
-                self.db_session, self.standardized_email(email_address)
-            )
+            user = User.read(self.db_session, self.standardized_email(email_address))
         except (NoResultFound, MultipleResultsFound):
             logger.error("user not found for email %s", email_address)
             return

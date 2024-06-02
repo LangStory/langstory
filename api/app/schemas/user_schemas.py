@@ -2,7 +2,12 @@ from typing import Any, Optional, TYPE_CHECKING, Type
 from uuid import UUID
 from pydantic import Field
 
-from app.schemas.base_schema import BaseSchema, id_regex_pattern, id_example, id_description
+from app.schemas.base_schema import (
+    BaseSchema,
+    id_regex_pattern,
+    id_example,
+    id_description,
+)
 from app.schemas.organization_schemas import OrganizationRead
 from app.models.user import User
 from app.models.organization import Organization
@@ -32,8 +37,14 @@ class UpdateUser(NewUser):
     last_name: Optional[str] = Field(None, description="the user's display name")
     avatar_url: Optional[str] = Field(None, description="the user's avatar image URL")
 
+
 class ReadUser(UpdateUser):
-    id: str = Field(..., example=id_example("user"), pattern=id_regex_pattern("user"), description=id_description("user"))
+    id: str = Field(
+        ...,
+        example=id_example("user"),
+        pattern=id_regex_pattern("user"),
+        description=id_description("user"),
+    )
 
 
 class ScopedUser:
@@ -83,6 +94,7 @@ class ScopedUser:
     def to_pydantic(self) -> Type["BaseSchema"]:
         """convert to a Pydantic model, no longer supports the graduated attr lookup"""
         return PydanticScopedUser(user=self.user, organization=self.organization)
+
 
 class PydanticScopedUser(BaseSchema):
     """ScopedUser converted to a Pydantic model, no longer supports the graduated attr lookup"""

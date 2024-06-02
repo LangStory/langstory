@@ -23,6 +23,7 @@ def get_chat(
     chat = controller.get_chat_for_actor(chat_id, actor)
     return chat
 
+
 @router.post("/", response_model=ChatRead)
 def create_chat(
     chat_data: ChatCreate,
@@ -31,6 +32,7 @@ def create_chat(
 ):
     controller = ChatController(db_session)
     return controller.create_chat_for_actor(chat_data, actor)
+
 
 @router.put("/{chat_id}", response_model=ChatRead)
 @router.patch("/{chat_id}", response_model=ChatRead)
@@ -43,15 +45,19 @@ def update_chat(
     controller = ChatController(db)
     return controller.update_chat_for_actor(chat_id, chat_data, actor)
 
+
 @router.delete("/{chat_id}")
-def delete_chat(chat_id: str,
-                db: Session = Depends(get_db_session),
-                actor: ScopedUser = Depends(get_current_user)):
+def delete_chat(
+    chat_id: str,
+    db: Session = Depends(get_db_session),
+    actor: ScopedUser = Depends(get_current_user),
+):
     controller = ChatController(db)
     chat = controller.get_chat_for_actor(chat_id, actor)
     chat.deleted = True
     chat.update(db)
     return {"message": "Chat deleted successfully"}
+
 
 @router.post("/{chat_id}/messages", response_model=MessageRead)
 def add_message(
@@ -72,4 +78,3 @@ def get_messages(chat_id: str, db: Session = Depends(get_db_session)):
     if not chat.messages:
         raise HTTPException(status_code=404, detail="No messages available for chat")
     return chat
-
