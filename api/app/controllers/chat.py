@@ -1,19 +1,16 @@
 from typing import TYPE_CHECKING, Union, Optional
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound, MultipleResultsFound
 
-from app.models.chat import Chat
-from app.models.message import Message
 from app.controllers.mixins.database_mixin import DatabaseMixin
 from app.controllers.project import ProjectController
 from app.http_errors import not_found
-from app.schemas.chat_schemas import MessageCreate, ChatCreate, ChatRead, ToolCallCreate
-
+from app.models.chat import Chat
+from app.models.message import Message
+from app.schemas.chat_schemas import MessageCreate, ChatCreate, ToolCallCreate
 
 if TYPE_CHECKING:
-    from app.models.user import User
     from app.schemas.user_schemas import ScopedUser
     from app.models.tool_call import ToolCall
 
@@ -22,7 +19,7 @@ class ChatController(DatabaseMixin):
 
     def get_chat_for_actor(self, chat_id: str, actor: "ScopedUser") -> Chat:
         """retrieve a chat if the actor can access it"""
-        query = Chat.apply_access_predicate(select(Chat), actor, "read")
+        query = Chat.apply_access_predicate(select(Chat), actor, ["read"])
         try:
             chat_uid = Chat.to_uid(chat_id)
             return self.db_session.execute(query.where(Chat.uid == chat_uid)).one()
@@ -50,7 +47,7 @@ class ChatController(DatabaseMixin):
         return chat.update(self.db_session)
 
     def add_message(
-        self, chat_id: str, message_data: MessageCreate, actor: "ScopedUser"
+            self, chat_id: str, message_data: MessageCreate, actor: "ScopedUser"
     ) -> Message:
         chat = self.get_chat_for_actor(chat_id)
 
@@ -74,9 +71,9 @@ class ChatController(DatabaseMixin):
         return message
 
     def _to_tool_call(
-        self,
-        tool_call: Union[ToolCallCreate, str],
-        assistant_message_id: Optional[str] = None,
+            self,
+            tool_call: Union[ToolCallCreate, str],
+            assistant_message_id: Optional[str] = None,
     ) -> "ToolCall":
         """a flexible input that takes either a definition or an existing uuid and returns the ToolCall object
         Args:

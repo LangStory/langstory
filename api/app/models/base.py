@@ -83,7 +83,8 @@ class Base(AbsoluteBase):
         """
         try:
             # a valid ID for the class was passed, or the uid was passed as a string
-            uid = UUID(identifier.split(f"{cls.__name__.lower()}-")[-1])
+            prefix = prefix or cls.__name__.lower()
+            uid = UUID(identifier.split(f"{prefix}-")[-1])
         except AttributeError:
             # a UUID was passed
             uid = identifier
@@ -152,7 +153,7 @@ class AuditedBase(Base):
         try:
             uid = getattr(value, "user", value).uid
         except AttributeError:
-            uid = self.to_uid(value)
+            uid = self.to_uid(value, prefix="user")
         self._creator_uid = uid
 
     @property
@@ -164,5 +165,5 @@ class AuditedBase(Base):
         try:
             uid = getattr(value, "user", value).uid
         except AttributeError:
-            uid = self.to_uid(value)
+            uid = self.to_uid(value, prefix="user")
         self._last_editor_uid = uid
