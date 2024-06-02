@@ -22,7 +22,7 @@ class MagicLink(AuditedBase, UserMixin):
     expiration: Mapped[datetime] = mapped_column(default=ten_minutes, doc="The expiration date of the magic link")
 
     # relationships
-    user: Mapped["User"] = relationship("User")
+    user: Mapped["User"] = relationship("User", primaryjoin="MagicLink._user_id == User.uid")
 
     @property
     def is_expired(self) -> bool:

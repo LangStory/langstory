@@ -63,7 +63,7 @@ class Message(AuditedBase, ChatMixin, ThreadMixin):
     # USER MESSAGES PROPS
     # =========================
     _user_message_persona_uid: Mapped[Optional[UUID]] = mapped_column(SQLUUID(), ForeignKey("persona.uid"), nullable=True, doc="The ID of the persona this message belongs to (if any); only valid for user messages")
-    _user_message_persona: Mapped[Optional["Persona"]] = relationship("Persona", primaryjoin="Message._message_persona_uid==Persona.uid")
+    _user_message_persona: Mapped[Optional["Persona"]] = relationship("Persona", primaryjoin="Message._user_message_persona_uid==Persona.uid")
 
     @property
     def persona_id(self) -> Optional[str]:
@@ -95,7 +95,8 @@ class Message(AuditedBase, ChatMixin, ThreadMixin):
     # ASSISTANT MESSAGES PROPS
     # =========================
     _assistant_message_tool_calls: Mapped[Optional[List["ToolCall"]]] = relationship(
-        back_populates="assistant_message"
+        back_populates="assistant_message",
+        foreign_keys="ToolCall._assistant_message_uid",
     )
 
     @property
@@ -113,22 +114,7 @@ class Message(AuditedBase, ChatMixin, ThreadMixin):
     # =========================
     # TOOL MESSAGES PROPS
     # =========================
-    _tool_message_tool_call_uid: Mapped[UUID] = mapped_column(ForeignKey("tool_call.uid"), nullable=False, doc="The ID of the tool call this message belongs to; only valid for tool messages")
-
-    _tool_message_tool_call: Mapped["ToolCall"] = relationship("ToolCall", back_populates="tool_message", primaryjoin="Message._tool_message_tool_call_uid==ToolCall.uid")
-
-    @property
-    def tool_call_response_id(self) -> str:
-        if not self.type == EventType.tool_message:
-            raise ValueError("tool call response id is only valid for tool messages")
-        if uid := self._tool_message_tool_call_uid:
-            return f"toolcall-{uid}"
-
-    @tool_call_response_id.setter
-    def tool_call_response_id(self, value: UUID) -> None:
-        if not self.type == EventType.tool_message:
-            raise ValueError("tool call response is only valid for tool messages")
-        self._tool_message_tool_call_uid = AuditedBase.to_uid(value, prefix="toolcall")
+    _tool_message_tool_call: Mapped["ToolCall"] = relationship("ToolCall", back_populates="tool_message", foreign_keys="ToolCall._tool_message_uid")
 
     @property
     def tool_call_response(self) -> "ToolCall":
