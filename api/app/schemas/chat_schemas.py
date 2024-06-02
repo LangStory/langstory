@@ -151,13 +151,16 @@ class MessageRead(MessageCreate):
         description="The tool call associated with the response from executing the tool call",
     )
 
+
 class MessageUpdate(MessageRead):
-    id: Optional[str] = Field(default=None,
+    id: Optional[str] = Field(
+        default=None,
         pattern=id_regex_pattern("message"),
         examples=id_example("message"),
         description=id_description("message"),
     )
-    chat_id: Optional[str] = Field(default=None,
+    chat_id: Optional[str] = Field(
+        default=None,
         pattern=id_regex_pattern("chat"),
         examples=id_example("chat"),
         description=id_description("chat"),
