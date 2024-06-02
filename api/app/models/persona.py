@@ -1,37 +1,21 @@
 from typing import Optional, TYPE_CHECKING
-from uuid import UUID
 from pydantic import HttpUrl
-from sqlmodel import Field, Column, String, Relationship
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
-from app.models.organization import Organization
+from app.models.mixins import OrganizationMixin
+
+if TYPE_CHECKING:
+    from app.models.organization import Organization
 
 
 
-class Persona(Base, table=True):
-    name: str = Field(..., description="The name of the persona")
-    description: Optional[str] = Field(
-        default=None, description="A description of the persona"
-    )
-    fkey_organization_uid: UUID = Field(
-        ...,
-        foreign_key="organization.uid",
-        description="The ID of the organization this persona belongs to",
-    )
+class Persona(Base, OrganizationMixin):
+    __tablename__ = "persona"
 
-    avatar_url: Optional[HttpUrl] = Field(
-        None, description="The URL of the persona's avatar", sa_column=Column(String)
-    )
+    name: Mapped[str] = mapped_column(nullable=False, doc="The name of the persona")
+    description: Mapped[Optional[str]] = mapped_column(default=None, doc="A description of the persona")
+    avatar_url: Mapped[Optional[HttpUrl]] = mapped_column(String, default=None, doc="The URL of the persona's avatar")
 
-    @property
-    def organization_id(self) -> str:
-        if uid := self.fkey_organization_uid:
-            return f"organization-{uid}"
-        return None
-
-    @organization_id.setter
-    def organization_id(self, value:str) -> None:
-        self.fkey_organization_uid = Organization.to_uid(value)
-
-    # relationships
-    organization: "Organization" = Relationship(sa_relationship_kwargs={"primaryjoin":"Persona.fkey_organization_uid==Organization.uid"}, back_populates="personas")
+    organization: "Organization" = relationship("Organization", back_populates="personas")
