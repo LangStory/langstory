@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Union, Optional
+from typing import TYPE_CHECKING, List, Union, Optional
 
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound, MultipleResultsFound
@@ -15,6 +15,7 @@ from app.schemas.chat_schemas import (
     ChatRead,
     ToolCallCreate,
     MessageRead,
+    MessageUpdate
 )
 from app.schemas.collection_schemas import CollectionResponse, CollectionRequest
 
@@ -127,6 +128,18 @@ class MessageController(CollectionMixin):
     def __init__(self, db_session: "Session"):
         super().__init__(db_session=db_session, ModelClass=Message)
 
+
+    def get_message_for_actor(self, message_id: str, actor: "ScopedUser") -> Message:
+        """retrieve a message if the actor can access it"""
+        query = Message.apply_access_predicate(select(Message), actor, ["read"])
+        try:
+            message_uid = Message.to_uid(message_id)
+            return self.db_session.execute(
+                query.where(Message.uid == message_uid)
+            ).scalar_one()
+        except (NoResultFound, MultipleResultsFound) as e:
+            not_found(e=e)
+
     def list_chat_messages_for_actor(
         self, chat_id: str, request: "CollectionRequest"
     ) -> CollectionResponse:
@@ -147,3 +160,18 @@ class MessageController(CollectionMixin):
         return CollectionResponse(
             items=refined_items, page=request.page, pages=page_count
         )
+
+    def update_message_for_actor(self, message_data: MessageUpdate, actor: "ScopedUser") -> Message:
+        # make sure actor can access the project first
+        chat_controller = ChatController(self.db_session)
+
+        chat = chat_controller.get_chat_for_actor(message_data.chat_id, actor)
+        chat.editor_id = actor.id
+        message = self.get_message_for_actor(message_data.id, actor)
+        message.editor_id = actor.id
+        for key, value in message_data.model_dump(exclude_none=True, exclude=["id","chat_id"]).items():
+            setattr(message, key, value)
+        self.db_session.add(chat)
+        self.db_session.add(message)
+        _ = chat.update(self.db_session)
+        return message.update(self.db_session)

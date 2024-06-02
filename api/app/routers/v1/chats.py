@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.controllers.chat import ChatController, MessageController
 from app.models.chat import Chat
 from app.routers.utilities import get_db_session, get_current_user
-from app.schemas.chat_schemas import ChatCreate, ChatRead, MessageCreate, MessageRead
+from app.schemas.chat_schemas import ChatCreate, ChatRead, MessageCreate, MessageRead, MessageUpdate
 from app.schemas.user_schemas import ScopedUser
 from app.schemas.collection_schemas import CollectionResponse, CollectionRequest
 
@@ -116,3 +116,33 @@ def list_messages(
     request = CollectionRequest(actor=actor, **query_args)
     controller = MessageController(db_session)
     return controller.list_chat_messages_for_actor(chat_id, request)
+
+@router.put("/{chat_id}/messages/{message_id}", response_model=MessageRead)
+@router.patch("/{chat_id}/messages/{message_id}", response_model=MessageRead)
+def update_message(
+    chat_id: str,
+    message_id: str,
+    message_data: MessageUpdate,
+    db: Session = Depends(get_db_session),
+    actor: ScopedUser = Depends(get_current_user),
+):
+    message_data.id = message_id
+    message_data.chat_id = chat_id
+    controller = MessageController(db)
+    message = controller.update_message_for_actor(message_data, actor)
+    extra = {}
+    match message.type:
+        case "user_message":
+            extra["persona"] = message.persona
+        case "assistant_message":
+            extra["tool_calls_requested"] = message.tool_calls_requested
+        case "tool_message":
+            extra["tool_call_response"] = message.tool_call_response
+        case _:
+            pass
+    return MessageRead(id=message.id,
+                       name=message.name,
+                       chat_id=chat_id,
+                       type=message.type,
+                       timestamp=message.timestamp,
+                       content=message.content, **extra)
