@@ -4,15 +4,18 @@ from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound, MultipleResultsFound
 
 from app.controllers.mixins.database_mixin import DatabaseMixin
+from app.controllers.mixins.collection_mixin import CollectionMixin
 from app.controllers.project import ProjectController
 from app.http_errors import not_found
 from app.models.chat import Chat
 from app.models.message import Message
-from app.schemas.chat_schemas import MessageCreate, ChatCreate, ToolCallCreate
+from app.schemas.chat_schemas import MessageCreate, ChatCreate, ToolCallCreate, MessageRead
+from app.schemas.collection_schemas import CollectionResponse, CollectionRequest
 
 if TYPE_CHECKING:
     from app.schemas.user_schemas import ScopedUser
     from app.models.tool_call import ToolCall
+    from sqlalchemy.orm import Session
 
 
 class ChatController(DatabaseMixin):
@@ -73,6 +76,7 @@ class ChatController(DatabaseMixin):
         self.db_session.refresh(message)
         return message
 
+
     def _to_tool_call(
         self,
         tool_call: Union[ToolCallCreate, str],
@@ -94,3 +98,25 @@ class ChatController(DatabaseMixin):
             return ToolCall(**tool_call.model_dump(exclude_none=True)).create(
                 self.db_session
             )
+
+class MessageController(CollectionMixin):
+
+
+    def __init__(self, db_session: "Session"):
+        super().__init__(db_session=db_session, ModelClass=Message)
+
+    def list_messages_for_actor(self, request: "CollectionRequest") -> CollectionResponse:
+        items, page_count = self.get_collection(request)
+        refined_items = [
+            MessageRead(
+                id=item.id,
+                type=item.type,
+                timestamp=item.timestamp,
+                content=item.content,
+                chat_id=item.chat_id
+            )
+            for item in items
+        ]
+        return CollectionResponse(
+            items=refined_items, page=request.page, pages=page_count
+        )

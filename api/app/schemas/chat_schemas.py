@@ -106,15 +106,15 @@ class MessageCreate(BaseSchema):
     def check_event_type_params(cls, values):
         try:
             vtype = values["type"]
-        except TypeError:
+        except (KeyError, TypeError):
             return values
         try:
             if vtype == EventType.tool_message:
                 assert (
-                    values["tool_call_response"] is not None
+                    values.get("tool_call_response", None) is not None
                 ), "tool_call_response is required for tool_message events"
                 assert (
-                    values["tool_calls_requested"] is None
+                    values.get("tool_calls_requested", None) is None
                 ), "tool_calls_requested is not allowed for tool_message events"
             elif not vtype == EventType.assistant_message:
                 assert (

@@ -4,11 +4,12 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.controllers.chat import ChatController
+from app.controllers.chat import ChatController, MessageController
 from app.models.chat import Chat
 from app.routers.utilities import get_db_session, get_current_user
 from app.schemas.chat_schemas import ChatCreate, ChatRead, MessageCreate, MessageRead
 from app.schemas.user_schemas import ScopedUser
+from app.schemas.collection_schemas import CollectionResponse, CollectionRequest
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
@@ -76,11 +77,21 @@ def add_message(
     return controller.add_message(chat_id, message_data, actor)
 
 
-@router.get("/{chat_id}/messages", response_model=List[MessageRead])
-def get_messages(chat_id: str, db: Session = Depends(get_db_session)):
-    chat = Chat.read(db, chat_id)
-    if not chat:
-        raise HTTPException(status_code=404, detail="Chat not found")
-    if not chat.messages:
-        raise HTTPException(status_code=404, detail="No messages available for chat")
-    return chat
+@router.get("/", response_model=CollectionResponse)
+def list_messages(
+    perPage: int = None,
+    page: int = None,
+    query: str = None,
+    orderBy: str = None,
+    orderDir: str = None,
+    db_session: Session = Depends(get_db_session),
+    actor: ScopedUser = Depends(get_current_user),
+):
+    query_args = {}
+    # drop the None values
+    for key in ["perPage", "page", "orderBy", "orderDir"]:
+        if locals()[key] is not None:
+            query_args[key] = locals()[key]
+    request = CollectionRequest(actor=actor, **query_args)
+    controller = MessageController(db_session)
+    return controller.list_messages_for_actor(request)
