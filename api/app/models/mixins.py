@@ -72,3 +72,18 @@ class ProjectMixin(Base):
     @project_id.setter
     def project_id(self, value: str) -> None:
         return _relation_setter(self, "project", value)
+
+class UserMixin(Base):
+    """1:1 mixin for Users"""
+
+    __abstract__ = True
+
+    _user_id: Mapped[UUID] = mapped_column(SQLUUID(), ForeignKey("user.uid"))
+
+    @property
+    def user_id(self) -> str:
+        return _relation_getter(self, "user")
+
+    @user_id.setter
+    def user_id(self, value: str) -> None:
+        return _relation_setter(self, "user", value)
