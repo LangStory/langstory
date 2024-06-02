@@ -27,12 +27,13 @@ class CollectionMixin(DatabaseMixin):
         super().__init__(db_session)
         self.ModelClass = ModelClass
 
-    def get_collection(self, request: "CollectionRequest") -> "CollectionResponse":
+    def get_collection(self, request: "CollectionRequest", select_:Optional["Select"]=None) -> "CollectionResponse":
         """shorthand for get_paginated_collection"""
         # cannot infer type of ScopedUser at this time
         return self.get_paginated_collection(
             self.ModelClass,
             actor=request.actor,
+            select_=select_,
             **request.model_dump(exclude_none=True, exclude=["actor"]),
         )
 
@@ -45,8 +46,11 @@ class CollectionMixin(DatabaseMixin):
         order_by: Optional[str] = None,
         order_dir: Optional[str] = None,
         power_filter: Optional[str] = None,
+        select_: Optional["Select"] = None,
     ) -> Tuple[List[Type["Base"]], int]:
-        """DEPRECATED: use get_collection, which will eventually replace this method"""
+        """DEPRECATED: use get_collection, which will eventually replace this method
+        select_: a pre-built select query to use instead of building a new one
+        """
         # defaults post-none, as upstream may set these to None
         page = max(
             (
@@ -59,7 +63,7 @@ class CollectionMixin(DatabaseMixin):
         order_by = order_by or getattr(ModelClass, "__order_by_default__")
 
         orderable = self._get_orderable(ModelClass, order_by, order_dir)
-        query = select(ModelClass)
+        query = select_ or select(ModelClass)
         if hasattr(ModelClass, "deleted"):
             query = query.where(ModelClass.deleted == False)
         query = ModelClass.apply_access_predicate(query, actor, "read")

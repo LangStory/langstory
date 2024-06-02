@@ -12,6 +12,7 @@ from app.models.message import Message
 from app.schemas.chat_schemas import (
     MessageCreate,
     ChatCreate,
+    ChatRead,
     ToolCallCreate,
     MessageRead,
 )
@@ -23,7 +24,24 @@ if TYPE_CHECKING:
     from sqlalchemy.orm import Session
 
 
-class ChatController(DatabaseMixin):
+class ChatController(CollectionMixin, DatabaseMixin):
+
+    def __init__(self, db_session: "Session"):
+        super().__init__(db_session=db_session, ModelClass=Chat)
+
+    def list_for_actor(self, request: "CollectionRequest") -> "CollectionResponse":
+        items, page_count = self.get_collection(request)
+        refined_items = [
+            ChatRead(
+                id=item.id,
+                name=item.name,
+                project_id=item.project_id,
+            )
+            for item in items
+        ]
+        return CollectionResponse(
+            items=refined_items, page=request.page, pages=page_count
+        )
 
     def get_chat_for_actor(self, chat_id: str, actor: "ScopedUser") -> Chat:
         """retrieve a chat if the actor can access it"""
@@ -109,10 +127,13 @@ class MessageController(CollectionMixin):
     def __init__(self, db_session: "Session"):
         super().__init__(db_session=db_session, ModelClass=Message)
 
-    def list_messages_for_actor(
-        self, request: "CollectionRequest"
+    def list_chat_messages_for_actor(
+        self,
+        chat_id: str,
+        request: "CollectionRequest"
     ) -> CollectionResponse:
-        items, page_count = self.get_collection(request)
+        chat = ChatController(self.db_session).get_chat_for_actor(chat_id, request.actor)
+        items, page_count = self.get_collection(request, select_=chat.messages)
         refined_items = [
             MessageRead(
                 id=item.id,

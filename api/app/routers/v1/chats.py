@@ -13,6 +13,24 @@ from app.schemas.collection_schemas import CollectionResponse, CollectionRequest
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
+@router.get("/", response_model=CollectionResponse)
+def list_chats(
+    perPage: int = None,
+    page: int = None,
+    query: str = None,
+    orderBy: str = None,
+    orderDir: str = None,
+    db_session: Session = Depends(get_db_session),
+    actor: ScopedUser = Depends(get_current_user),
+):
+    query_args = {}
+    # drop the None values
+    for key in ["perPage", "page", "orderBy", "orderDir"]:
+        if locals()[key] is not None:
+            query_args[key] = locals()[key]
+    request = CollectionRequest(actor=actor, **query_args)
+    controller = ChatController(db_session)
+    return controller.list_for_actor(request)
 
 @router.get("/{chat_id}", response_model=ChatRead)
 def get_chat(
@@ -77,8 +95,9 @@ def add_message(
     return controller.add_message(chat_id, message_data, actor)
 
 
-@router.get("/", response_model=CollectionResponse)
+@router.get("/{chat_id}/messages", response_model=CollectionResponse)
 def list_messages(
+    chat_id: str,
     perPage: int = None,
     page: int = None,
     query: str = None,
@@ -94,4 +113,4 @@ def list_messages(
             query_args[key] = locals()[key]
     request = CollectionRequest(actor=actor, **query_args)
     controller = MessageController(db_session)
-    return controller.list_messages_for_actor(request)
+    return controller.list_chat_messages_for_actor(chat_id, request)
