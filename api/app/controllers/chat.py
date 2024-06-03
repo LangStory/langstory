@@ -128,8 +128,7 @@ class MessageController(CollectionMixin):
     def __init__(self, db_session: "Session"):
         super().__init__(db_session=db_session, ModelClass=Message)
 
-    def get_message_for_actor(self, message_id: str, actor: "ScopedUser") -> Message:
-        """retrieve a message if the actor can access it"""
+    def _get_for_actor(self, actor: "ScopedUser", message_id: str) -> Message:
         query = Message.apply_access_predicate(select(Message), actor, ["read"])
         try:
             message_uid = Message.to_uid(message_id)
@@ -138,6 +137,10 @@ class MessageController(CollectionMixin):
             ).scalar_one()
         except (NoResultFound, MultipleResultsFound) as e:
             not_found(e=e)
+
+    def get_message_for_actor(self, message_id: str, actor: "ScopedUser") -> Message:
+        """TODO: this should cast to the MessageRead object for consistency"""
+        return self._get_for_actor(actor, message_id)
 
     def list_chat_messages_for_actor(
         self, chat_id: str, request: "CollectionRequest"
