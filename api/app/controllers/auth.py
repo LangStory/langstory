@@ -52,7 +52,10 @@ class JWTTokenFlow(AuthMixin):
         return JWTResponse(token=token, data=data)
 
     def get_auth_token(
-        self, refresh_token: "JWTBase", org: Optional["str"] = None, expire_min: Optional[int] = 5
+        self,
+        refresh_token: "JWTBase",
+        org: Optional["str"] = None,
+        expire_min: Optional[int] = 5,
     ) -> "JWTResponse":
         """generate a detailed token and readable data for a given user and org"""
         decoded = jwt.decode(

@@ -50,5 +50,7 @@ async def development_only_login(
     flow = JWTTokenFlow(db_session)
     refresh = flow.get_refresh_token(user)
     org = Organization.default(db_session)
-    auth_token = flow.get_auth_token(refresh, org=org.id, expire_min=(60*24*365)).token
+    auth_token = flow.get_auth_token(
+        refresh, org=org.id, expire_min=(60 * 24 * 365)
+    ).token
     return {"access_token": auth_token, "token_type": "bearer"}
