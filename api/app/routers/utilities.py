@@ -73,3 +73,47 @@ def list_router_for_actor_factory(controller_model:Any) -> Callable:
         return controller.list_for_actor(request)
 
     return list_collection
+
+def read_router_for_actor_factory(controller_model:Any) -> Callable:
+    def read_object(
+        object_id: str,
+        actor: "ScopedUser" = Depends(get_current_user),
+        db_session: "Session" = Depends(get_db_session),
+    ):
+        controller = controller_model(db_session)
+        return controller.read_for_actor(actor, object_id)
+    return read_object
+
+def create_router_for_actor_factory(controller_model:Any, object_schema: Type["BaseSchema"]) -> Callable:
+
+    def create_object(
+        object_data: object_schema,
+        actor: "ScopedUser" = Depends(get_current_user),
+        db_session: "Session" = Depends(get_db_session),
+    ):
+        controller = controller_model(db_session)
+        return controller.create_for_actor(actor, object_data)
+    return create_object
+
+def update_router_for_actor_factory(controller_model:Any, object_schema: Type["BaseSchema"]) -> Callable:
+
+    def update_object(
+        object_id: str,
+        object_data: object_schema,
+        actor: "ScopedUser" = Depends(get_current_user),
+        db_session: "Session" = Depends(get_db_session),
+    ):
+        controller = controller_model(db_session)
+        return controller.update_for_actor(actor, object_id, object_data)
+    return update_object
+
+def delete_router_for_actor_factory(controller_model:Any) -> Callable:
+
+    def delete_object(
+        object_id: str,
+        actor: "ScopedUser" = Depends(get_current_user),
+        db_session: "Session" = Depends(get_db_session),
+    ):
+        controller = controller_model(db_session)
+        return controller.delete_for_actor(actor, object_id)
+    return delete_object
