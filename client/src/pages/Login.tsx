@@ -12,7 +12,7 @@ import logo from 'assets/yin-yang.png'
 function Login() {
     const navigate = useNavigate()
     const rollbar = useRollbar()
-    const {updateAuth} = useAuth()
+    const {validateJwtToken} = useAuth()
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
     const [error, setError] = useState<string>('')
@@ -30,7 +30,7 @@ function Login() {
                 if (response.status === StatusCodes.OK) {
                     const token: string = response.data.token
                     storeValue(STORAGE_KEYS.REFRESH_TOKEN, token)
-                    updateAuth()
+                    await validateJwtToken()
                     navigate('/chats')
                 } else setError('Couldn\'t log in.')
             } catch (e) {

@@ -8,8 +8,9 @@ export const URLS = {
     REQUEST_MAGIC_LINK: (): string => `${BASE_URL}/login/magic-link`,
     ORGANIZATIONS: (): string => `${V1}/organizations`,
     LIST_PROJECTS: (): string => `${V1}/projects`,
+    GET_CHATS: (perPage: number = 1000): string => `${V1}/chats?perPage=${perPage}`,
     GET_CHAT: (id: string): string => `${V1}/chats/${id}`,
     CREATE_NEW_CHAT: (): string => `${V1}/chats`,
     CREATE_NEW_MESSAGE: (id: string): string => `${V1}/chats/${id}/messages`,
-    GET_CHAT_MESSAGES: (id: string): string => `${V1}/chats/${id}/messages`
+    GET_CHAT_MESSAGES: (id: string, perPage: number = 1000): string => `${V1}/chats/${id}/messages?perPage=${perPage}`,
 }

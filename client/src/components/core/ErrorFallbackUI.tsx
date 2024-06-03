@@ -1,5 +1,7 @@
+import Nullable from 'types/Nullable.ts'
+
 export default function ErrorFallbackUI({error, resetError}: {
-    error: Error | null,
+    error: Nullable<Error>,
     resetError: () => void
 }) {
     return (

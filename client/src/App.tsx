@@ -8,19 +8,19 @@ import OfflineNotification from 'components/core/OfflineNotification.tsx'
 import Routes from 'components/routing/Routes.tsx'
 
 export default function App() {
-    const {updateAuth} = useAuth()
-    const {rollbar} = init(updateAuth)
+    const {validateJwtToken} = useAuth()
+    const {rollbar} = init(validateJwtToken)
 
     return (
         <Provider instance={rollbar}>
             <ErrorBoundary fallbackUI={ErrorFallbackUI}>
-                <AuthProvider>
-                    <BrowserRouter>
+                <BrowserRouter>
+                    <AuthProvider>
                         <Toaster position="bottom-right" reverseOrder={false}/>
                         <OfflineNotification/>
                         <Routes/>
-                    </BrowserRouter>
-                </AuthProvider>
+                    </AuthProvider>
+                </BrowserRouter>
             </ErrorBoundary>
         </Provider>
     )

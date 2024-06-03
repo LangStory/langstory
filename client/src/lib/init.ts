@@ -1,12 +1,11 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
 import Rollbar from 'rollbar'
 import { StatusCodes } from 'http-status-codes'
-import toast from 'react-hot-toast'
 import mixpanel from 'mixpanel-browser'
-import { debounce } from 'lodash'
-import { deleteValue, getValue, STORAGE_KEYS } from './session-manager.ts'
+import { getValue, STORAGE_KEYS } from './session-manager.ts'
+import Nullable from 'types/Nullable.ts'
 
-export default function init(updatedAuth: () => void): { rollbar: Rollbar } {
+export default function init(validateJwtToken: () => Promise<void>): { rollbar: Rollbar } {
     //==============================
     // ROLLBAR
     //==============================
@@ -26,7 +25,7 @@ export default function init(updatedAuth: () => void): { rollbar: Rollbar } {
     //==============================
     axios.interceptors.request.use(
         (config: InternalAxiosRequestConfig) => {
-            const jwt: string = getValue(STORAGE_KEYS.ACCESS_TOKEN)
+            const jwt: Nullable<string> = getValue(STORAGE_KEYS.ACCESS_TOKEN)
 
             if (jwt) {
                 config.headers['Authorization'] = `Bearer ${jwt}`
@@ -41,12 +40,10 @@ export default function init(updatedAuth: () => void): { rollbar: Rollbar } {
         }
     )
 
-    axios.interceptors.response.use(undefined, (error: AxiosError) => {
+    axios.interceptors.response.use(undefined, async (error: AxiosError) => {
         if (error.response) {
             if (error.response.status === StatusCodes.UNAUTHORIZED && window.location.pathname !== '/login') {
-                deleteValue(STORAGE_KEYS.ACCESS_TOKEN)
-                updatedAuth()
-                window.location.replace('/login')
+                await validateJwtToken()
             }
         } else {
             rollbar.error(error)
