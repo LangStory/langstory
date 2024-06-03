@@ -1,7 +1,7 @@
 """init
 
 Revision ID: 4bb96acf7278
-Revises: 
+Revises:
 Create Date: 2024-06-02 16:09:40.863685
 
 """
@@ -10,7 +10,6 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-import sqlmodel
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.

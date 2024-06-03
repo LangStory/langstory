@@ -16,7 +16,14 @@ if TYPE_CHECKING:
     from sqlalchemy.orm import Session
 
 
-class NewUser(BaseSchema):
+class BaseUser(BaseSchema):
+    email_address: str = Field(
+        ..., description="the user's email address, must be unique once conformed"
+    )
+    first_name: str = Field(..., description="the user's display name")
+    last_name: str = Field(..., description="the user's display name")
+
+class NewUser(BaseUser):
     """when a new user is created"""
 
     email_address: str = Field(
@@ -27,17 +34,21 @@ class NewUser(BaseSchema):
     password: Optional[str] = Field(
         default=None,
         description="the user's password, required if not using SSO",
-        exclude=True,
     )
 
 
-class UpdateUser(NewUser):
+class UpdateUser(BaseUser):
     """when a user updates their own profile"""
 
     email_address: Optional[str] = Field(None, description="the user's email address")
     first_name: Optional[str] = Field(None, description="the user's display name")
     last_name: Optional[str] = Field(None, description="the user's display name")
     avatar_url: Optional[str] = Field(None, description="the user's avatar image URL")
+    password: Optional[str] = Field(
+        default=None,
+        description="the user's password, required if not using SSO",
+        exclude=True,
+    )
 
 
 class ReadUser(UpdateUser):
