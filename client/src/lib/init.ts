@@ -43,7 +43,18 @@ export default function init(validateJwtToken: () => Promise<void>): { rollbar: 
     axios.interceptors.response.use(undefined, async (error: AxiosError) => {
         if (error.response) {
             if (error.response.status === StatusCodes.UNAUTHORIZED && window.location.pathname !== '/login') {
-                await validateJwtToken()
+                try {
+                    await validateJwtToken()
+                    const jwt: Nullable<string> = getValue(STORAGE_KEYS.ACCESS_TOKEN)
+                    if (jwt && error && error.config) {
+                        error.config.headers['Authorization'] = `Bearer ${jwt}`
+                        return axios(error.config)
+                    }
+                } catch (tokenError) {
+                    window.location.replace('/login')
+                }
+            } else if (error.response.status === StatusCodes.FORBIDDEN) {
+                window.location.replace('/login')
             }
         } else {
             rollbar.error(error)
