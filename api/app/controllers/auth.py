@@ -52,7 +52,7 @@ class JWTTokenFlow(AuthMixin):
         return JWTResponse(token=token, data=data)
 
     def get_auth_token(
-        self, refresh_token: "JWTBase", org: Optional["str"] = None
+        self, refresh_token: "JWTBase", org: Optional["str"] = None, expire_min: Optional[int] = 5
     ) -> "JWTResponse":
         """generate a detailed token and readable data for a given user and org"""
         decoded = jwt.decode(
@@ -82,7 +82,7 @@ class JWTTokenFlow(AuthMixin):
                 "id": sql_org.id,
                 "name": sql_org.name,
             }
-        expire = datetime.now(timezone.utc) + timedelta(minutes=5)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=expire_min)
         user_data = {
             "id": user.id,
             "email_address": user.email_address,

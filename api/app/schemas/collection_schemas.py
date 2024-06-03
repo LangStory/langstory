@@ -4,7 +4,6 @@ from app.models.base import Base
 from app.schemas.base_schema import BaseSchema
 from app.schemas.user_schemas import ScopedUser
 from app.models.user import User
-from sqlmodel import SQLModel
 
 
 class CollectionRequest(BaseSchema):
