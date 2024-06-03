@@ -30,7 +30,7 @@ export default function ChatComponent() {
                 name: (new Date()).toDateString(),
                 projectId
             })
-            navigate(`/chat/${data.id}`)
+            navigate(`/chats/${data.id}`)
         } catch (e) {
             console.error(e)
             return

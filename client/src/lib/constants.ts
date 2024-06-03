@@ -10,4 +10,6 @@ export const URLS = {
     LIST_PROJECTS: (): string => `${V1}/projects`,
     GET_CHAT: (id: string): string => `${V1}/chats/${id}`,
     CREATE_NEW_CHAT: (): string => `${V1}/chats`,
+    CREATE_NEW_MESSAGE: (id: string): string => `${V1}/chats/${id}/messages`,
+    GET_CHAT_MESSAGES: (id: string): string => `${V1}/chats/${id}/messages`
 }
