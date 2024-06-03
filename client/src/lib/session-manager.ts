@@ -1,3 +1,5 @@
+import Nullable from 'types/Nullable.ts'
+
 const KEY_PREFIX = '__LANGSTORY__'
 
 export const STORAGE_KEYS = {
@@ -14,6 +16,6 @@ export function storeValue(key: string, val: any) {
     else window.localStorage.setItem(`${KEY_PREFIX}${key}`, JSON.stringify(val))
 }
 
-export function getValue(key: string): string {
-    return window.localStorage.getItem(`${KEY_PREFIX}${key}`) || ''
+export function getValue(key: string): Nullable<string> {
+    return window.localStorage.getItem(`${KEY_PREFIX}${key}`) || null
 }

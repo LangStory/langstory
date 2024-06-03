@@ -1,5 +1,5 @@
 import { RollbarContext } from '@rollbar/react'
-import { ReactNode } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import { useAuth } from 'hooks/use-auth'
 import AuthRoute from 'components/routing/AuthRoute'
@@ -52,10 +52,19 @@ function withAuthNavbarRollbar(name: string, children: ReactNode): ReactNode {
 // ROUTES
 // ==========================================
 export default function AppRoutes() {
-    const {user} = useAuth()
+    const {user, signOut, accessTokenExpired, refreshTokenExpired, refreshAccessToken} = useAuth()
+    const [isRefreshing, setIsRefreshing] = useState<boolean>(true)
     const navigateToDefault = () => user ? <Navigate to={'/chats'}/> : <Navigate to="/login"/>
 
-    return (
+    useEffect(() => {
+        if (refreshTokenExpired()) signOut()
+        else if (accessTokenExpired()) refreshAccessToken().finally(() => setIsRefreshing(false))
+        else setIsRefreshing(false)
+    }, [refreshAccessToken, refreshTokenExpired, user])
+
+    if (isRefreshing) return ''
+
+    else return (
         <Routes>
             {/*=================================*/}
             {/*PRIVATE ROUTES*/}
