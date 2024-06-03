@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from sqlalchemy.orm import Session
     from app.schemas.user_schemas import ScopedUser
 
+
 class ThreadController(CollectionMixin):
 
     def __init__(self, db_session: "Session"):
@@ -30,7 +31,7 @@ class ThreadController(CollectionMixin):
                 id=item.id,
                 name=item.name,
                 chatId=item.chat_id,
-                message_ids=[message.id for message in item.messages]
+                message_ids=[message.id for message in item.messages],
             )
             for item in items
         ]
@@ -38,7 +39,7 @@ class ThreadController(CollectionMixin):
             items=refined_items, page=request.page, pages=page_count
         )
 
-    def _get_for_actor(self, actor:"ScopedUser", thread_id:str) -> "ThreadRead":
+    def _get_for_actor(self, actor: "ScopedUser", thread_id: str) -> "ThreadRead":
         query = Thread.apply_access_predicate(select(Thread), actor, ["read"])
         try:
             thread_uid = Thread.to_uid(thread_id)
@@ -48,17 +49,20 @@ class ThreadController(CollectionMixin):
         except (NoResultFound, MultipleResultsFound) as e:
             not_found(e=e)
 
-    def read_for_actor(self, actor:"ScopedUser", thread_id:str) -> "ThreadRead":
+    def read_for_actor(self, actor: "ScopedUser", thread_id: str) -> "ThreadRead":
         thread = self._get_for_actor(actor, thread_id)
         return ThreadRead(
             id=thread.id,
             name=thread.name,
             chatId=thread.chat_id,
-            messageIds=[message.id for message in thread.messages]
+            messageIds=[message.id for message in thread.messages],
         )
 
-    def create_for_actor(self, actor:"ScopedUser", thread_data:ThreadCreate) -> "ThreadRead":
-        thread = Thread(**thread_data.model_dump(exclude_none=True, exclude=["id","message_ids"])
+    def create_for_actor(
+        self, actor: "ScopedUser", thread_data: ThreadCreate
+    ) -> "ThreadRead":
+        thread = Thread(
+            **thread_data.model_dump(exclude_none=True, exclude=["id", "message_ids"])
         ).create(self.db_session)
         message_controller = MessageController(self.db_session)
         current_messages = []
@@ -71,12 +75,16 @@ class ThreadController(CollectionMixin):
             id=thread.id,
             name=thread.name,
             chatId=thread.chat_id,
-            messageIds=[message.id for message in thread.messages]
+            messageIds=[message.id for message in thread.messages],
         )
 
-    def update_for_actor(self, actor:"ScopedUser", thread_id:str, thread_data:ThreadUpdate) -> "ThreadRead":
+    def update_for_actor(
+        self, actor: "ScopedUser", thread_id: str, thread_data: ThreadUpdate
+    ) -> "ThreadRead":
         thread = self._get_for_actor(actor, thread_id)
-        for key, value in thread_data.model_dump(exclude_none=True, exclude=["id","chat_id", "message_ids"]).items():
+        for key, value in thread_data.model_dump(
+            exclude_none=True, exclude=["id", "chat_id", "message_ids"]
+        ).items():
             setattr(thread, key, value)
         message_controller = MessageController(self.db_session)
         current_messages = []
@@ -89,20 +97,23 @@ class ThreadController(CollectionMixin):
             id=thread_id,
             name=thread.name,
             chatId=thread.chat_id,
-            messageIds=[message.id for message in thread.messages]
+            messageIds=[message.id for message in thread.messages],
         )
 
-    def delete_for_actor(self, actor:"ScopedUser", thread_id:str) -> None:
+    def delete_for_actor(self, actor: "ScopedUser", thread_id: str) -> None:
         thread = self._get_for_actor(actor, thread_id)
         thread.deleted = True
         thread.update(self.db_session)
+
 
 class ThreadMessageController(CollectionMixin):
 
     def __init__(self, db_session: "Session"):
         super().__init__(db_session=db_session, ModelClass=Message)
 
-    def list_messages_for_actor(self, thread_id: str, request: "CollectionRequest") -> "CollectionResponse":
+    def list_messages_for_actor(
+        self, thread_id: str, request: "CollectionRequest"
+    ) -> "CollectionResponse":
         select_ = select(Message).where(Message._thread_uid == Thread.to_uid(thread_id))
         items, page_count = self.get_collection(request, select_=select_)
         refined_items = [
@@ -118,7 +129,10 @@ class ThreadMessageController(CollectionMixin):
         return CollectionResponse(
             items=refined_items, page=request.page, pages=page_count
         )
-    def add_message_for_actor(self, thread_id: str, message_id: str, actor: "ScopedUser") -> "ThreadRead":
+
+    def add_message_for_actor(
+        self, thread_id: str, message_id: str, actor: "ScopedUser"
+    ) -> "ThreadRead":
         thread = ThreadController(self.db_session)._get_for_actor(actor, thread_id)
         message = MessageController(self.db_session)._get_for_actor(actor, message_id)
         thread.messages.append(message)
@@ -127,10 +141,12 @@ class ThreadMessageController(CollectionMixin):
             id=thread.id,
             name=thread.name,
             chatId=thread.chat_id,
-            messageIds=[message.id for message in thread.messages]
+            messageIds=[message.id for message in thread.messages],
         )
 
-    def remove_message_for_actor(self, thread_id: str, message_id: str, actor: "ScopedUser") -> "ThreadRead":
+    def remove_message_for_actor(
+        self, thread_id: str, message_id: str, actor: "ScopedUser"
+    ) -> "ThreadRead":
         thread = ThreadController(self.db_session)._get_for_actor(actor, thread_id)
         for message in thread.messages:
             if message.id == message_id:
@@ -140,5 +156,5 @@ class ThreadMessageController(CollectionMixin):
             id=thread.id,
             name=thread.name,
             chatId=thread.chat_id,
-            messageIds=[message.id for message in thread.messages]
+            messageIds=[message.id for message in thread.messages],
         )

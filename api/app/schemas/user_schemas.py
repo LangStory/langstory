@@ -23,6 +23,7 @@ class BaseUser(BaseSchema):
     first_name: str = Field(..., description="the user's display name")
     last_name: str = Field(..., description="the user's display name")
 
+
 class NewUser(BaseUser):
     """when a new user is created"""
 

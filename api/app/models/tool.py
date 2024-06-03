@@ -24,7 +24,6 @@ class Tool(ProjectMixin, Base):
 
     project: Mapped["Project"] = relationship("Project", back_populates="tools")
 
-
     @classmethod
     def apply_access_predicate(
         cls,

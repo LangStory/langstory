@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from app.schemas.user_schemas import ScopedUser
     from app.schemas.user_schemas import User
 
+
 class Thread(ChatMixin, Base):
     __tablename__ = "thread"
 
@@ -41,7 +42,9 @@ class Thread(ChatMixin, Base):
         )
         if not org_uid:
             raise ValueError("object %s has no organization accessor", actor)
-        return query.join(Chat).join(Project).where(Project._organization_uid == org_uid)
+        return (
+            query.join(Chat).join(Project).where(Project._organization_uid == org_uid)
+        )
 
     @classmethod
     def related_lookup(cls, value: Any):

@@ -14,6 +14,7 @@ from app.schemas.base_schema import (
     id_description,
 )
 
+
 class ToolCreate(BaseSchema):
     name: str = Field(
         ...,
@@ -38,6 +39,7 @@ class ToolCreate(BaseSchema):
         description="The full OAI compatible JSON schema for the tool",
     )
 
+
 class ToolRead(ToolCreate):
     id: str = Field(
         ...,
@@ -45,6 +47,7 @@ class ToolRead(ToolCreate):
         examples=id_example("tool"),
         description=id_description("tool"),
     )
+
 
 class ToolUpdate(ToolRead):
     # optional to allow router to assemble from url

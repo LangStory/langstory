@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from sqlalchemy.orm import Session
     from app.schemas.user_schemas import ScopedActor
 
+
 class ToolController(CollectionMixin):
 
     def __init__(self, db_session: "Session"):
@@ -35,7 +36,7 @@ class ToolController(CollectionMixin):
             items=refined_items, page=request.page, pages=page_count
         )
 
-    def _get_for_actor(self, actor:"ScopedActor", tool_id:str) -> "ToolRead":
+    def _get_for_actor(self, actor: "ScopedActor", tool_id: str) -> "ToolRead":
         query = Tool.apply_access_predicate(select(Tool), actor, ["read"])
         try:
             tool_uid = Tool.to_uid(tool_id)
@@ -45,7 +46,7 @@ class ToolController(CollectionMixin):
         except (NoResultFound, MultipleResultsFound) as e:
             not_found(e=e)
 
-    def read_for_actor(self, actor:"ScopedActor", tool_id:str) -> "ToolRead":
+    def read_for_actor(self, actor: "ScopedActor", tool_id: str) -> "ToolRead":
         tool = self._get_for_actor(actor, tool_id)
         return ToolRead(
             id=tool.id,
@@ -55,9 +56,10 @@ class ToolController(CollectionMixin):
             jsonSchema=tool.json_schema,
         )
 
-    def create_for_actor(self, actor:"ScopedActor", tool_data:ToolCreate) -> "ToolRead":
-        tool = Tool(**tool_data.model_dump(exclude_none=True)
-        ).create(self.db_session)
+    def create_for_actor(
+        self, actor: "ScopedActor", tool_data: ToolCreate
+    ) -> "ToolRead":
+        tool = Tool(**tool_data.model_dump(exclude_none=True)).create(self.db_session)
         self.db_session.add(tool)
         self.db_session.refresh(tool)
         return ToolRead(
@@ -68,9 +70,13 @@ class ToolController(CollectionMixin):
             jsonSchema=tool.json_schema,
         )
 
-    def update_for_actor(self, actor:"ScopedActor", tool_id:str, tool_data:ToolUpdate) -> "ToolRead":
+    def update_for_actor(
+        self, actor: "ScopedActor", tool_id: str, tool_data: ToolUpdate
+    ) -> "ToolRead":
         tool = self._get_for_actor(actor, tool_id)
-        for key, value in tool_data.model_dump(exclude_none=True, exclude=["id","project_id"]).items():
+        for key, value in tool_data.model_dump(
+            exclude_none=True, exclude=["id", "project_id"]
+        ).items():
             setattr(tool, key, value)
         tool = tool.update(self.db_session)
         return ToolRead(
@@ -81,7 +87,7 @@ class ToolController(CollectionMixin):
             jsonSchema=tool.json_schema,
         )
 
-    def delete_for_actor(self, actor:"ScopedActor", tool_id:str) -> None:
+    def delete_for_actor(self, actor: "ScopedActor", tool_id: str) -> None:
         tool = self._get_for_actor(actor, tool_id)
         tool.deleted = True
         tool.update(self.db_session)

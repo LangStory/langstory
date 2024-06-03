@@ -9,6 +9,7 @@ from app.schemas.base_schema import (
     id_description,
 )
 
+
 class ThreadCreate(BaseSchema):
     name: str = Field(
         ...,
@@ -25,8 +26,9 @@ class ThreadCreate(BaseSchema):
     message_ids: Optional[list[str]] = Field(
         [],
         description="The ids of the messages in the thread",
-        examples=[id_example('message')],
+        examples=[id_example("message")],
     )
+
 
 class ThreadRead(ThreadCreate):
     id: str = Field(

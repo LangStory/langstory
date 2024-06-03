@@ -19,6 +19,7 @@ def _relation_getter(instance: "Base", prop: str) -> Optional[str]:
     except AttributeError:
         return None
 
+
 def _relation_setter(instance: Type["Base"], prop: str, value: str) -> None:
     formatted_prop = f"_{prop}_uid"
     prefix = prop.replace("_", "")
