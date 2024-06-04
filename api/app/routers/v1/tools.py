@@ -19,7 +19,6 @@ read_tool = read_router_for_actor_factory(ToolController)
 update_tool = update_router_for_actor_factory(ToolController, ToolUpdate)
 delete_tool = delete_router_for_actor_factory(ToolController)
 
-
 router.get(
     "/",
     response_model=CollectionResponse,
@@ -27,14 +26,14 @@ router.get(
 )(list_tools)
 router.post("/", response_model=ToolRead, description="create a new tool")(create_tool)
 router.get(
-    "/{tool_id}", response_model=ToolRead, description="read a single tool by id"
+    "/{object_id}", response_model=ToolRead, description="read a single tool by id"
 )(read_tool)
 router.post(
-    "/{tool_id}", response_model=ToolRead, description="update a single tool by id"
+    "/{object_id}", response_model=ToolRead, description="update a single tool by id"
 )(update_tool)
 router.put(
-    "/{tool_id}", response_model=ToolRead, description="update a single tool by id"
+    "/{object_id}", response_model=ToolRead, description="update a single tool by id"
 )(update_tool)
 router.delete(
-    "/{tool_id}", response_model=None, description="delete a single tool by id"
+    "/{object_id}", response_model=None, description="delete a single tool by id"
 )(delete_tool)
