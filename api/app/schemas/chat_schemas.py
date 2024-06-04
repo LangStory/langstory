@@ -111,14 +111,14 @@ class MessageCreate(BaseSchema):
         try:
             if vtype == EventType.tool_message:
                 assert (
-                    values.get("tool_call_response", None) is not None
+                        values.get("tool_call_response", None) is not None
                 ), "tool_call_response is required for tool_message events"
                 assert (
-                    values.get("tool_calls_requested", None) is None
+                        values.get("tool_calls_requested", None) is None
                 ), "tool_calls_requested is not allowed for tool_message events"
             elif not vtype == EventType.assistant_message:
                 assert (
-                    values.get("tool_calls_requested", None) is None
+                        values.get("tool_calls_requested", None) is None
                 ), "tool_calls_requested is not allowed for non-assistant_message events"
             return values
         except AssertionError as e:
@@ -139,7 +139,7 @@ class MessageRead(MessageCreate):
         description=id_description("chat"),
         validation_alias="chat_id",
     )
-
+    role: str
     # assistant
     tool_calls_requested: Optional[List[Optional[Union[ToolCallRead, str]]]] = Field(
         None, description="The tool calls requested by the assistant"

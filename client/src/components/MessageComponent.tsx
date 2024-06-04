@@ -1,26 +1,35 @@
+import { RefObject } from 'react'
+import { format } from 'date-fns'
+import { capitalize } from 'lodash'
+import Nullable from 'types/Nullable.ts'
 import Message, { MessageType } from 'types/Message.ts'
 import { classNames } from 'lib/helpers.ts'
-import { RefObject } from 'react'
-import Nullable from 'types/Nullable.ts'
 
 function getMessageClasses(type: MessageType): string {
-    if (type === 'system_message') return 'self-start bg-amber-400'
-    if (type === 'assistant_message') return 'self-start bg-fuchsia-600'
-    if (type === 'tool_message') return 'self-start bg-emerald-400'
-    if (type === 'external_event') return 'self-start bg-purple-500'
-    return 'self-end bg-sky-400'
+    if (type === 'system_message') return 'bg-amber-400'
+    if (type === 'assistant_message') return 'bg-fuchsia-600'
+    if (type === 'tool_message') return 'bg-emerald-400'
+    if (type === 'external_event') return 'bg-purple-500'
+    return 'bg-sky-500'
 }
 
 interface Properties {
     message: Message
-    ref?: Nullable<RefObject<HTMLDivElement>>
 }
 
-export default function MessageComponent({message, ref = null}: Properties) {
-    const classes: string = classNames('w-fit px-4 py-3 rounded-md cursor-pointer font-ibm', getMessageClasses(message.type))
+export default function MessageComponent({message}: Properties) {
+    const classes: string = classNames('self-center w-full max-w-2xl flex flex-col px-4 py-3 rounded-md cursor-pointer font-ibm', getMessageClasses(message.type))
     return (
-        <div key={message.id} className={classes} ref={ref}>
-            {message.content}
+        <div key={message.id} className={classes}>
+            <div className="w-full flex items-end space-x-2 text-sm text-slate-900">
+                <div className="font-bold">{capitalize(message.role)}</div>
+                <div className="text-xs text-slate-600">
+                    {format(new Date(message.timestamp), 'h:mm a')}
+                </div>
+            </div>
+            <div className="mt-2">
+                {message.content}
+            </div>
         </div>
     )
 }

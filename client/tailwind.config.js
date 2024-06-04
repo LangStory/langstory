@@ -8,6 +8,9 @@ export default {
     ],
     theme: {
         extend: {
+            fontSize: {
+                '2xs': '0.625rem'
+            },
             fontFamily: {
                 ibm: [ '\'IBM Plex Sans\'', ...defaultTheme.fontFamily.sans ],
             }

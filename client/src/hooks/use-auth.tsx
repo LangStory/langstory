@@ -7,7 +7,7 @@ import { useRollbarPerson } from '@rollbar/react'
 import mixpanel from 'mixpanel-browser'
 import Nullable from 'types/Nullable.ts'
 import RefreshTokenResponse from 'types/Auth.ts'
-import { AuthJwtPayload } from 'lib/langstory-jwt-decode'
+import { AuthJwtPayload } from 'types/AuthJwtPayload.ts'
 import { deleteValue, getValue, STORAGE_KEYS, storeValue } from 'lib/session-manager'
 import { URLS } from 'lib/constants'
 

@@ -5,6 +5,7 @@ export default interface Message {
     id: string
     role: MessageRole
     type: MessageType
-    content: string
     chat_id: string
+    content: string
+    timestamp: string
 }
