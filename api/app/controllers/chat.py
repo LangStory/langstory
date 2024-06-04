@@ -151,6 +151,7 @@ class MessageController(CollectionMixin):
                 id=item.id,
                 type=item.type,
                 timestamp=item.timestamp,
+                role=item.role,
                 content=item.content,
                 chat_id=item.chat_id,
             )
