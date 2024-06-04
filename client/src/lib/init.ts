@@ -63,7 +63,6 @@ export default function init(validateJwtToken: () => Promise<void>): { rollbar: 
         return Promise.reject(error)
     })
 
-
     //==============================
     // MIXPANEL
     //==============================

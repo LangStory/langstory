@@ -52,19 +52,55 @@ function withAuthNavbarRollbar(name: string, children: ReactNode): ReactNode {
 // ROUTES
 // ==========================================
 export default function AppRoutes() {
+    //==============================
+    // STATE FOR TRACKING TOKENS
+    //==============================
     const {user, signOut, accessTokenExpired, refreshTokenExpired, refreshAccessToken} = useAuth()
     const [isRefreshing, setIsRefreshing] = useState<boolean>(true)
     const navigateToDefault = () => user ? <Navigate to={'/chats'}/> : <Navigate to="/login"/>
 
+    //==============================
+    // CHECK JWT TOKENS ARE VALID
+    // ONLY CHECK IF USER IS CHANGES
+    //==============================
     useEffect(() => {
-        if (refreshTokenExpired()) signOut()
-        else if (accessTokenExpired()) refreshAccessToken().finally(() => setIsRefreshing(false))
-        else setIsRefreshing(false)
-    }, [refreshAccessToken, refreshTokenExpired, user])
+        const checkTokens = async () => {
+            console.log('Checking tokens...')
+            if (refreshTokenExpired()) {
+                console.log('Refresh token expired. Signing out.')
+                signOut()
+            } else if (accessTokenExpired()) {
+                console.log('Access token expired. Refreshing access token.')
+                try {
+                    await refreshAccessToken()
+                    console.log('Access token refreshed.')
+                } catch (error) {
+                    console.error('Failed to refresh access token:', error)
+                    signOut()
+                } finally {
+                    setIsRefreshing(false)
+                }
+            } else {
+                console.log('Tokens are valid.')
+                setIsRefreshing(false)
+            }
+        }
 
-    if (isRefreshing) return ''
+        checkTokens().then()
+    }, [user])
 
-    else return (
+    //==============================
+    // IF LOGGED IN AND TOKEN
+    // IS REFRESHING RENDER NOTHING
+    //==============================
+    if (user && isRefreshing) {
+        return <></>
+    }
+
+    //==============================
+    // RENDER ROUTES
+    //==============================
+    return (
         <Routes>
             {/*=================================*/}
             {/*PRIVATE ROUTES*/}
@@ -76,19 +112,16 @@ export default function AppRoutes() {
 
             <Route path="/settings" element={withAuthNavbarRollbar('settings', <Settings/>)}/>
 
-
             {/*=================================*/}
             {/*PUBLIC ROUTES*/}
             {/*=================================*/}
             <Route path="login" element={withNoAuth(withRollbarContext('login', <Login/>))}/>
             <Route path="magic-link" element={withNoAuth(withRollbarContext('magic-link-login', <MagicLinkLogin/>))}/>
 
-
             {/*=================================*/}
             {/*REDIRECT FROM AN AUTH ROUTE OR GOING TO '/' */}
             {/*=================================*/}
             <Route index element={navigateToDefault()}/>
-
 
             {/*=================================*/}
             {/*REDIRECT WHEN ROUTE IS NOT FOUND */}

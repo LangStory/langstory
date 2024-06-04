@@ -1,8 +1,8 @@
+import { FormEvent, useEffect, useRef, useState } from 'react'
+import axios from 'axios'
 import { ArrowRightIcon, PaperClipIcon } from '@heroicons/react/24/outline'
 import Chat from 'types/Chat.ts'
 import Message from 'types/Message.ts'
-import { FormEvent, useEffect, useRef, useState } from 'react'
-import axios from 'axios'
 import Nullable from 'types/Nullable.ts'
 import Optional from 'types/Optional.ts'
 import { URLS } from 'lib/constants.ts'
@@ -13,11 +13,17 @@ interface Properties {
 }
 
 export default function ChatContent({chat}: Properties) {
+    //==============================
+    // STATE
+    //==============================
     const messageScroll = useRef<HTMLDivElement>(null)
     const [message, setMessage] = useState<Nullable<string>>(null)
     const [displayMessages, setDisplayMessages] = useState<Array<Message>>([])
     const [timestamp, setTimestamp] = useState<string>(new Date().toISOString())
 
+    //==============================
+    // FETCH MESSAGES
+    //==============================
     useEffect(() => {
         if (chat) {
             axios.get(URLS.GET_CHAT_MESSAGES(chat.id))
@@ -27,12 +33,18 @@ export default function ChatContent({chat}: Properties) {
         }
     }, [chat])
 
+    //==============================
+    // SCROLL TO BOTTOM OF MESSAGES
+    //==============================
     useEffect(() => {
         if (messageScroll.current) {
             messageScroll.current.scrollIntoView({behavior: 'smooth'})
         }
     }, [displayMessages])
 
+    //==============================
+    // ADD NEW MESSAGE
+    //==============================
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault()
         const {data} = await axios.post(URLS.CREATE_NEW_MESSAGE(chat!.id), {type: 'user_message', content: message, timestamp})
@@ -58,10 +70,8 @@ export default function ChatContent({chat}: Properties) {
                 {/*CHAT*/}
                 {/*=================================*/}
                 <div className="w-full h-full px-10 pt-10 flex flex-col flex-grow overflow-y-auto">
-                    <div className="h-full flex flex-col flex-grow space-y-8 overflow-y-auto">
-                        {displayMessages.map((message: Message) =>
-                            <MessageComponent message={message}/>
-                        )}
+                    <div className="w-full h-full flex flex-col space-y-8 overflow-y-auto">
+                        {displayMessages.map((message: Message) => <MessageComponent key={message.id} message={message}/>)}
                         <div className="h-1" ref={messageScroll}/>
                     </div>
                 </div>
@@ -77,9 +87,9 @@ export default function ChatContent({chat}: Properties) {
                             <input type="text" className="w-full bg-gray-200 border-none text-black" placeholder="Message ChatBot" value={message || ''} onChange={(e) => setMessage(e.target.value)}/>
                         </div>
 
-                        <div className="self-end rounded-full bg-black text-gray-200">
+                        <button type="submit" className="self-end rounded-full bg-black text-gray-200">
                             <ArrowRightIcon className="w-6 h-6"/>
-                        </div>
+                        </button>
                     </form>
                 </div>
             </div>
