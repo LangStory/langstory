@@ -65,7 +65,7 @@ class CollectionMixin(DatabaseMixin):
         order_by = order_by or getattr(ModelClass, "__order_by_default__")
 
         orderable = self._get_orderable(ModelClass, order_by, order_dir)
-        query = select_ or select(ModelClass)
+        query = select_ if select_ is not None else select(ModelClass)
         if hasattr(ModelClass, "deleted"):
             query = query.where(ModelClass.deleted == False)
         query = ModelClass.apply_access_predicate(query, actor, "read")

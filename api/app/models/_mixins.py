@@ -11,12 +11,13 @@ class MalformedIdError(Exception):
 
 
 def _relation_getter(instance: "Base", prop: str) -> Optional[str]:
-    if not getattr(instance, prop):
-        return None
     prefix = prop.replace("_", "")
     formatted_prop = f"_{prop}_uid"
-    uuid_ = getattr(instance, formatted_prop)
-    return f"{prefix}-{uuid_}"
+    try:
+        uuid_ = getattr(instance, formatted_prop)
+        return f"{prefix}-{uuid_}"
+    except AttributeError:
+        return None
 
 
 def _relation_setter(instance: Type["Base"], prop: str, value: str) -> None:

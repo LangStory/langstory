@@ -5,6 +5,8 @@ from app.routers.v1.me import router as me_router
 from app.routers.v1.chats import router as chat_router
 from app.routers.v1.projects import router as project_router
 from app.routers.v1.users import router as user_router
+from app.routers.v1.tools import router as tool_router
+from app.routers.v1.threads import router as thread_router
 
 ROUTERS = [
     magic_link_router,
@@ -14,4 +16,6 @@ ROUTERS = [
     project_router,
     token_router,
     user_router,
+    tool_router,
+    thread_router,
 ]
