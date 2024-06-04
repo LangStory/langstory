@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import Project from 'types/Project.ts'
 import Nullable from 'types/Nullable.ts'
 import { URLS } from 'lib/constants.ts'
@@ -27,7 +27,7 @@ export default function ProjectComponent() {
             <div className="mt-10 text-lg">Tools</div>
             <div className="w-1/2 flex flex-col items-center">
                 {project.tools.map((tool: Tool) => {
-                    return <div key={tool.id} className="w-full py-2">{tool.name}</div>
+                    return <Link to={`/projects/${projectId}/tools/${tool.id}`} key={tool.id} className="w-full py-2">{tool.name}</Link>
                 })}
             </div>
         </div>

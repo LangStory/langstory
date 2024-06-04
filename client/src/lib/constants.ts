@@ -13,7 +13,7 @@ export const URLS = {
     GET_PROJECT_TOOLS: (id: string, perPage: number = 1000): string => `${V1}/projects/${id}/tools?perPage=${perPage}`,
     GET_CHATS: (perPage: number = 1000): string => `${V1}/chats?perPage=${perPage}`,
     GET_CHAT: (id: string): string => `${V1}/chats/${id}`,
-    GET_TOOL: (id: string): string => `${V1}/tools/${id}`,
+    GET_TOOL: (id: string): string => `${V1}/tools/${id}?`,
     CREATE_NEW_CHAT: (): string => `${V1}/chats`,
     CREATE_NEW_MESSAGE: (id: string): string => `${V1}/chats/${id}/messages`,
     GET_CHAT_MESSAGES: (id: string, perPage: number = 1000): string => `${V1}/chats/${id}/messages?perPage=${perPage}`,

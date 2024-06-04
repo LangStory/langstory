@@ -12,7 +12,7 @@ export default function ProjectToolsList() {
     useEffect(() => {
         async function fetchProject() {
             if (projectId) {
-                const {data} = await axios.get<Project>(URLS.GET_CHAT(projectId))
+                const {data} = await axios.get<Project>(URLS.GET_PROJECT(projectId))
                 setTools(data.tools)
             }
         }
