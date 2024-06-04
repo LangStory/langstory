@@ -29,7 +29,7 @@ class ToolCallCreate(BaseSchema):
         None,
         pattern=id_regex_pattern("assistantmessage"),
         examples=id_example("assistantmessage"),
-        description="Optional only becase it can be used in compound creates for the assistant message",
+        description="Optional only because it can be used in compound creates for the assistant message",
     )
 
 
