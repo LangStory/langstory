@@ -1,14 +1,7 @@
-from typing import Annotated
-from fastapi import APIRouter, File, UploadFile, Depends
-import json
-from jsonschema import Draft7Validator, validate
-from jsonschema.exceptions import SchemaError
+from fastapi import APIRouter
 
-from app.models.tool import Tool
 from app.controllers.tool import ToolController
 from app.routers.utilities import (
-    get_current_user,
-    get_db_session,
     list_router_for_actor_factory,
     create_router_for_actor_factory,
     read_router_for_actor_factory,
@@ -17,7 +10,6 @@ from app.routers.utilities import (
 )
 from app.schemas.tool_schemas import ToolRead, ToolCreate, ToolUpdate
 from app.schemas.collection_schemas import CollectionResponse
-from app.http_errors import bad_request
 
 router = APIRouter(prefix="/tools", tags=["tools"])
 
