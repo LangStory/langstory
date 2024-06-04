@@ -10,7 +10,6 @@ export const URLS = {
     LIST_PROJECTS: (): string => `${V1}/projects`,
     GET_PROJECTS: (perPage: number = 1000): string => `${V1}/projects?perPage=${perPage}`,
     GET_PROJECT: (id: string, perPage: number = 1000): string => `${V1}/projects/${id}?perPage=${perPage}`,
-    GET_PROJECT_TOOLS: (id: string, perPage: number = 1000): string => `${V1}/projects/${id}/tools?perPage=${perPage}`,
     GET_CHATS: (perPage: number = 1000): string => `${V1}/chats?perPage=${perPage}`,
     GET_CHAT: (id: string): string => `${V1}/chats/${id}`,
     GET_TOOL: (id: string): string => `${V1}/tools/${id}?`,

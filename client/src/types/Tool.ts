@@ -4,6 +4,6 @@ export default interface Tool {
     id: string
     projectId: string
     name: string
-    jsonSchema: string
+    jsonSchema: object
     description: Nullable<string>
 }

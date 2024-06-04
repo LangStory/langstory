@@ -1,10 +1,10 @@
-import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import Project from 'types/Project.ts'
+import axios from 'axios'
 import Nullable from 'types/Nullable.ts'
-import { URLS } from 'lib/constants.ts'
+import Project from 'types/Project.ts'
 import Tool from 'types/Tool.ts'
+import { URLS } from 'lib/constants.ts'
 
 export default function ProjectComponent() {
     const {id: projectId} = useParams()

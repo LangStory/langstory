@@ -18,7 +18,7 @@ export default function ProjectToolsList() {
         }
 
         fetchProject().then()
-    }, [])
+    }, [projectId])
 
     return (
         <div className="w-full flex flex-col">
