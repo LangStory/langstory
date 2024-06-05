@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { PlusIcon } from '@heroicons/react/24/solid'
-import Optional from 'types/Optional.ts'
 
 type FieldType = 'string' | 'number' | 'boolean' | 'array' | 'object';
 
@@ -9,18 +8,34 @@ interface FieldObject {
     type: FieldType;
     parentIndex: number | null;
     index: number;
-    nested?: Array<FieldObject>
+    description: string;
+    required: boolean;
 }
 
 interface FieldProps {
     field: FieldObject;
-    addField: (parentIndex: number | null) => void;
-    updateField: (fieldIndex: number, name: string, type: FieldType) => void;
+    addField: (parentIndex: number | null, removeNested?: boolean) => void;
+    updateField: (fieldIndex: number, name: string, type: FieldType, description: string, required: boolean) => void;
+    addNestedFieldButton: boolean;
 }
 
-function Field({field, addField, updateField}: FieldProps) {
+const Field: React.FC<FieldProps> = ({field, addField, updateField, addNestedFieldButton}) => {
     const [name, setName] = useState<string>(field.name)
     const [fieldType, setFieldType] = useState<FieldType>(field.type)
+    const [description, setDescription] = useState<string>(field.description)
+    const [required, setRequired] = useState<boolean>(field.required)
+
+    useEffect(() => {
+        setFieldType(field.type)
+    }, [field.type])
+
+    useEffect(() => {
+        if (fieldType === 'object') {
+            addField(field.index)
+        } else {
+            addField(field.index, true)
+        }
+    }, [fieldType])
 
     return (
         <div className="w-full flex flex-col items-start space-y-4 border-l-2 border-gray-300 pl-4">
@@ -32,7 +47,7 @@ function Field({field, addField, updateField}: FieldProps) {
                     onChange={e => {
                         const newType = e.target.value as FieldType
                         setFieldType(newType)
-                        updateField(field.index, name, newType)
+                        updateField(field.index, name, newType, description, required)
                     }}
                 >
                     <option value="string">String</option>
@@ -51,124 +66,189 @@ function Field({field, addField, updateField}: FieldProps) {
                     className="px-4 py-2 border border-gray-300 rounded-lg w-full"
                     onChange={e => {
                         setName(e.target.value)
-                        updateField(field.index, e.target.value, fieldType)
+                        updateField(field.index, e.target.value, fieldType, description, required)
                     }}
                 />
             </div>
 
-            <button onClick={() => addField(field.index)} className="flex items-center">
-                <PlusIcon className="w-6 h-6 mr-2"/>
-                Add Nested Field
-            </button>
+            <div className="flex flex-col space-y-1 w-full">
+                <label className="text-sm">Description</label>
+                <input
+                    type="text"
+                    value={description}
+                    className="px-4 py-2 border border-gray-300 rounded-lg w-full"
+                    onChange={e => {
+                        setDescription(e.target.value)
+                        updateField(field.index, name, fieldType, e.target.value, required)
+                    }}
+                />
+            </div>
+
+            <div className="flex flex-col space-y-1 w-full">
+                <label className="text-sm">Required</label>
+                <input
+                    type="checkbox"
+                    checked={required}
+                    className="px-4 py-2 border border-gray-300 rounded-lg"
+                    onChange={e => {
+                        setRequired(e.target.checked)
+                        updateField(field.index, name, fieldType, description, e.target.checked)
+                    }}
+                />
+            </div>
+
+            {fieldType === 'object' && addNestedFieldButton && (
+                <button onClick={() => addField(field.index)} className="flex items-center">
+                    <PlusIcon className="w-6 h-6 mr-2"/>
+                    Add Nested Field
+                </button>
+            )}
         </div>
     )
 }
 
-function GeneratedSchema({schema}: { schema: object }) {
+const GeneratedObject: React.FC<{ obj: object }> = ({obj}) => {
     return (
-        <div className="w-full mt-8">
-            <h3 className="text-lg font-semibold">Generated JSON Schema:</h3>
-            <pre className="bg-gray-100 p-4 rounded overflow-x-auto">{JSON.stringify(schema, null, 2)}</pre>
+        <div className="w-1/2">
+            <pre className="bg-gray-100 p-4 rounded overflow-x-auto">{JSON.stringify(obj, null, 2)}</pre>
         </div>
     )
 }
 
 export default function SchemaBuilder() {
     const [fields, setFields] = useState<FieldObject[]>([
-        {name: 'Field 1', type: 'string', parentIndex: null, index: 1},
+        {name: 'field_1', type: 'string', parentIndex: null, index: 1, description: '', required: false},
     ])
     const [index, setIndex] = useState<number>(2)
-    const [schema, setSchema] = useState<object>({})
+    const [generatedObject, setGeneratedObject] = useState<object>({})
+    const [functionName, setFunctionName] = useState<string>('')
+    const [description, setDescription] = useState<string>('')
+    const [topLevelRequired, setTopLevelRequired] = useState<string[]>([])
 
-    const addField = (parentIndex: number | null) => {
-        const newField: FieldObject = {
-            name: `Field ${index}`,
-            type: 'string',
-            parentIndex,
-            index,
-            nested: [],
-        }
-
-        if (parentIndex !== null) {
-            const parentField: Optional<FieldObject> = fields.find(field => field.index === parentIndex)
-            if (parentField) {
-                parentField.nested = parentField.nested || []
-                parentField.nested.push(newField)
-                const otherFields = fields.filter(field => field.index !== parentIndex)
-                setFields([...otherFields, parentField])
-            }
+    const addField = (parentIndex: number | null, removeNested = false) => {
+        if (removeNested) {
+            setFields(fields.filter(field => field.parentIndex !== parentIndex))
         } else {
-            setFields([...fields, newField])
+            setFields([
+                ...fields,
+                {
+                    name: `field_${index}`,
+                    type: 'string',
+                    parentIndex,
+                    index,
+                    description: '',
+                    required: false
+                },
+            ])
+            setIndex(index + 1)
         }
-
-        setIndex(index + 1)
     }
 
-    const updateField = (fieldIndex: number, name: string, type: FieldType) => {
-        const updateNestedFields = (fields: FieldObject[]): FieldObject[] => {
-            return fields.map(field => {
-                if (field.index === fieldIndex) {
-                    return {...field, name, type}
-                } else if (field.nested && field.nested.length > 0) {
-                    return {...field, nested: updateNestedFields(field.nested)}
-                }
-                return field
-            })
-        }
-
-        setFields(updateNestedFields(fields))
+    const updateField = (fieldIndex: number, name: string, type: FieldType, description: string, required: boolean) => {
+        setFields(fields.map(field =>
+            field.index === fieldIndex ? {...field, name, type, description, required} : field
+        ))
     }
 
-    const generateSchema = () => {
-        const buildSchema = (fields: FieldObject[]): any => {
+    const generateObject = () => {
+        const buildObject = (parentIndex: number | null): any => {
             const result: any = {}
-            fields.forEach(field => {
-                if (field.type === 'object' && field.nested) {
-                    result[field.name] = {
-                        type: field.type,
-                        properties: buildSchema(field.nested),
+            const requiredFields: string[] = []
+
+            fields
+                .filter(field => field.parentIndex === parentIndex)
+                .forEach(field => {
+                    if (field.required) {
+                        requiredFields.push(field.name)
                     }
-                } else {
-                    result[field.name] = {type: field.type}
-                }
-            })
-            return result
+                    if (field.type === 'object') {
+                        const {properties, required} = buildObject(field.index)
+                        result[field.name] = {
+                            type: field.type,
+                            description: field.description,
+                            properties,
+                        }
+                        if (required.length > 0) {
+                            result[field.name].required = required
+                        }
+                    } else {
+                        result[field.name] = {
+                            type: field.type,
+                            description: field.description
+                        }
+                    }
+                })
+
+            return {properties: result, required: requiredFields}
         }
 
-        const rootFields = fields.filter(field => field.parentIndex === null)
-        const schema = {type: 'object', properties: buildSchema(rootFields)}
-        setSchema(schema)
+        const {properties, required} = buildObject(null)
+
+        const obj = {
+            name: functionName,
+            description: description,
+            parameters: {
+                type: 'object',
+                properties,
+                required: topLevelRequired.concat(required)
+            }
+        }
+
+        setGeneratedObject(obj)
     }
 
-    useEffect(() => {
-        generateSchema()
-    }, [fields])
+    useEffect(() => generateObject(), [fields, functionName, description, topLevelRequired])
 
     const renderFields = (parentIndex: number | null, depth: number = 0) => {
         return fields
             .filter(field => field.parentIndex === parentIndex)
-            .map(field => (
+            .map((field, idx, arr) => (
                 <div key={field.index} style={{paddingLeft: depth * 20}}>
                     <Field
                         field={field}
                         addField={addField}
                         updateField={updateField}
+                        addNestedFieldButton={idx === arr.length - 1}
                     />
-                    {field.nested && renderFields(field.index, depth + 1)}
+                    {renderFields(field.index, depth + 1)}
                 </div>
             ))
     }
 
     return (
         <div className="w-full flex flex-col justify-center items-center">
-            <div className="w-full flex justify-center">
-                <button onClick={() => addField(null)} className="flex items-center mb-4">
-                    <PlusIcon className="w-6 h-6 mr-2"/>
-                    Add Field at Root Level
-                </button>
+            <div className="w-full px-20 flex justify-center space-x-10 overflow-y-auto">
+                <div className="w-1/2">
+                    <label className="block text-sm font-medium text-gray-700">Function Name</label>
+                    <input
+                        type="text"
+                        value={functionName}
+                        onChange={e => setFunctionName(e.target.value)}
+                        className="px-4 py-2 mb-4 border border-gray-300 rounded-lg w-full"
+                    />
+                    <label className="block text-sm font-medium text-gray-700">Description</label>
+                    <input
+                        type="text"
+                        value={description}
+                        onChange={e => setDescription(e.target.value)}
+                        className="px-4 py-2 mb-4 border border-gray-300 rounded-lg w-full"
+                    />
+                    <label className="block text-sm font-medium text-gray-700">Required Top Level Fields (comma-separated)</label>
+                    <input
+                        type="text"
+                        value={topLevelRequired.join(', ')}
+                        onChange={e => setTopLevelRequired(e.target.value.split(',').map(s => s.trim()))}
+                        className="px-4 py-2 mb-4 border border-gray-300 rounded-lg w-full"
+                    />
+                    <button onClick={() => addField(null)} className="flex items-center mb-4">
+                        <PlusIcon className="w-6 h-6 mr-2"/>
+                        Add Field
+                    </button>
+                    {renderFields(null)}
+                </div>
+
+                <GeneratedObject obj={generatedObject}/>
             </div>
-            {renderFields(null)}
-            <GeneratedSchema schema={schema}/>
         </div>
     )
 }
