@@ -28,30 +28,28 @@ export default function ProjectToolComponent() {
     }, [toolId])
 
     if (tool) return (
-        <div className="w-full h-screen mt-20 flex flex-col items-center font-ibm">
-            {tool.name}
-            <div className="w-full mt-10 flex justify-center space-x-10">
-                <SchemaBuilder/>
-                {/*<CodeMirror value={toolSchema || ''} width="250px" height="250px" extensions={[json()]} onChange={(value: string) => {*/}
-                {/*    setToolSchema(value)*/}
-                {/*}}/>*/}
+        <div className="w-full h-full py-10 flex flex-col justify-center items-center font-ibm space-y-4">
+            <div className="font-bold uppercase text-xl">{tool.name}</div>
+            <SchemaBuilder/>
+            {/*<CodeMirror value={toolSchema || ''} width="250px" height="250px" extensions={[json()]} onChange={(value: string) => {*/}
+            {/*    setToolSchema(value)*/}
+            {/*}}/>*/}
 
-                {/*<JsonEditor*/}
-                {/*    data={() => {*/}
-                {/*        try {*/}
-                {/*            return JSON.parse(toolSchema || '')*/}
-                {/*        } catch (e) {*/}
-                {/*            return {}*/}
-                {/*        }*/}
-                {/*    }}*/}
-                {/*    onUpdate={({newData}) => {*/}
-                {/*        try {*/}
-                {/*            setToolSchema(JSON.stringify(newData))*/}
-                {/*        } catch (e) {*/}
-                {/*            void (0)*/}
-                {/*        }*/}
-                {/*    }}/>*/}
-            </div>
+            {/*<JsonEditor*/}
+            {/*    data={() => {*/}
+            {/*        try {*/}
+            {/*            return JSON.parse(toolSchema || '')*/}
+            {/*        } catch (e) {*/}
+            {/*            return {}*/}
+            {/*        }*/}
+            {/*    }}*/}
+            {/*    onUpdate={({newData}) => {*/}
+            {/*        try {*/}
+            {/*            setToolSchema(JSON.stringify(newData))*/}
+            {/*        } catch (e) {*/}
+            {/*            void (0)*/}
+            {/*        }*/}
+            {/*    }}/>*/}
         </div>
     )
     else return <></>
