@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { PlusIcon } from '@heroicons/react/24/solid'
+import { Square2StackIcon } from '@heroicons/react/24/outline'
+import toast from 'react-hot-toast'
 
 type FieldType = 'string' | 'number' | 'boolean' | 'array' | 'object';
 
@@ -270,7 +272,13 @@ export default function SchemaBuilder() {
                 {/*GENERATED SCHEMA */}
                 {/*=================================*/}
                 <div className="w-1/2 overflow-y-auto flex flex-col px-4">
-                    <pre className="bg-gray-100 p-4 rounded mt-4 overflow-x-auto">{JSON.stringify(generatedSchema, null, 2)}</pre>
+                    <pre className="relative bg-gray-100 p-4 rounded mt-4 overflow-x-auto">
+                        <Square2StackIcon className="absolute top-5 right-5 w-6 h-6 cursor-pointer" onClick={() => {
+                            navigator.clipboard.writeText(JSON.stringify(generatedSchema, null, 2))
+                            toast.success('Copied to clipboard')
+                        }}/>
+                        {JSON.stringify(generatedSchema, null, 2)}
+                    </pre>
                 </div>
             </div>
         </div>
