@@ -46,7 +46,7 @@ function Field({field, addField, updateField, deleteField}: FieldProps) {
                     <label className="block text-sm font-medium text-gray-700">Type</label>
                     <select
                         value={fieldType}
-                        className="px-4 py-2 border border-gray-300 rounded-md w-full"
+                        className="p-2 border border-gray-300 rounded-md w-full"
                         onChange={e => {
                             const newType = e.target.value as FieldType
                             setFieldType(newType)
@@ -67,7 +67,7 @@ function Field({field, addField, updateField, deleteField}: FieldProps) {
                 <input
                     type="text"
                     value={name}
-                    className="px-4 py-2 border border-gray-300 rounded-md w-full"
+                    className="p-2 border border-gray-300 rounded-md w-full"
                     onChange={e => {
                         setName(e.target.value)
                         updateField(field.index, e.target.value, fieldType, description, required)
@@ -80,7 +80,7 @@ function Field({field, addField, updateField, deleteField}: FieldProps) {
                 <input
                     type="text"
                     value={description}
-                    className="px-4 py-2 border border-gray-300 rounded-md w-full"
+                    className="p-2 border border-gray-300 rounded-md w-full"
                     onChange={e => {
                         setDescription(e.target.value)
                         updateField(field.index, name, fieldType, e.target.value, required)
@@ -88,20 +88,19 @@ function Field({field, addField, updateField, deleteField}: FieldProps) {
                 />
             </div>
 
-            <div className="flex space-x-6 w-full">
-                <div className="self-start flex space-x-6 w-full">
+            <div className="flex space-x-6 items-center w-full">
+                <div className="self-start flex items-center space-x-6 w-full">
                     <label className="block text-sm font-medium text-gray-700">Required</label>
                     <input
                         type="checkbox"
                         checked={required}
-                        className="px-4 py-2 border border-gray-300 rounded-md"
+                        className="border border-gray-300 rounded-md"
                         onChange={e => {
                             setRequired(e.target.checked)
                             updateField(field.index, name, fieldType, description, e.target.checked)
                         }}
                     />
                 </div>
-
                 <TrashIcon
                     className="self-end w-6 h-6 cursor-pointer"
                     onClick={() => deleteField(field.index)}
@@ -121,22 +120,51 @@ function Field({field, addField, updateField, deleteField}: FieldProps) {
     )
 }
 
-export default function SchemaBuilder() {
-    const [fields, setFields] = useState<FieldObject[]>([
-        {name: 'field_1', type: 'string', parentIndex: null, index: 1, description: '', required: false},
-    ])
-    const [index, setIndex] = useState<number>(2)
+interface SchemaBuilderProps {
+    schema: any;
+}
+
+export default function SchemaBuilder({schema}: SchemaBuilderProps) {
+    const [fields, setFields] = useState<FieldObject[]>([])
+    const [index, setIndex] = useState<number>(1)
     const [generatedSchema, setGeneratedSchema] = useState<object>({})
     const [functionName, setFunctionName] = useState<string>('')
     const [description, setDescription] = useState<string>('')
-    const [topLevelRequired] = useState<string[]>([])
+    const [topLevelRequired, setTopLevelRequired] = useState<string[]>([])
+
+    useEffect(() => {
+        if (schema) {
+            const parseSchema = (schema: any, parentIndex: number | null) => {
+                const entries = Object.entries(schema?.properties || {})
+                entries.forEach(([name, prop]: [string, any], idx) => {
+                    const newField: FieldObject = {
+                        name,
+                        type: prop.type as FieldType,
+                        parentIndex,
+                        index: index + idx,
+                        description: prop.description || '',
+                        required: (schema.required || []).includes(name),
+                    }
+                    setFields(prevFields => [...prevFields, newField])
+                    if (prop.type === 'object' && prop.properties) {
+                        setIndex(prevIndex => prevIndex + 1)
+                        parseSchema(prop, index + idx)
+                    }
+                })
+                setIndex(prevIndex => prevIndex + entries.length)
+            }
+            setFunctionName(schema.name || '')
+            setDescription(schema.description || '')
+            parseSchema(schema.parameters || {}, null)
+        }
+    }, [schema])
 
     const addField = (parentIndex: number | null, removeNested = false) => {
         if (removeNested) {
             setFields(fields.filter(field => field.parentIndex !== parentIndex))
         } else {
-            setFields([
-                ...fields,
+            setFields(prevFields => [
+                ...prevFields,
                 {
                     name: `field_${index}`,
                     type: 'string',
@@ -213,19 +241,18 @@ export default function SchemaBuilder() {
     useEffect(() => generateObject(), [fields, functionName, description, topLevelRequired])
 
     const renderFields = (parentIndex: number | null, depth: number = 0) => {
-        return fields
-            .filter(field => field.parentIndex === parentIndex)
-            .map((field, idx, arr) => (
-                <div key={field.index} style={{paddingLeft: depth * 30}}>
-                    <Field
-                        field={field}
-                        addField={addField}
-                        updateField={updateField}
-                        deleteField={deleteField}
-                    />
-                    {renderFields(field.index, depth + 1)}
-                </div>
-            ))
+        const filteredFields = fields.filter(field => field.parentIndex === parentIndex)
+        return filteredFields.map((field) => (
+            <div key={field.index} style={{paddingLeft: depth * 30}}>
+                <Field
+                    field={field}
+                    addField={addField}
+                    updateField={updateField}
+                    deleteField={deleteField}
+                />
+                {renderFields(field.index, depth + 1)}
+            </div>
+        ))
     }
 
     return (

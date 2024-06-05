@@ -30,7 +30,37 @@ export default function ProjectToolComponent() {
     if (tool) return (
         <div className="w-full h-full py-10 flex flex-col justify-center items-center font-ibm space-y-4">
             <div className="font-bold uppercase text-xl">{tool.name}</div>
-            <SchemaBuilder/>
+            <SchemaBuilder schema={{
+                'name': 'test_function',
+                'description': 'this is a test function',
+                'parameters': {
+                    'type': 'object',
+                    'properties': {
+                        'take_one': {
+                            'type': 'string',
+                            'description': ''
+                        },
+                        'foobar': {
+                            'type': 'object',
+                            'description': '',
+                            'properties': {
+                                'a_number': {
+                                    'type': 'number',
+                                    'description': ''
+                                }
+                            },
+                            'required': [
+                                'a_number'
+                            ]
+                        },
+                        'is_false': {
+                            'type': 'boolean',
+                            'description': ''
+                        }
+                    },
+                    'required': []
+                }
+            }}/>
             {/*<CodeMirror value={toolSchema || ''} width="250px" height="250px" extensions={[json()]} onChange={(value: string) => {*/}
             {/*    setToolSchema(value)*/}
             {/*}}/>*/}
