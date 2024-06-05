@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { PlusIcon } from '@heroicons/react/24/solid'
-import { Square2StackIcon } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
+import { PlusIcon } from '@heroicons/react/24/solid'
+import { Square2StackIcon, TrashIcon } from '@heroicons/react/24/outline'
 
 type FieldType = 'string' | 'number' | 'boolean' | 'array' | 'object';
 
@@ -18,9 +18,10 @@ interface FieldProps {
     field: FieldObject;
     addField: (parentIndex: number | null, removeNested?: boolean) => void;
     updateField: (fieldIndex: number, name: string, type: FieldType, description: string, required: boolean) => void;
+    deleteField: (fieldIndex: number) => void;
 }
 
-function Field({field, addField, updateField}: FieldProps) {
+function Field({field, addField, updateField, deleteField}: FieldProps) {
     const [name, setName] = useState<string>(field.name)
     const [fieldType, setFieldType] = useState<FieldType>(field.type)
     const [description, setDescription] = useState<string>(field.description)
@@ -40,31 +41,27 @@ function Field({field, addField, updateField}: FieldProps) {
 
     return (
         <div className="w-full my-6 py-3 flex flex-col items-start space-y-4 border-l-2 border-gray-300 pl-4">
-            <div className="flex flex-col space-y-1 w-full">
-                {/*=================================*/}
-                {/*FIELD TYPE*/}
-                {/*=================================*/}
-                <label className="block text-sm font-medium text-gray-700">Type</label>
-                <select
-                    value={fieldType}
-                    className="px-4 py-2 border border-gray-300 rounded-md w-full"
-                    onChange={e => {
-                        const newType = e.target.value as FieldType
-                        setFieldType(newType)
-                        updateField(field.index, name, newType, description, required)
-                    }}
-                >
-                    <option value="string">string</option>
-                    <option value="number">number</option>
-                    <option value="boolean">boolean</option>
-                    <option value="array">array</option>
-                    <option value="object">object</option>
-                </select>
+            <div className="flex justify-between w-full items-center">
+                <div className="flex flex-col space-y-1 w-full">
+                    <label className="block text-sm font-medium text-gray-700">Type</label>
+                    <select
+                        value={fieldType}
+                        className="px-4 py-2 border border-gray-300 rounded-md w-full"
+                        onChange={e => {
+                            const newType = e.target.value as FieldType
+                            setFieldType(newType)
+                            updateField(field.index, name, newType, description, required)
+                        }}
+                    >
+                        <option value="string">string</option>
+                        <option value="number">number</option>
+                        <option value="boolean">boolean</option>
+                        <option value="array">array</option>
+                        <option value="object">object</option>
+                    </select>
+                </div>
             </div>
 
-            {/*=================================*/}
-            {/*FIELD NAME*/}
-            {/*=================================*/}
             <div className="flex flex-col space-y-1 w-full">
                 <label className="block text-sm font-medium text-gray-700">Name</label>
                 <input
@@ -78,9 +75,6 @@ function Field({field, addField, updateField}: FieldProps) {
                 />
             </div>
 
-            {/*=================================*/}
-            {/*FIELD DESCRIPTION*/}
-            {/*=================================*/}
             <div className="flex flex-col space-y-1 w-full">
                 <label className="block text-sm font-medium text-gray-700">Description</label>
                 <input
@@ -94,25 +88,26 @@ function Field({field, addField, updateField}: FieldProps) {
                 />
             </div>
 
-            {/*=================================*/}
-            {/*FIELD REQUIRED*/}
-            {/*=================================*/}
             <div className="flex space-x-6 w-full">
-                <label className="block text-sm font-medium text-gray-700">Required</label>
-                <input
-                    type="checkbox"
-                    checked={required}
-                    className="px-4 py-2 border border-gray-300 rounded-md"
-                    onChange={e => {
-                        setRequired(e.target.checked)
-                        updateField(field.index, name, fieldType, description, e.target.checked)
-                    }}
+                <div className="self-start flex space-x-6 w-full">
+                    <label className="block text-sm font-medium text-gray-700">Required</label>
+                    <input
+                        type="checkbox"
+                        checked={required}
+                        className="px-4 py-2 border border-gray-300 rounded-md"
+                        onChange={e => {
+                            setRequired(e.target.checked)
+                            updateField(field.index, name, fieldType, description, e.target.checked)
+                        }}
+                    />
+                </div>
+
+                <TrashIcon
+                    className="self-end w-6 h-6 cursor-pointer"
+                    onClick={() => deleteField(field.index)}
                 />
             </div>
 
-            {/*=================================*/}
-            {/*ADD NESTED FIELD*/}
-            {/*=================================*/}
             {fieldType === 'object' && (
                 <button
                     onClick={() => addField(field.index)}
@@ -153,6 +148,13 @@ export default function SchemaBuilder() {
             ])
             setIndex(index + 1)
         }
+    }
+
+    const deleteField = (fieldIndex: number) => {
+        const deleteFieldAndNested = (index: number) => {
+            setFields(prevFields => prevFields.filter(field => field.index !== index && field.parentIndex !== index))
+        }
+        deleteFieldAndNested(fieldIndex)
     }
 
     const updateField = (fieldIndex: number, name: string, type: FieldType, description: string, required: boolean) => {
@@ -219,6 +221,7 @@ export default function SchemaBuilder() {
                         field={field}
                         addField={addField}
                         updateField={updateField}
+                        deleteField={deleteField}
                     />
                     {renderFields(field.index, depth + 1)}
                 </div>
@@ -228,13 +231,9 @@ export default function SchemaBuilder() {
     return (
         <div className="w-full h-screen flex flex-col overflow-hidden">
             <div className="w-full flex flex-grow justify-center space-x-10 overflow-hidden">
-                {/*=================================*/}
                 {/*SCHEMA GUI*/}
-                {/*=================================*/}
                 <div className="w-1/2 overflow-y-auto flex flex-col px-4">
-                    {/*=================================*/}
                     {/*FUNCTION NAME*/}
-                    {/*=================================*/}
                     <label className="block text-sm font-medium text-gray-700 mt-4">Function Name</label>
                     <input
                         type="text"
@@ -243,9 +242,7 @@ export default function SchemaBuilder() {
                         className="px-4 py-2 mb-4 border border-gray-300 rounded-md w-full"
                     />
 
-                    {/*=================================*/}
                     {/*FUNCTION DESCRIPTION*/}
-                    {/*=================================*/}
                     <label className="block text-sm font-medium text-gray-700">Function Description</label>
                     <input
                         type="text"
@@ -254,9 +251,7 @@ export default function SchemaBuilder() {
                         className="px-4 py-2 mb-4 border border-gray-300 rounded-md w-full"
                     />
 
-                    {/*=================================*/}
                     {/*ADD FIELD */}
-                    {/*=================================*/}
                     <button
                         onClick={() => addField(null)}
                         className="w-fit ml-1 px-2 py-1 border border-gray-700 uppercase rounded flex items-center space-x-2 hover:bg-gray-700 hover:text-white"
@@ -268,15 +263,16 @@ export default function SchemaBuilder() {
                     {renderFields(null)}
                 </div>
 
-                {/*=================================*/}
                 {/*GENERATED SCHEMA */}
-                {/*=================================*/}
                 <div className="w-1/2 overflow-y-auto flex flex-col px-4">
                     <pre className="relative bg-gray-100 p-4 rounded mt-4 overflow-x-auto">
-                        <Square2StackIcon className="absolute top-5 right-5 w-6 h-6 cursor-pointer" onClick={() => {
-                            navigator.clipboard.writeText(JSON.stringify(generatedSchema, null, 2))
-                            toast.success('Copied to clipboard')
-                        }}/>
+                        <Square2StackIcon
+                            className="absolute top-5 right-5 w-6 h-6 cursor-pointer"
+                            onClick={() => {
+                                navigator.clipboard.writeText(JSON.stringify(generatedSchema, null, 2))
+                                toast.success('Copied to clipboard')
+                            }}
+                        />
                         {JSON.stringify(generatedSchema, null, 2)}
                     </pre>
                 </div>
