@@ -6,7 +6,6 @@ import { useParams } from 'react-router-dom'
 import ChatContent from 'components/ChatContent.tsx'
 import Nullable from 'types/Nullable.ts'
 import ChatSidebar from 'components/ChatSidebar.tsx'
-import Modal from 'components/core/Modal.tsx'
 
 export default function ChatComponent() {
     const {id: chatId} = useParams()

@@ -1,8 +1,9 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import HttpUrl
 
 from app.schemas.base_schema import BaseSchema
+from app.schemas.tool_schemas import ToolRead
 
 
 class ProjectCreate(BaseSchema):
@@ -17,3 +18,4 @@ class ProjectRead(BaseSchema):
     avatar_url: Optional[HttpUrl] = None
     description: Optional[str] = None
     organization_id: str
+    tools: List[ToolRead]

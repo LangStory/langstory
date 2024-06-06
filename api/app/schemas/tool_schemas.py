@@ -1,9 +1,8 @@
 from datetime import datetime
 from typing import Optional, Union, List
 from uuid import UUID
-from pydantic import Field, model_validator
+from pydantic import Field, model_validator, AliasChoices
 from pydantic.json_schema import SkipJsonSchema
-
 
 from app.models.message import EventType
 from app.schemas.tool_call_schemas import ToolCallCreate, ToolCallRead
@@ -33,6 +32,7 @@ class ToolCreate(BaseSchema):
         pattern=id_regex_pattern("project"),
         examples=id_example("project"),
         description=id_description("project"),
+        validation_alias=AliasChoices("project_id", "projectId", ),
     )
     json_schema: dict = Field(
         default_factory=lambda: {},

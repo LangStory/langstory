@@ -5,6 +5,7 @@ from sqlalchemy import select
 from app.models.project import Project
 from app.controllers.mixins.collection_mixin import CollectionMixin
 from app.schemas.collection_schemas import CollectionResponse, CollectionRequest
+from app.schemas.tool_schemas import ToolRead
 from app.schemas.user_schemas import ScopedUser
 from app.schemas.project_schemas import ProjectRead
 from app.http_errors import bad_request, not_found
@@ -27,14 +28,14 @@ class ProjectController(CollectionMixin):
                 avatarUrl=item.avatar_url,
                 description=item.description,
                 organizationId=item.organization.id,
-            )
+                tools=[ToolRead.model_validate(tool) for tool in item.tools], )
             for item in items
         ]
         return CollectionResponse(
             items=refined_items, page=request.page, pages=page_count
         )
 
-    def read_for_actor(self, actor: ScopedUser, project_id: str) -> Optional["Project"]:
+    def read_for_actor(self, actor: ScopedUser, project_id: str) -> Optional["ProjectRead"]:
         self.db_session.merge(actor.organization)
         try:
             project_uid = Project.to_uid(project_id)
@@ -49,6 +50,12 @@ class ProjectController(CollectionMixin):
                 "Project is not in the organization the actor is currently bound to"
             )
             assert project.organization_id == actor.organization.id, message
-            return project
+            return ProjectRead(
+                id=project.id,
+                name=project.name,
+                avatarUrl=project.avatar_url,
+                description=project.description,
+                organizationId=project.organization.id,
+                tools=[ToolRead.model_validate(tool) for tool in project.tools], )
         except AssertionError as e:
             bad_request(e=e, message=message)
