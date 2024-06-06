@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { PlusIcon } from '@heroicons/react/24/solid'
 import { Square2StackIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { classNames } from 'lib/helpers.ts'
 
 type FieldType = 'array' | 'boolean' | 'integer' | 'null' | 'number' | 'object' | 'string'
 
@@ -41,8 +42,9 @@ function Field({field, addField, updateField, deleteField}: FieldProps) {
 
     return (
         <div className="w-full my-6 py-3 flex flex-col items-start space-y-4 border-l-2 border-gray-300 pl-4">
+
             <div className="flex justify-between w-full items-center">
-                <div className="flex flex-col space-y-1 w-full">
+                <div className={classNames('flex flex-col space-y-1', fieldType === 'object' ? 'w-1/2' : 'w-full')}>
                     <label className="block text-sm font-medium text-gray-700">Type</label>
                     <select
                         value={fieldType}
@@ -62,6 +64,16 @@ function Field({field, addField, updateField, deleteField}: FieldProps) {
                         <option value="object">object</option>
                     </select>
                 </div>
+
+                {fieldType === 'object' && (
+                    <button
+                        onClick={() => addField(field.index)}
+                        className="self-end h-full w-fit ml-1 px-2 py-1 border border-gray-700 uppercase rounded flex items-center space-x-2 hover:bg-gray-700 hover:text-white"
+                    >
+                        <PlusIcon className="w-4 h-4"/>
+                        <span className="text-sm font-medium">Add Nested Field</span>
+                    </button>
+                )}
             </div>
 
             <div className="flex flex-col space-y-1 w-full">
@@ -108,16 +120,6 @@ function Field({field, addField, updateField, deleteField}: FieldProps) {
                     onClick={() => deleteField(field.index)}
                 />
             </div>
-
-            {fieldType === 'object' && (
-                <button
-                    onClick={() => addField(field.index)}
-                    className="self-end w-fit ml-1 px-2 py-1 border border-gray-700 uppercase rounded flex items-center space-x-2 hover:bg-gray-700 hover:text-white"
-                >
-                    <PlusIcon className="w-4 h-4"/>
-                    <span className="text-sm font-medium">Add Nested Field</span>
-                </button>
-            )}
         </div>
     )
 }
