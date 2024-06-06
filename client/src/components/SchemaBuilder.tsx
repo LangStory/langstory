@@ -9,17 +9,17 @@ type FieldType = 'array' | 'boolean' | 'integer' | 'null' | 'number' | 'object' 
 interface FieldObject {
     name: string;
     type: FieldType;
-    parentIndex: number | null;
-    index: number;
+    parentIndex: Array<number> | null;
+    index: Array<number>;
     description: string;
     required: boolean;
 }
 
 interface FieldProps {
     field: FieldObject;
-    addField: (parentIndex: number | null, removeNested?: boolean) => void;
-    updateField: (fieldIndex: number, name: string, type: FieldType, description: string, required: boolean) => void;
-    deleteField: (fieldIndex: number) => void;
+    addField: (parentIndex: Array<number> | null, removeNested?: boolean) => void;
+    updateField: (fieldIndex: Array<number>, name: string, type: FieldType, description: string, required: boolean) => void;
+    deleteField: (fieldIndex: Array<number>) => void;
 }
 
 function Field({field, addField, updateField, deleteField}: FieldProps) {
@@ -42,7 +42,6 @@ function Field({field, addField, updateField, deleteField}: FieldProps) {
 
     return (
         <div className="w-full my-6 py-3 flex flex-col items-start space-y-4 border-l-2 border-gray-300 pl-4">
-
             <div className="flex justify-between w-full items-center">
                 <div className={classNames('flex flex-col space-y-1', fieldType === 'object' ? 'w-1/2' : 'w-full')}>
                     <label className="block text-sm font-medium text-gray-700">Type</label>
@@ -116,7 +115,7 @@ function Field({field, addField, updateField, deleteField}: FieldProps) {
                     />
                 </div>
                 <TrashIcon
-                    className="self-end w-6 h-6 cursor-pointer"
+                    className="self-end w-6 h-6 cursor-pointer hover:fill-red-300"
                     onClick={() => deleteField(field.index)}
                 />
             </div>
@@ -125,83 +124,90 @@ function Field({field, addField, updateField, deleteField}: FieldProps) {
 }
 
 interface SchemaBuilderProps {
-    schema: any;
+    initialSchema: any;
 }
 
-export default function SchemaBuilder({schema}: SchemaBuilderProps) {
+export default function SchemaBuilder({initialSchema}: SchemaBuilderProps) {
     const [fields, setFields] = useState<FieldObject[]>([])
-    const [index, setIndex] = useState<number>(1)
     const [generatedSchema, setGeneratedSchema] = useState<object>({})
     const [functionName, setFunctionName] = useState<string>('')
     const [description, setDescription] = useState<string>('')
-    const [topLevelRequired, setTopLevelRequired] = useState<string[]>([])
+    const [topLevelRequired] = useState<string[]>([])
 
     useEffect(() => {
-        if (schema) {
-            const parseSchema = (schema: any, parentIndex: number | null) => {
-                const entries = Object.entries(schema?.properties || {})
+        if (initialSchema) {
+            const parseSchema = (schema: any, parentIndex: Array<number> | null) => {
+                const entries: Array<[string, unknown]> = Object.entries(schema?.properties || {})
                 entries.forEach(([name, prop]: [string, any], idx) => {
+                    const currentIndex = parentIndex ? [...parentIndex, idx] : [idx]
                     const newField: FieldObject = {
                         name,
                         type: prop.type as FieldType,
                         parentIndex,
-                        index: index + idx,
+                        index: currentIndex,
                         description: prop.description || '',
                         required: (schema.required || []).includes(name),
                     }
                     setFields(prevFields => [...prevFields, newField])
                     if (prop.type === 'object' && prop.properties) {
-                        setIndex(prevIndex => prevIndex + 1)
-                        parseSchema(prop, index + idx)
+                        parseSchema(prop, currentIndex)
                     }
                 })
-                setIndex(prevIndex => prevIndex + entries.length)
             }
-            setFunctionName(schema.name || '')
-            setDescription(schema.description || '')
-            parseSchema(schema.parameters || {}, null)
+            setFunctionName(initialSchema.name || '')
+            setDescription(initialSchema.description || '')
+            parseSchema(initialSchema.parameters || {}, null)
         }
-    }, [schema])
+    }, [initialSchema])
 
-    const addField = (parentIndex: number | null, removeNested = false) => {
+    const addField = (parentIndex: Array<number> | null, removeNested = false) => {
         if (removeNested) {
             setFields(fields.filter(field => field.parentIndex !== parentIndex))
         } else {
+            const newIndex = parentIndex ? [...parentIndex, fields.length] : [fields.length]
             setFields(prevFields => [
                 ...prevFields,
                 {
-                    name: `field_${index}`,
+                    name: `field_${fields.length}`,
                     type: 'string',
                     parentIndex,
-                    index,
+                    index: newIndex,
                     description: '',
                     required: false,
                 },
             ])
-            setIndex(index + 1)
         }
     }
 
-    const deleteField = (fieldIndex: number) => {
-        const deleteFieldAndNested = (index: number) => {
-            setFields(prevFields => prevFields.filter(field => field.index !== index && field.parentIndex !== index))
+    const deleteField = (fieldIndex: Array<number>) => {
+        const deleteFieldAndNested = (index: Array<number>) => {
+            setFields(prevFields => prevFields.filter(field => {
+                const fieldIndexString = JSON.stringify(field.index)
+                const indexString = JSON.stringify(index)
+                return !fieldIndexString.startsWith(indexString)
+            }))
         }
         deleteFieldAndNested(fieldIndex)
     }
 
-    const updateField = (fieldIndex: number, name: string, type: FieldType, description: string, required: boolean) => {
+    const updateField = (fieldIndex: Array<number>, name: string, type: FieldType, description: string, required: boolean) => {
         setFields(fields.map(field =>
-            field.index === fieldIndex ? {...field, name, type, description, required} : field
+            JSON.stringify(field.index) === JSON.stringify(fieldIndex) ? {...field, name, type, description, required} : field
         ))
     }
 
     const generateObject = () => {
-        const buildObject = (parentIndex: number | null): any => {
+        const buildObject = (parentIndex: Array<number> | null): any => {
             const result: any = {}
             const requiredFields: string[] = []
 
             fields
-                .filter(field => field.parentIndex === parentIndex)
+                .filter(field => {
+                    if (!parentIndex) {
+                        return field.parentIndex === null
+                    }
+                    return JSON.stringify(field.parentIndex) === JSON.stringify(parentIndex)
+                })
                 .forEach(field => {
                     if (field.required) {
                         requiredFields.push(field.name)
@@ -244,10 +250,15 @@ export default function SchemaBuilder({schema}: SchemaBuilderProps) {
 
     useEffect(() => generateObject(), [fields, functionName, description, topLevelRequired])
 
-    const renderFields = (parentIndex: number | null, depth: number = 0) => {
-        const filteredFields = fields.filter(field => field.parentIndex === parentIndex)
+    const renderFields = (parentIndex: Array<number> | null, depth: number = 0) => {
+        const filteredFields = fields.filter(field => {
+            if (!parentIndex) {
+                return field.parentIndex === null
+            }
+            return JSON.stringify(field.parentIndex) === JSON.stringify(parentIndex)
+        })
         return filteredFields.map((field) => (
-            <div key={field.index} style={{paddingLeft: depth * 30}}>
+            <div key={field.index.join(',')} style={{paddingLeft: depth * 30}}>
                 <Field
                     field={field}
                     addField={addField}
@@ -262,9 +273,13 @@ export default function SchemaBuilder({schema}: SchemaBuilderProps) {
     return (
         <div className="w-full h-screen flex flex-col overflow-hidden">
             <div className="w-full flex flex-grow justify-center space-x-10 overflow-hidden">
+                {/*=================================*/}
                 {/*SCHEMA GUI*/}
+                {/*=================================*/}
                 <div className="w-1/2 overflow-y-auto flex flex-col px-4">
+                    {/*=================================*/}
                     {/*FUNCTION NAME*/}
+                    {/*=================================*/}
                     <label className="block text-sm font-medium text-gray-700 mt-4">Function Name</label>
                     <input
                         type="text"
@@ -273,7 +288,9 @@ export default function SchemaBuilder({schema}: SchemaBuilderProps) {
                         className="px-4 py-2 mb-4 border border-gray-300 rounded-md w-full"
                     />
 
+                    {/*=================================*/}
                     {/*FUNCTION DESCRIPTION*/}
+                    {/*=================================*/}
                     <label className="block text-sm font-medium text-gray-700">Function Description</label>
                     <input
                         type="text"
@@ -281,8 +298,9 @@ export default function SchemaBuilder({schema}: SchemaBuilderProps) {
                         onChange={e => setDescription(e.target.value)}
                         className="px-4 py-2 mb-4 border border-gray-300 rounded-md w-full"
                     />
-
+                    {/*=================================*/}
                     {/*ADD FIELD */}
+                    {/*=================================*/}
                     <button
                         onClick={() => addField(null)}
                         className="w-fit ml-1 px-2 py-1 border border-gray-700 uppercase rounded flex items-center space-x-2 hover:bg-gray-700 hover:text-white"
@@ -294,11 +312,13 @@ export default function SchemaBuilder({schema}: SchemaBuilderProps) {
                     {renderFields(null)}
                 </div>
 
+                {/*=================================*/}
                 {/*GENERATED SCHEMA */}
+                {/*=================================*/}
                 <div className="w-1/2 overflow-y-auto flex flex-col px-4">
                     <pre className="relative bg-gray-100 p-4 rounded mt-4 overflow-x-auto">
                         <Square2StackIcon
-                            className="absolute top-5 right-5 w-6 h-6 cursor-pointer"
+                            className="absolute top-5 right-5 w-6 h-6 cursor-pointer hover:fill-emerald-300"
                             onClick={() => {
                                 navigator.clipboard.writeText(JSON.stringify(generatedSchema, null, 2))
                                 toast.success('Copied to clipboard')
