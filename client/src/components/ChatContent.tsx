@@ -47,7 +47,7 @@ export default function ChatContent({chat}: Properties) {
     //==============================
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault()
-        const {data} = await axios.post(URLS.CREATE_NEW_MESSAGE(chat!.id), {type: 'user_message', content: message, timestamp})
+        const {data} = await axios.post(URLS.CREATE_MESSAGE(chat!.id), {type: 'user_message', content: message, timestamp})
         setDisplayMessages([...displayMessages, data])
         setMessage(null)
     }

@@ -43,6 +43,10 @@ function Field({field, addField, updateField, deleteField}: FieldProps) {
     return (
         <div className="w-full my-6 py-3 flex flex-col items-start space-y-4 border-l-2 border-gray-300 pl-4">
             <div className="flex justify-between w-full items-center">
+
+                {/*=================================*/}
+                {/*FIELD TYPE*/}
+                {/*=================================*/}
                 <div className={classNames('flex flex-col space-y-1', fieldType === 'object' ? 'w-1/2' : 'w-full')}>
                     <label className="block text-sm font-medium text-gray-700">Type</label>
                     <select
@@ -64,6 +68,9 @@ function Field({field, addField, updateField, deleteField}: FieldProps) {
                     </select>
                 </div>
 
+                {/*=================================*/}
+                {/*ADD NESTED FIELD*/}
+                {/*=================================*/}
                 {fieldType === 'object' && (
                     <button
                         onClick={() => addField(field.index)}
@@ -75,6 +82,9 @@ function Field({field, addField, updateField, deleteField}: FieldProps) {
                 )}
             </div>
 
+            {/*=================================*/}
+            {/*FIELD NAME*/}
+            {/*=================================*/}
             <div className="flex flex-col space-y-1 w-full">
                 <label className="block text-sm font-medium text-gray-700">Name</label>
                 <input
@@ -88,6 +98,9 @@ function Field({field, addField, updateField, deleteField}: FieldProps) {
                 />
             </div>
 
+            {/*=================================*/}
+            {/*FIELD DESCRIPTION*/}
+            {/*=================================*/}
             <div className="flex flex-col space-y-1 w-full">
                 <label className="block text-sm font-medium text-gray-700">Description</label>
                 <input
@@ -102,6 +115,9 @@ function Field({field, addField, updateField, deleteField}: FieldProps) {
             </div>
 
             <div className="flex space-x-6 items-center w-full">
+                {/*=================================*/}
+                {/*FIELD REQUIRED*/}
+                {/*=================================*/}
                 <div className="self-start flex items-center space-x-6 w-full">
                     <label className="block text-sm font-medium text-gray-700">Required</label>
                     <input
@@ -114,6 +130,10 @@ function Field({field, addField, updateField, deleteField}: FieldProps) {
                         }}
                     />
                 </div>
+
+                {/*=================================*/}
+                {/*DELETE FIELD*/}
+                {/*=================================*/}
                 <TrashIcon
                     className="self-end w-6 h-6 cursor-pointer hover:fill-red-300"
                     onClick={() => deleteField(field.index)}
@@ -125,9 +145,10 @@ function Field({field, addField, updateField, deleteField}: FieldProps) {
 
 interface SchemaBuilderProps {
     initialSchema: any;
+    setUpdatedSchema: (s: any) => void;
 }
 
-export default function SchemaBuilder({initialSchema}: SchemaBuilderProps) {
+export default function SchemaBuilder({initialSchema, setUpdatedSchema}: SchemaBuilderProps) {
     const [fields, setFields] = useState<FieldObject[]>([])
     const [generatedSchema, setGeneratedSchema] = useState<object>({})
     const [functionName, setFunctionName] = useState<string>('')
@@ -249,6 +270,9 @@ export default function SchemaBuilder({initialSchema}: SchemaBuilderProps) {
     }
 
     useEffect(() => generateObject(), [fields, functionName, description, topLevelRequired])
+    useEffect(() => {
+        setUpdatedSchema(generatedSchema)
+    }, [generatedSchema])
 
     const renderFields = (parentIndex: Array<number> | null, depth: number = 0) => {
         const filteredFields = fields.filter(field => {

@@ -13,7 +13,6 @@ import ChatsList from 'pages/ChatsList.tsx'
 import ChatComponent from 'pages/ChatComponent.tsx'
 import ProjectsList from 'pages/ProjectsList.tsx'
 import ProjectComponent from 'pages/ProjectComponent.tsx'
-import ProjectToolsList from 'pages/ProjectToolsList.tsx'
 import ProjectToolComponent from 'pages/ProjectToolComponent.tsx'
 
 function withNoAuth(children: ReactNode): ReactNode {
@@ -113,12 +112,12 @@ export default function AppRoutes() {
                 <Route index element={withAuthNavbarRollbar('chats-list', <ChatsList/>)}/>
                 <Route path=":id" element={withAuthNavbarRollbar('chat', <ChatComponent/>)}/>
             </Route>
+
             <Route path="projects">
                 <Route index element={withAuthNavbarRollbar('projects-list', <ProjectsList/>)}/>
                 <Route path=":id">
                     <Route index element={withAuthNavbarRollbar('project', <ProjectComponent/>)}/>
                     <Route path="tools">
-                        <Route index element={withAuthNavbarRollbar('project-tools-list', <ProjectToolsList/>)}/>
                         <Route path=":id" element={withAuthNavbarRollbar('project-tool', <ProjectToolComponent/>)}/>
                     </Route>
                 </Route>
