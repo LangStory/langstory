@@ -3,7 +3,7 @@ import toast from 'react-hot-toast'
 import { PlusIcon } from '@heroicons/react/24/solid'
 import { Square2StackIcon, TrashIcon } from '@heroicons/react/24/outline'
 
-type FieldType = 'string' | 'number' | 'boolean' | 'array' | 'object';
+type FieldType = 'array' | 'boolean' | 'integer' | 'null' | 'number' | 'object' | 'string'
 
 interface FieldObject {
     name: string;
@@ -54,8 +54,10 @@ function Field({field, addField, updateField, deleteField}: FieldProps) {
                         }}
                     >
                         <option value="string">string</option>
+                        <option value="integer">integer</option>
                         <option value="number">number</option>
                         <option value="boolean">boolean</option>
+                        <option value="null">null</option>
                         <option value="array">array</option>
                         <option value="object">object</option>
                     </select>
