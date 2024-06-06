@@ -1,12 +1,7 @@
-from datetime import datetime
-from typing import Optional, Union, List
-from uuid import UUID
-from pydantic import Field, model_validator
+from typing import Optional
+from pydantic import Field
 from pydantic.json_schema import SkipJsonSchema
 
-
-from app.models.message import EventType
-from app.schemas.tool_call_schemas import ToolCallCreate, ToolCallRead
 from app.schemas.base_schema import (
     BaseSchema,
     id_regex_pattern,

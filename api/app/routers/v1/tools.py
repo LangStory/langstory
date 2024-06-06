@@ -46,3 +46,153 @@ router.put(
 router.delete(
     "/{tool_id}", response_model=None, description="delete a single tool by id"
 )(delete_tool)
+
+OAI_JSON_SCHEMA = """{
+      $schema: "http://json-schema.org/draft/2020-12/schema",
+      definitions: {
+        objectWithProperties: {
+          type: "object",
+          properties: {
+            type: {
+              type: "string",
+              enum: [
+                "array",
+                "boolean",
+                "integer",
+                "null",
+                "number",
+                "object",
+                "string",
+              ],
+            },
+            name: {
+              type: "string",
+            },
+            description: {
+              type: "string",
+            },
+            parameters: {
+              type: "object",
+              required: ["type", "required", "properties"],
+              properties: {
+                type: {
+                  type: "string",
+                  enum: ["object"],
+                },
+                required: {
+                  type: "array",
+                  items: {
+                    type: "string",
+                  },
+                },
+                properties: {
+                  $ref: "#/definitions/propertiesObject",
+                },
+              },
+              additionalProperties: false,
+            },
+            enum: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+            },
+            items: {
+              oneOf: [
+                {
+                  $ref: "#/definitions/objectWithProperties",
+                },
+                {
+                  type: "string",
+                },
+              ],
+            },
+            required: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+            },
+            properties: {
+              $ref: "#/definitions/propertiesObject",
+            },
+            $ref: {
+              type: "string",
+            },
+          },
+          additionalProperties: false,
+        },
+        propertiesObject: {
+          type: "object",
+          patternProperties: {
+            ".*": {
+              $ref: "#/definitions/objectWithProperties",
+            },
+          },
+          additionalProperties: false,
+        },
+      },
+      type: "object",
+      required: ["name", "description", "parameters"],
+      properties: {
+        name: {
+          type: "string",
+        },
+        description: {
+          type: "string",
+        },
+        parameters: {
+          type: "object",
+          required: ["type", "required", "properties"],
+          properties: {
+            type: {
+              type: "string",
+              enum: ["object"],
+            },
+            required: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+            },
+            properties: {
+              $ref: "#/definitions/propertiesObject",
+            },
+          },
+          additionalProperties: false,
+        },
+      },
+      additionalProperties: false,
+      }"""
+
+# bulk add from jsonschema file
+@router.post("/bulk", description="bulk create tools")
+async def bulk_create_tools(
+    project_id: str,
+    tools: UploadFile,
+    db_session = Depends(get_db_session),
+    actor = Depends(get_current_user)) -> CollectionResponse:
+    pass
+    tools_body = await tools.read()
+    schemas = json.loads(tools_body.decode("utf-8"))
+
+    try:
+        # check that each schema is valid
+        _ = [Draft7Validator.check_schema(schema) for schema in schemas]
+        validate(schemas, json.loads(OAI_JSON_SCHEMA))
+
+    except SchemaError as e:
+        bad_request(e, e.message)
+
+    # loop through and create each tool
+    tools = []
+    for schema in schemas:
+        tool = Tool(
+            name=schema["name"],
+            description=schema["description"],
+            json_schema=tool,
+            project_id=project_id)
+        tools.append(tool)
+        db_session.add(tool)
+    db_session.commit()
+    return CollectionResponse(data=[ToolRead.model_validate(tool) for tool in tools])
