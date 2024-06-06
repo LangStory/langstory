@@ -22,10 +22,12 @@ export default function ProjectToolsList() {
 
     return (
         <div className="w-full flex flex-col">
-            <div className="w-full font-medium pb-1 border-b border-b-black">ProjectTools</div>
-            {tools.map((tool: Tool) => {
-                return <Link to={`/projects/${projectId}/tools/${tool.id}`} key={tool.id} className="w-full py-2">{tool.name}</Link>
-            })}
+            <div className="w-full font-medium pl-10 pb-1 border-b border-b-black">ProjectTools</div>
+            <div className="pl-10">
+                {tools.map((tool: Tool) => {
+                    return <Link to={`/projects/${projectId}/tools/${tool.id}`} key={tool.id} className="w-full py-2">{tool.name}</Link>
+                })}
+            </div>
         </div>
     )
 }

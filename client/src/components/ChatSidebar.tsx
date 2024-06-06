@@ -33,7 +33,7 @@ export default function ChatSidebar() {
         try {
             const {data: projectData} = await axios(URLS.LIST_PROJECTS())
             const projectId = projectData.items[0].id
-            const {data} = await axios.post<Chat>(URLS.CREATE_NEW_CHAT(), {
+            const {data} = await axios.post<Chat>(URLS.CREATE_CHAT(), {
                 name: newChatName,
                 projectId
             })
