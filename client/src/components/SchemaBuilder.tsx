@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, FocusEvent } from 'react'
 import toast from 'react-hot-toast'
 import { PlusIcon } from '@heroicons/react/24/solid'
 import { Square2StackIcon, TrashIcon } from '@heroicons/react/24/outline'
@@ -154,6 +154,7 @@ export default function SchemaBuilder({initialSchema, setUpdatedSchema}: SchemaB
     const [functionName, setFunctionName] = useState<string>('')
     const [description, setDescription] = useState<string>('')
     const [topLevelRequired] = useState<string[]>([])
+    const [editedSchema, setEditedSchema] = useState<string>('')
 
     useEffect(() => {
         if (initialSchema) {
@@ -267,12 +268,51 @@ export default function SchemaBuilder({initialSchema, setUpdatedSchema}: SchemaB
         }
 
         setGeneratedSchema(obj)
+        setEditedSchema(JSON.stringify(obj, null, 2))
     }
 
     useEffect(() => generateObject(), [fields, functionName, description, topLevelRequired])
     useEffect(() => {
         setUpdatedSchema(generatedSchema)
     }, [generatedSchema])
+
+    const handleSchemaChange = (e: FocusEvent<HTMLPreElement>) => {
+        const updatedSchemaString = e.currentTarget.innerText
+        setEditedSchema(updatedSchemaString)
+        try {
+            const updatedSchema = JSON.parse(updatedSchemaString)
+            setFields([])
+            const parseSchema = (schema: any, parentIndex: Array<number> | null) => {
+                const entries: Array<[string, unknown]> = Object.entries(schema?.properties || {})
+                entries.forEach(([name, prop]: [string, any], idx) => {
+                    const currentIndex = parentIndex ? [...parentIndex, idx] : [idx]
+                    const newField: FieldObject = {
+                        name,
+                        type: prop.type as FieldType,
+                        parentIndex,
+                        index: currentIndex,
+                        description: prop.description || '',
+                        required: (schema.required || []).includes(name),
+                    }
+                    setFields(prevFields => [...prevFields, newField])
+                    if (prop.type === 'object' && prop.properties) {
+                        parseSchema(prop, currentIndex)
+                    }
+                })
+            }
+            // =============================================
+            // HAVE TO WRAP IN TIMEOUT SO
+            // PREVIOUS SET FIELDS TAKES EFFECT
+            // =============================================
+            setTimeout(() => {
+                setFunctionName(updatedSchema.name || '')
+                setDescription(updatedSchema.description || '')
+                parseSchema(updatedSchema.parameters || {}, null)
+            }, 0)
+        } catch (error) {
+            console.error('Invalid JSON')
+        }
+    }
 
     const renderFields = (parentIndex: Array<number> | null, depth: number = 0) => {
         const filteredFields = fields.filter(field => {
@@ -340,16 +380,21 @@ export default function SchemaBuilder({initialSchema, setUpdatedSchema}: SchemaB
                 {/*GENERATED SCHEMA */}
                 {/*=================================*/}
                 <div className="w-1/2 overflow-y-auto flex flex-col px-4">
-                    <pre className="relative bg-gray-100 p-4 rounded mt-4 overflow-x-auto">
-                        <Square2StackIcon
-                            className="absolute top-5 right-5 w-6 h-6 cursor-pointer hover:fill-emerald-300"
-                            onClick={() => {
-                                navigator.clipboard.writeText(JSON.stringify(generatedSchema, null, 2))
-                                toast.success('Copied to clipboard')
-                            }}
-                        />
-                        {JSON.stringify(generatedSchema, null, 2)}
+                    <pre
+                        className="relative bg-gray-100 p-4 rounded mt-4 overflow-x-auto"
+                        contentEditable
+                        suppressContentEditableWarning
+                        onBlur={handleSchemaChange}
+                    >
+                        {editedSchema}
                     </pre>
+                    <Square2StackIcon
+                        className="absolute top-5 right-5 w-6 h-6 cursor-pointer hover:fill-emerald-300"
+                        onClick={() => {
+                            navigator.clipboard.writeText(JSON.stringify(generatedSchema, null, 2))
+                            toast.success('Copied to clipboard')
+                        }}
+                    />
                 </div>
             </div>
         </div>

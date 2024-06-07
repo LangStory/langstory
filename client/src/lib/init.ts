@@ -45,6 +45,7 @@ export default function init(validateJwtToken: () => Promise<void>): { rollbar: 
             if (error.response.status === StatusCodes.UNAUTHORIZED && window.location.pathname !== '/login') {
                 try {
                     await validateJwtToken()
+                    setTimeout(() => window.location.reload(), 1)
                     const jwt: Nullable<string> = getValue(STORAGE_KEYS.ACCESS_TOKEN)
                     if (jwt && error && error.config) {
                         error.config.headers['Authorization'] = `Bearer ${jwt}`
