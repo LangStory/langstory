@@ -102,7 +102,11 @@ export default function ProjectComponent() {
                 </div>
                 <div className="w-full mt-2 flex flex-col items-center space-y-2">
                     {project.tools.map((tool: Tool) => {
-                        return <Link to={`/projects/${projectId}/tools/${tool.id}`} key={tool.id} className="w-full p-2 uppercase rounded text-sm hover:bg-amber-500 hover:text-white">{tool.name}</Link>
+                        return (
+                            <Link to={`/projects/${projectId}/tools/${tool.id}`} key={tool.id} className="w-full flex p-2 uppercase rounded text-sm hover:bg-amber-500 hover:text-white">
+                                <span className="flex flex-grow">{tool.name}</span> <span className="ml-2 text-2xs">{tool.description}</span>
+                            </Link>
+                        )
                     })}
                 </div>
             </div>
