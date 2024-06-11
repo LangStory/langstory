@@ -28,14 +28,17 @@ class ProjectController(CollectionMixin):
                 avatarUrl=item.avatar_url,
                 description=item.description,
                 organizationId=item.organization.id,
-                tools=[ToolRead.model_validate(tool) for tool in item.tools], )
+                tools=[ToolRead.model_validate(tool) for tool in item.tools],
+            )
             for item in items
         ]
         return CollectionResponse(
             items=refined_items, page=request.page, pages=page_count
         )
 
-    def read_for_actor(self, actor: ScopedUser, project_id: str) -> Optional["ProjectRead"]:
+    def read_for_actor(
+        self, actor: ScopedUser, project_id: str
+    ) -> Optional["ProjectRead"]:
         self.db_session.merge(actor.organization)
         try:
             project_uid = Project.to_uid(project_id)
@@ -56,6 +59,7 @@ class ProjectController(CollectionMixin):
                 avatarUrl=project.avatar_url,
                 description=project.description,
                 organizationId=project.organization.id,
-                tools=[ToolRead.model_validate(tool) for tool in project.tools], )
+                tools=[ToolRead.model_validate(tool) for tool in project.tools],
+            )
         except AssertionError as e:
             bad_request(e=e, message=message)
