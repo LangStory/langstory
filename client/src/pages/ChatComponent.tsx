@@ -1,11 +1,11 @@
 import axios from 'axios'
-import Chat from 'types/Chat.ts'
-import { URLS } from 'lib/constants.ts'
+import Chat from '../typing/Chat.ts'
+import { URLS } from '@lib/constants.ts'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import ChatContent from 'components/ChatContent.tsx'
-import Nullable from 'types/Nullable.ts'
-import ChatSidebar from 'components/ChatSidebar.tsx'
+import ChatContent from '@components/ChatContent.tsx'
+import Nullable from '@typing/Nullable.ts'
+import ChatSidebar from '@components/ChatSidebar.tsx'
 
 export default function ChatComponent() {
     const {id: chatId} = useParams()

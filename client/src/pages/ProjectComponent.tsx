@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import Nullable from 'types/Nullable.ts'
-import Project from 'types/Project.ts'
-import Tool from 'types/Tool.ts'
-import { URLS } from 'lib/constants.ts'
-import Modal from 'components/core/Modal.tsx'
+import Nullable from '@typing/Nullable.ts'
+import Project from '@typing/Project.ts'
+import Tool from '@typing/Tool.ts'
+import { URLS } from '@lib/constants.ts'
+import Modal from '@components/core/Modal.tsx'
 
 export default function ProjectComponent() {
     const {id: projectId} = useParams()

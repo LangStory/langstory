@@ -1,4 +1,4 @@
-import Nullable from 'types/Nullable.ts'
+import Nullable from '@typing/Nullable.ts'
 
 export default function ErrorFallbackUI({error, resetError}: {
     error: Nullable<Error>,

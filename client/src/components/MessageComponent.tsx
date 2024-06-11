@@ -1,9 +1,7 @@
-import { RefObject } from 'react'
 import { format } from 'date-fns'
 import { capitalize } from 'lodash'
-import Nullable from 'types/Nullable.ts'
-import Message, { MessageType } from 'types/Message.ts'
-import { classNames } from 'lib/helpers.ts'
+import Message, { MessageType } from '@typing/Message.ts'
+import { classNames } from '@lib/helpers.ts'
 
 function getMessageClasses(type: MessageType): string {
     if (type === 'system_message') return 'bg-amber-400'

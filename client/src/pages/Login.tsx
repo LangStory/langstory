@@ -3,11 +3,11 @@ import { Link, useNavigate } from 'react-router-dom'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import { StatusCodes } from 'http-status-codes'
 import { useRollbar } from '@rollbar/react'
-import RefreshTokenResponse from 'types/Auth.ts'
-import { STORAGE_KEYS, storeValue } from 'lib/session-manager.ts'
-import { URLS } from 'lib/constants.ts'
-import { useAuth } from 'hooks/use-auth.tsx'
-import logo from 'assets/yin-yang.png'
+import RefreshTokenResponse from '../typing/Auth.ts'
+import { STORAGE_KEYS, storeValue } from '@lib/session-manager.ts'
+import { URLS } from '@lib/constants.ts'
+import { useAuth } from '@hooks/use-auth.tsx'
+import logo from '@assets/yin-yang.png'
 
 function Login() {
     const navigate = useNavigate()

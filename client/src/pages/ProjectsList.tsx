@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import Project from 'types/Project.ts'
+import Project from '../typing/Project.ts'
 import axios from 'axios'
-import ApiCollectionResponse from 'types/ApiCollectionResponse.ts'
-import { URLS } from 'lib/constants.ts'
+import ApiCollectionResponse from '../typing/ApiCollectionResponse.ts'
+import { URLS } from '@lib/constants.ts'
 import { Link } from 'react-router-dom'
 
 export default function ProjectsList() {

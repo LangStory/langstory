@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
-import Nullable from 'types/Nullable.ts'
+import Nullable from '@typing/Nullable.ts'
 
 export default function OfflineNotification() {
     const [toastId, setToastId] = useState<Nullable<string>>(null)

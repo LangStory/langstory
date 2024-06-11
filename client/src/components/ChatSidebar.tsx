@@ -2,12 +2,12 @@ import axios from 'axios'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FormEvent, useEffect, useState } from 'react'
 import { PlusIcon } from '@heroicons/react/24/outline'
-import Chat from 'types/Chat.ts'
-import ApiCollectionResponse from 'types/ApiCollectionResponse.ts'
-import Nullable from 'types/Nullable.ts'
-import { URLS } from 'lib/constants.ts'
-import { useAuth } from 'hooks/use-auth.tsx'
-import Modal from 'components/core/Modal.tsx'
+import Chat from '@typing/Chat.ts'
+import ApiCollectionResponse from '@typing/ApiCollectionResponse.ts'
+import Nullable from '@typing/Nullable.ts'
+import { URLS } from '@lib/constants.ts'
+import { useAuth } from '@hooks/use-auth.tsx'
+import Modal from '@components/core/Modal.tsx'
 
 export default function ChatSidebar() {
     const navigate = useNavigate()

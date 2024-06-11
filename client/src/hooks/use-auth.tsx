@@ -5,11 +5,11 @@ import { jwtDecode } from 'jwt-decode'
 import { StatusCodes } from 'http-status-codes'
 import { useRollbarPerson } from '@rollbar/react'
 import mixpanel from 'mixpanel-browser'
-import Nullable from 'types/Nullable.ts'
-import RefreshTokenResponse from 'types/Auth.ts'
-import { AuthJwtPayload } from 'types/AuthJwtPayload.ts'
-import { deleteValue, getValue, STORAGE_KEYS, storeValue } from 'lib/session-manager'
-import { URLS } from 'lib/constants'
+import Nullable from '@typing/Nullable.ts'
+import RefreshTokenResponse from '@typing/Auth.ts'
+import { AuthJwtPayload } from '@typing/AuthJwtPayload.ts'
+import { deleteValue, getValue, STORAGE_KEYS, storeValue } from '@lib/session-manager'
+import { URLS } from '@lib/constants'
 
 function tokenExpired(token: string | null): boolean {
     if (token) {

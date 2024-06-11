@@ -1,5 +1,5 @@
 import { MutableRefObject, useCallback, useRef } from 'react'
-import Nullable from 'types/Nullable.ts'
+import Nullable from '../typing/Nullable.ts'
 
 export default function useDebounce<T extends Array<any>>(callback: (...args: T) => void, delay: number) {
     const timer: MutableRefObject<Nullable<NodeJS.Timeout>> = useRef<Nullable<NodeJS.Timeout>>(null)

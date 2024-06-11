@@ -7,13 +7,13 @@ export default defineConfig({
     plugins: [react()],
     resolve: {
         alias: {
-            'pages': path.resolve(__dirname, './src/pages'),
-            'components': path.resolve(__dirname, './src/components'),
-            'hooks': path.resolve(__dirname, './src/hooks'),
-            'lib': path.resolve(__dirname, './src/lib'),
-            'types': path.resolve(__dirname, './src/types'),
-            'assets': path.resolve(__dirname, './src/assets'),
-            'services': path.resolve(__dirname, './src/services'),
+            '@pages': path.resolve(__dirname, './src/pages'),
+            '@components': path.resolve(__dirname, './src/components'),
+            '@hooks': path.resolve(__dirname, './src/hooks'),
+            '@lib': path.resolve(__dirname, './src/lib'),
+            '@typing': path.resolve(__dirname, './src/typing'),
+            '@assets': path.resolve(__dirname, './src/assets'),
+            '@services': path.resolve(__dirname, './src/services'),
         }
     }
 })
