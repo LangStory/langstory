@@ -32,7 +32,10 @@ class ToolCreate(BaseSchema):
         pattern=id_regex_pattern("project"),
         examples=id_example("project"),
         description=id_description("project"),
-        validation_alias=AliasChoices("project_id", "projectId", ),
+        validation_alias=AliasChoices(
+            "project_id",
+            "projectId",
+        ),
     )
     json_schema: dict = Field(
         default_factory=lambda: {},
