@@ -3,7 +3,7 @@ import Rollbar from 'rollbar'
 import { StatusCodes } from 'http-status-codes'
 import mixpanel from 'mixpanel-browser'
 import { getValue, STORAGE_KEYS } from './session-manager.ts'
-import Nullable from 'types/Nullable.ts'
+import Nullable from '../typing/Nullable.ts'
 
 export default function init(validateJwtToken: () => Promise<void>): { rollbar: Rollbar } {
     //==============================

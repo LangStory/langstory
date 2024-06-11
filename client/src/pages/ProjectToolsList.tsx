@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import axios from 'axios'
-import Tool from 'types/Tool.ts'
-import { URLS } from 'lib/constants.ts'
-import Project from 'types/Project.ts'
+import Tool from '@typing/Tool.ts'
+import Project from '@typing/Project.ts'
+import { URLS } from '@lib/constants.ts'
 
 export default function ProjectToolsList() {
     const {id: projectId} = useParams()

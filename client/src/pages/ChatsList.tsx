@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import Chat from 'types/Chat.ts'
-import axios from 'axios'
-import ApiCollectionResponse from 'types/ApiCollectionResponse.ts'
-import { URLS } from 'lib/constants.ts'
 import { Link } from 'react-router-dom'
+import axios from 'axios'
+import Chat from '@typing/Chat.ts'
+import ApiCollectionResponse from '@typing/ApiCollectionResponse.ts'
+import { URLS } from '@lib/constants.ts'
 
 export default function ChatsList() {
     const [chats, setChats] = useState<Array<Chat>>([])

@@ -1,4 +1,4 @@
-import Nullable from 'types/Nullable.ts'
+import Nullable from './Nullable.ts'
 
 export default interface Tool {
     id: string

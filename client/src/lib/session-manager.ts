@@ -1,4 +1,4 @@
-import Nullable from 'types/Nullable.ts'
+import Nullable from '@typing/Nullable.ts'
 
 const KEY_PREFIX = '__LANGSTORY__'
 

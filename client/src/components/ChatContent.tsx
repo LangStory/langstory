@@ -1,12 +1,12 @@
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { ArrowRightIcon, PaperClipIcon } from '@heroicons/react/24/outline'
-import Chat from 'types/Chat.ts'
-import Message from 'types/Message.ts'
-import Nullable from 'types/Nullable.ts'
-import Optional from 'types/Optional.ts'
-import { URLS } from 'lib/constants.ts'
-import MessageComponent from 'components/MessageComponent.tsx'
+import Chat from '@typing/Chat.ts'
+import Message from '@typing/Message.ts'
+import Nullable from '@typing/Nullable.ts'
+import Optional from '@typing/Optional.ts'
+import { URLS } from '@lib/constants.ts'
+import MessageComponent from '@components/MessageComponent.tsx'
 
 interface Properties {
     chat: Nullable<Optional<Chat>>

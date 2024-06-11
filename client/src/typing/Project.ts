@@ -1,5 +1,5 @@
-import Nullable from 'types/Nullable.ts'
-import Tool from 'types/Tool.ts'
+import Nullable from './Nullable.ts'
+import Tool from './Tool.ts'
 
 export default interface Project {
     id: string

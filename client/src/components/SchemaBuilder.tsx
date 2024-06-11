@@ -2,7 +2,7 @@ import { useState, useEffect, FocusEvent } from 'react'
 import toast from 'react-hot-toast'
 import { PlusIcon } from '@heroicons/react/24/solid'
 import { Square2StackIcon, TrashIcon } from '@heroicons/react/24/outline'
-import { classNames } from 'lib/helpers.ts'
+import { classNames } from '@lib/helpers.ts'
 
 type FieldType = 'array' | 'boolean' | 'integer' | 'null' | 'number' | 'object' | 'string'
 

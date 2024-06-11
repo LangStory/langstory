@@ -1,5 +1,5 @@
-import Message from 'types/Message.ts'
-import Nullable from 'types/Nullable.ts'
+import Message from './Message.ts'
+import Nullable from './Nullable.ts'
 
 export default interface jjChat {
     id: string

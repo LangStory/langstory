@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import axios from 'axios'
-import Nullable from 'types/Nullable.ts'
-import Tool from 'types/Tool.ts'
-import { URLS } from 'lib/constants.ts'
-import SchemaBuilder from 'components/SchemaBuilder.tsx'
 import toast from 'react-hot-toast'
+import axios from 'axios'
+import Nullable from '@typing/Nullable.ts'
+import Tool from '@typing/Tool.ts'
+import { URLS } from '@lib/constants.ts'
+import SchemaBuilder from '@components/SchemaBuilder.tsx'
 
 export default function ProjectToolComponent() {
     const {id: projectId} = useParams()
